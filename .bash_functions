@@ -342,6 +342,9 @@ installNodePackages ()
 
 		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
 		yarn global add doctoc
+
+		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Yarn.
+		command -v yarn --version >/dev/null 2>&1 && export PATH="$(yarn global bin):${PATH}"
 	else
 		echo "ERROR: `yarn` is required for installing NodeJS packages, but it's not available in your PATH. Please install `yarn` and ensure it's in your PATH. Then re-run `installNodePackages`."
 	fi
