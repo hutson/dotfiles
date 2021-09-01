@@ -294,7 +294,7 @@ installBrewPackages()
 			brew install --cask firefox
 			brew install --cask keepassxc
 			brew install --cask gpg-suite
-			brew install --cask joplin # For taking and organizing notes.
+			brew install --cask joplin
 			brew install --cask iterm2
 			brew install --cask slack
 		fi
