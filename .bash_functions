@@ -277,9 +277,6 @@ installBrewPackages()
 		# Install command line text editor.
 		brew install neovim
 
-		# Install network traffic inspection tool.
-		brew install tcpdump
-
 		if [ "$(uname)" == "Darwin" ]; then
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
 			brew install coreutils
@@ -295,13 +292,11 @@ installBrewPackages()
 			brew install pinentry-mac
 
 			brew install --cask firefox
-			brew install --cask visual-studio-code
 			brew install --cask keepassxc
 			brew install --cask gpg-suite
 			brew install --cask joplin # For taking and organizing notes.
 			brew install --cask iterm2
 			brew install --cask slack
-			brew install --cask wireshark # For network debugging.
 		fi
 
 		if [ "$(uname -n)" == "startopia" ]; then
