@@ -323,7 +323,7 @@ installBrewPackages()
 }
 
 #! Install NodeJS packages.
-# Install NodeJS packages via `yarn`.
+# Install NodeJS packages via `npm`.
 installNodePackages ()
 {
 	if command -v npm &> /dev/null; then
@@ -332,16 +332,13 @@ installNodePackages ()
 		# Install latest LTS release of NodeJS.
 		nvm install --lts
 
-		# Globally install the Yarn package manager so that we can use that package manager in subsequent tool installation steps.
-		npm install -g yarn
-
 		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
-		yarn global add doctoc
+		npm install -g doctoc
 
-		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Yarn.
-		command -v yarn --version >/dev/null 2>&1 && export PATH="$(yarn global bin):${PATH}"
+		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
+		command -v npm --version >/dev/null 2>&1 && export PATH="$(npm -g bin):${PATH}"
 	else
-		echo "ERROR: `yarn` is required for installing NodeJS packages, but it's not available in your PATH. Please install `yarn` and ensure it's in your PATH. Then re-run `installNodePackages`."
+		echo "ERROR: `npm` is required for installing NodeJS packages, but it's not available in your PATH. Please install `npm` and ensure it's in your PATH. Then re-run `installNodePackages`."
 	fi
 }
 
