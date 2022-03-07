@@ -366,13 +366,18 @@ installPythonPackages ()
 # Install Powerline fonts into our fontconfig directory so apply to our current chosen font.
 installPowerlineFonts ()
 {
-    mkdir -p "${XDG_DATA_HOME}/fonts/"
-    curl -L https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf -o "${XDG_DATA_HOME}/fonts/PowerlineSymbols.otf"
+	mkdir -p "${XDG_DATA_HOME}/fonts/"
+	curl -L https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf -o "${XDG_DATA_HOME}/fonts/PowerlineSymbols.otf"
 
-    mkdir -p "${XDG_CONFIG_HOME}/fontconfig/conf.d/"
-    curl -L https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf -o "${XDG_CONFIG_HOME}/fontconfig/conf.d/10-powerline-symbols.conf"
+	mkdir -p "${XDG_CONFIG_HOME}/fontconfig/conf.d/"
+	curl -L https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf -o "${XDG_CONFIG_HOME}/fontconfig/conf.d/10-powerline-symbols.conf"
 
-    fc-cache -vf "${XDG_DATA_HOME}/fonts/"
+	if [ "$(uname)" == "Darwin" ]; then
+		mkdir -p "${HOME}/Library/Fonts"
+		cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
+	else
+		fc-cache -vf "${XDG_DATA_HOME}/fonts/"
+	fi
 }
 
 #! Install Nerd fonts.
@@ -387,8 +392,12 @@ installNerdFonts ()
 	# Extract Hack glyps into our `fonts` directory by updating existing files and adding new files.
 	unzip -u -q "${tmpdir}/Hack.zip" -d "${XDG_DATA_HOME}/fonts/"
 
-	# Update our font cache so fonts takes effect immediately
-	fc-cache -vf "${XDG_DATA_HOME}/fonts/"
+	if [ "$(uname)" == "Darwin" ]; then
+		mkdir -p "${HOME}/Library/Fonts"
+		cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
+	else
+		fc-cache -vf "${XDG_DATA_HOME}/fonts/"
+	fi
 }
 
 #! Find all file types in use and convert to standard types.
