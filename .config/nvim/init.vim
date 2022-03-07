@@ -62,6 +62,7 @@ endif
 call plug#begin()
 
 Plug 'https://github.com/ctrlpvim/ctrlp.vim.git'
+Plug 'editorconfig/editorconfig-vim'
 Plug 'https://github.com/preservim/nerdtree.git'
 "Plug 'https://github.com/scrooloose/syntastic.git'
 Plug 'https://github.com/mbbill/undotree.git'
