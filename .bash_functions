@@ -374,7 +374,7 @@ installPowerlineFonts ()
 
 	if [ "$(uname)" == "Darwin" ]; then
 		mkdir -p "${HOME}/Library/Fonts"
-		cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
+		command cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
 	else
 		fc-cache -vf "${XDG_DATA_HOME}/fonts/"
 	fi
@@ -394,7 +394,7 @@ installNerdFonts ()
 
 	if [ "$(uname)" == "Darwin" ]; then
 		mkdir -p "${HOME}/Library/Fonts"
-		cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
+		command cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
 	else
 		fc-cache -vf "${XDG_DATA_HOME}/fonts/"
 	fi
