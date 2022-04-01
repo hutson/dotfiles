@@ -9,6 +9,7 @@
 
 " These options enable several useful baseline features for improving Vim functionality.
 "====================================================
+
 " Use Unix as the standard file type when saving a buffer back to file. This will cause Unix line terminators, \n, to be used for deliminating a file's newlines.
 set fileformat=unix
 
@@ -42,7 +43,10 @@ function! EnsureDirectoryExists(directory)
 	endif
 
 	return isdirectory(l:path)
- endfunction
+endfunction
+
+" Automatically save the contents of the buffer to file whenever the `:make` command is invoked, which is used by plugins such as Go for their `GoBuild`, etc. functions.
+set autowrite
 
 "====================================================
 " Setup vim-plug Plugin
