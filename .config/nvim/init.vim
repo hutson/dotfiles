@@ -346,6 +346,11 @@ vnoremap <F9> zR
 " Useful mappings for normal mode.
 "====================================================
 
+" Make it easier to navigate around the `quickfix` window using keyboard shortcuts.
+map <C-n> :cnext<CR>
+map <C-m> :cprevious<CR>
+nnoremap <leader>a :cclose<CR>
+
 " Map Y to act like D and C, i.e. to yank until EOL, rather than act as yy, which is the default.
 "nnoremap Y y$
 
