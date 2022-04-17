@@ -68,7 +68,6 @@ call plug#begin()
 Plug 'https://github.com/ctrlpvim/ctrlp.vim.git'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'https://github.com/preservim/nerdtree.git'
-"Plug 'https://github.com/scrooloose/syntastic.git'
 Plug 'https://github.com/mbbill/undotree.git'
 Plug 'https://github.com/vim-airline/vim-airline.git' " At the time of writing Powerline (Python) does not support neovim.
 Plug 'https://github.com/vim-airline/vim-airline-themes.git'
@@ -244,69 +243,26 @@ augroup returnLastLine
 		\ endif
 augroup END
 
-" Search and replace support.
-"function! VisualSelection(direction) range
-"	let l:saved_reg = @"
-"	execute "normal! vgvy"
-
-"	let l:pattern = escape(@", '\\/.*$^~[]')
-"	let l:pattern = substitute(l:pattern, "\n$", "", "")
-
-"	if a:direction == 'b'
-"		execute "normal ?" . l:pattern . "^M"
-"	elseif a:direction == 'gv'
-"		call CmdLine("vimgrep " . '/'. l:pattern . '/' . ' **/*.')
-"	elseif a:direction == 'replace'
-"		call execute "%s/" . l:pattern . "/"
-"	elseif a:direction == 'f'
-"		execute "normal /" . l:pattern . "^M"
-"	endif
-
-"	let @/ = l:pattern
-"	let @" = l:saved_reg
-"endfunction
-
-" Don't close this window when deleting a buffer.
-"command! Bclose call <SID>BufcloseCloseIt()
-"function! <SID>BufcloseCloseIt()
-"	let l:currentBufNum = bufnr('%')
-"	let l:alternateBufNum = bufnr('#')
-
-"	if buflisted(l:alternateBufNum)
-"		buffer #
-"	else
-"		bnext
-"	endif
-
-"	if bufnr('%') == l:currentBufNum
-"		new
-"	endif
-
-"	if buflisted(l:currentBufNum)
-"		execute 'bdelete! ' . l:currentBufNum
-"	endif
-"endfunction
-
 " Mark the buffer in the current window for movement to a new window.
-"function! MarkWindowSwap()
-"	let g:markedWinNum = winnr()
-"endfunction
+function! MarkWindowSwap()
+	let g:markedWinNum = winnr()
+endfunction
 
 " Mark the current window as the destination of the previously selected buffer and begin the process of swapping buffers between the two windows.
-"function! DoWindowSwap()
-"	"Mark destination buffer.
-"	let curNum = winnr()
-"	let curBuf = bufnr('%')
-"	exe g:markedWinNum . "wincmd w"
-"	" Switch to our source buffer and shuffle destination->source.
-"	let markedBuf = bufnr("%")
-"	" Hide and open so that we aren't prompted and insure our history is kept.
-"	exe 'hide buf' curBuf
-"	" Switch to our destination buffer and shuffle source->destination.
-"	exe curNum . "wincmd w"
-"	" Hide and open so that we aren't prompted and insure our history is kept.
-"	exe 'hide buf' markedBuf
-"endfunction
+function! DoWindowSwap()
+	" Mark destination buffer.
+	let curNum = winnr()
+	let curBuf = bufnr('%')
+	exe g:markedWinNum . "wincmd w"
+	" Switch to our source buffer and shuffle destination->source.
+	let markedBuf = bufnr("%")
+	" Hide and open so that we aren't prompted and insure our history is kept.
+	exe 'hide buf' curBuf
+	" Switch to our destination buffer and shuffle source->destination.
+	exe curNum . "wincmd w"
+	" Hide and open so that we aren't prompted and insure our history is kept.
+	exe 'hide buf' markedBuf
+endfunction
 
 "====================================================
 " Multi-Mode Mappings
@@ -351,15 +307,8 @@ map <C-n> :cnext<CR>
 map <C-m> :cprevious<CR>
 nnoremap <leader>a :cclose<CR>
 
-" Map Y to act like D and C, i.e. to yank until EOL, rather than act as yy, which is the default.
-"nnoremap Y y$
-
-" Map <space> to /, for forward searching, and CTRL+<space> to ?, for backwards searching.
-"nnoremap <space> /
-"nnoremap <C-space> ?
-
 " Remove the Window's ^M character when the encoding is messed up.
-"nnoremap <leader>m mmHmt:%s/<C-V><CR>//ge<CR>'tzt'm
+nnoremap <leader>m mmHmt:%s/<C-V><CR>//ge<CR>'tzt'm
 
 nnoremap <silent> <F2> :UndotreeToggle<CR>
 
@@ -370,74 +319,19 @@ nnoremap <silent> <A-Left> :wincmd h<CR>
 nnoremap <silent> <A-Right> :wincmd l<CR>
 
 " Support the swapping of buffers between two windows. We support two options, using either the <leader> or a function key. <F3> Marks a buffer for movement and <F4> selects the second buffer of the swap pair and then executes the swap.
-"nnoremap <silent> <leader>mw :call MarkWindowSwap()<CR>
-"nnoremap <silent> <leader>pw :call DoWindowSwap()<CR>
-"nnoremap <silent> <F3> :call MarkWindowSwap()<CR>
-"nnoremap <silent> <F4> :call DoWindowSwap()<CR>
+nnoremap <silent> <leader>mw :call MarkWindowSwap()<CR>
+nnoremap <silent> <leader>pw :call DoWindowSwap()<CR>
+nnoremap <silent> <F3> :call MarkWindowSwap()<CR>
+nnoremap <silent> <F4> :call DoWindowSwap()<CR>
 
 " Resize current window by +/- 3 rows/columns using CTRL and the arrow keys.
-"nnoremap <silent> <C-Up> :resize +3<CR>
-"nnoremap <silent> <C-Down> :resize -3<CR>
-"nnoremap <silent> <C-Right> :vertical resize +3<CR>
-"nnoremap <silent> <C-Left> :vertical resize -3<CR>
+nnoremap <silent> <C-Up> :resize +3<CR>
+nnoremap <silent> <C-Down> :resize -3<CR>
+nnoremap <silent> <C-Right> :vertical resize +3<CR>
+nnoremap <silent> <C-Left> :vertical resize -3<CR>
 
 " Pressing CTRL-A selects all text within the current buffer.
-"nnoremap <C-A> gggH<C-O>G
-
-"====================================================
-" Select Mode
-
-" Useful mappings for select mode.
-"====================================================
-
-" Pressing CTRL-C and CTRL-Insert copies the selected text.
-"snoremap <C-C> <C-O>"+y
-
-"====================================================
-" Visual Mode
-
-" Useful mappings for visual mode.
-"====================================================
-
-" Search and replace the selected text.
-"vnoremap <silent> <leader>r :call VisualSelection('replace')<CR>
-
-" Pressing * or # while in normal mode searches for the current selection. '*' searches forward while '#' searches backwards.
-"vnoremap <silent> 8 :call VisualSelection('f')<CR>
-"vnoremap <silent> 3 :call VisualSelection('b')<CR>
-
-" Pressing gv uses vimgrep after the selected text.
-"vnoremap <silent> gv :call VisualSelection('gv')<CR>
-
-" Pressing backspace will delete the character to the left of the cursor.
-"vnoremap <backspace> d
-
-" Pressing CTRL-A selects all text within the current buffer.
-"vnoremap <C-A> ggVG
-
-"====================================================
-" Block Commenting
-
-" These options and commands support commenting and uncommenting large source code blocks based on language.
-"====================================================
-
-" Map filetypes to comment delimiters.
-"augroup programmingLanguageComments
-"	autocmd!
-
-"	autocmd FileType haskell,vhdl,ada let b:comment_leader = '-- '
-"	autocmd FileType vim let b:comment_leader = '" '
-"	autocmd FileType c,cpp,java,javascript,php let b:comment_leader = '// '
-"	autocmd FileType fql,fqlut let b:comment_leader = '\\ '
-"	autocmd FileType sh,make let b:comment_leader = '# '
-"	autocmd FileType tex let b:comment_leader = '% '
-"augroup END
-
-" Define comment functions to map comment to 'cc' and uncomment to 'uc' in visual and normal mode.
-"nnoremap <silent> cc :<C-B>sil <C-E>s/^/<C-R>=escape(b:comment_leader,'\/')<CR>/<CR>:noh<CR>
-"vnoremap <silent> cc :<C-B>sil <C-E>s/^/<C-R>=escape(b:comment_leader,'\/')<CR>/<CR>:noh<CR>
-"nnoremap <silent> uc :<C-B>sil <C-E>s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:noh<CR>
-"vnoremap <silent> uc :<C-B>sil <C-E>s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:noh<CR>
+nnoremap <C-A> gggH<C-O>G
 
 "====================================================
 " Setup ctrlp Plugin
@@ -483,7 +377,7 @@ let g:airline_theme = 'one'
 
 " Correct a spacing issue that may occur with fonts loaded via the fontconfig approach.
 if !exists('g:airline_symbols')
-    let g:airline_symbols = {}
+	let g:airline_symbols = {}
 endif
 let g:airline_symbols.space = "\ua0"
 
@@ -531,37 +425,6 @@ let g:signify_sign_change = '~'
 
 " Update line status more quickly.
 set updatetime=100
-
-"====================================================
-" Setup syntastic Plugin
-
-" Setup for the Syntastic plugin so that it knows how to behave for each software language filetype. Additional configuration can be included in this section to, for example, specify the tool that should be used to check a particular filetype for lint issues.
-"====================================================
-
-" C++
-
-" Set our preferred lint checker to CppChecker.
-"let g:syntastic_cpp_checkers = ['cppcheck']
-
-" JavaScript
-
-" Set our preferred static analysis chcker to JsHint, and style checker, the fallback checker, to jscs.
-"let g:syntastic_javascript_checkers = ['jshint', 'jscs']
-
-" JSON
-
-" Set our preferred JSON validator to JSONLint.
-"let g:syntastic_json_checkers = [ 'jsonlint' ]
-
-" PYTHON
-
-" Set our preferred lint checker to PEP8, with a fallback to PyLint if the PEP8 checker fails to find any issues.
-"let g:syntastic_python_checkers = ['pep8', 'pylint']
-
-" YAML
-
-" Set our preferred lint checker to JSYAML.
-"let g:syntastic_yaml_checkers = ['jsyaml']
 
 "====================================================
 " Setup Colorscheme
