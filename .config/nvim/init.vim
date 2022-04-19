@@ -1,12 +1,12 @@
 "====================================================
 " Vim Configuration
-
+"
 " This script provides useful Vim configuration settings.
 "====================================================
 
 "====================================================
 " General Features
-
+"
 " These options enable several useful baseline features for improving Vim functionality.
 "====================================================
 
@@ -50,7 +50,7 @@ set autowrite
 
 "====================================================
 " Setup vim-plug Plugin
-
+"
 " Setup the vim-plug plugin so that it's aware of external plugins we're interested in incorporating into our Vim instance. vim-plug will manage those plugins by pulling in updates and placing them in the appropriate Vim directory.
 
 " Note: Plugins MUST be listed before any configuration steps involving these plugins can take place.
@@ -65,13 +65,17 @@ endif
 
 call plug#begin()
 
+Plug 'https://github.com/neovim/nvim-lspconfig.git' " Language Server client for intelligent autocompletion.
+
+Plug 'https://github.com/fatih/vim-go.git', { 'do': ':GoUpdateBinaries' } " Go tools, such as `goimports`.
+Plug 'https://github.com/hashivim/vim-terraform.git' " Terraform tools, such as `terraform fmt`.
+
+Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', { 'do': ':TSUpdate' }
 Plug 'https://github.com/ctrlpvim/ctrlp.vim.git'
-Plug 'editorconfig/editorconfig-vim'
+Plug 'https://github.com/editorconfig/editorconfig-vim.git'
 Plug 'https://github.com/preservim/nerdtree.git'
 Plug 'https://github.com/mbbill/undotree.git'
 Plug 'https://github.com/vim-airline/vim-airline.git' " At the time of writing Powerline (Python) does not support neovim.
-Plug 'https://github.com/vim-airline/vim-airline-themes.git'
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 Plug 'https://github.com/tpope/vim-fugitive.git'
 Plug 'https://github.com/rakr/vim-one.git'
 Plug 'https://github.com/mhinz/vim-signify.git'
@@ -82,12 +86,9 @@ call plug#end()
 
 "====================================================
 " User Interface
-
+"
 " These options alter the graphical layout and visual color of the interface, and alter how file contents are rendered.
 "====================================================
-
-" Enable Vim's syntax highlighting support. Specifically we call 'syntax enable' rather than 'syntax on'. Using 'enable' will instruct Vim to keep the current color settings rather than overruling those settings with Vim's defaults.
-syntax enable
 
 " Enable better command-line completion.
 set wildmenu " Enables a menu at the bottom of the window.
@@ -139,9 +140,6 @@ set scrolloff=3
 " Enable the highlighting of the row on which the cursor resides, along with highlighting the row's row number.
 set cursorline
 
-" Set the minimum number of lines to search around the cursor's position to derive the appropriate syntax highlighting.
-syntax sync minlines=256
-
 " Instruct Vim to offer corrections in a pop-up on right-click of the mouse.
 set mousemodel=popup
 
@@ -157,7 +155,7 @@ set formatoptions+=jlnoqr
 
 "====================================================
 " Backups
-
+"
 " These options manage settings associated with how backups are handled by Vim.
 "====================================================
 
@@ -165,9 +163,17 @@ set formatoptions+=jlnoqr
 set nobackup " Do not keep a backup of a file after overwriting the file.
 set noswapfile " No temporary swap files.
 
+" Store an undo file in our local user's cache folder for the purpose of supporting the `undotree` feature for navigating through a file's edit history.
+if has("persistent_undo")
+	let target_path = expand($XDG_CACHE_HOME . '/nvim/undotree/')
+	call EnsureDirectoryExists(target_path)
+	let &undodir=target_path
+	set undofile
+endif
+
 "====================================================
 " Tabs and Indents
-
+"
 " These options manage settings associated with tabs and automatically indenting new lines.
 "====================================================
 
@@ -194,16 +200,95 @@ set listchars=tab:>-,eol:$,trail:~,extends:>,precedes:<
 
 "====================================================
 " Folding
-
+"
 " These options manage settings associated with folding portions of code into condensed forms, leaving only an outline of the code visible. Folding is a form of collapsing of function definitions, class definitions, sections, etc. When a portion of code is collapsed only a header associated with that section is left visible along with a line indicating statistics associated with the collapsed code; such as the number of collapsed lines, etc. The terms 'folded' and 'collapsed' within this file are used interchangeably with one another.
 "====================================================
 
-" Use syntax highlighting rules to determine how source code or content should be folded.
-set foldmethod=syntax
+" Use tree-sitter to determine how source code or content should be folded.
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
+
+"====================================================
+" Tree-sitter
+"
+" Enable and configure the AST-aware tree-sitter for syntax highlighting and folding.
+"====================================================
+
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
+	ensure_installed = { 'bash', 'cooklang', 'css', 'dockerfile', 'go', 'hcl', 'help', 'html', 'javascript', 'json', 'lua', 'python', 'regex', 'toml', 'vim', 'yaml', 'zig' },
+
+	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
+	sync_install = false,
+
+	highlight = {
+		-- Enable syntax highlighting using tree-sitter.
+		enable = true,
+
+		-- Setting this to `true` will run `syntax` and `tree-sitter` at the same time.
+		-- Using this option may slow down neovim while it's attempting to run two syntax highlighers and may cause duplicate highlights.
+		additional_vim_regex_highlighting = false,
+	},
+}
+EOF
+
+"====================================================
+" Language Server configuration.
+"
+" Setup and configuration for language servers.
+"====================================================
+
+" The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
+lua <<EOF
+-- Mappings.
+-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+local opts = { noremap=true, silent=true }
+vim.api.nvim_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
+vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
+vim.api.nvim_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
+
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr)
+	-- Enable completion triggered by <c-x><c-o>
+	vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+	-- Mappings.
+	-- See `:help vim.lsp.*` for documentation on any of the below functions
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+end
+
+-- Use a loop to conveniently call 'setup' on multiple servers and
+-- map buffer local keybindings when the language server attaches
+local servers = { 'gopls', 'terraformls' }
+for _, lsp in pairs(servers) do
+	require('lspconfig')[lsp].setup {
+		on_attach = on_attach,
+		flags = {
+			-- This will be the default in neovim 0.7+
+			debounce_text_changes = 150,
+		}
+	}
+end
+EOF
 
 "====================================================
 " Vim Explorer
-
+"
 " These options configure Vim's built-in file system explorer so that it behaves in a manner that meets user expectations. This includes showing files in a tree view so that entire projects can be seen at once.
 "====================================================
 
@@ -215,7 +300,7 @@ let g:netrw_liststyle = 3
 
 "====================================================
 " Helper Functions
-
+"
 " These functions help with various automation tasks and can be mapped to various key combinations or function keys.
 "====================================================
 
@@ -239,7 +324,7 @@ augroup returnLastLine
 
 	autocmd BufReadPost *
 		\ if line("'\"") > 0 && line("'\"") <= line("$") |
-		\   exe "normal! g`\"" |
+		\		exe "normal! g`\"" |
 		\ endif
 augroup END
 
@@ -266,7 +351,7 @@ endfunction
 
 "====================================================
 " Multi-Mode Mappings
-
+"
 " General options are define such that they are available within all operating modes. Also a collection of mappings usable within two or more modes are defined.
 "====================================================
 
@@ -298,7 +383,7 @@ vnoremap <F9> zR
 
 "====================================================
 " Normal Mode
-
+"
 " Useful mappings for normal mode.
 "====================================================
 
@@ -335,7 +420,7 @@ nnoremap <C-A> gggH<C-O>G
 
 "====================================================
 " Setup ctrlp Plugin
-
+"
 " Setup for a tool that allows for fuzzy matching on file names within the current directory, or parent directory containing a repository directory, or against opened buffers, or MRU (Most Recently Used) files.
 "====================================================
 
@@ -353,7 +438,7 @@ let g:ctrlp_cmd = 'CtrlP'
 " * coverage - Output directory for generated coverage reports.
 " * .temp - Cache directory we use for Yeoman unit tests.
 let g:ctrlp_custom_ignore = {
-	\ 'dir':  '\v[\/](\.git|\.hg|\.svn|node_modules|dist|bin|build|_book|venv|\.tox|coverage|\.temp)$',
+	\ 'dir': '\v[\/](\.git|\.hg|\.svn|node_modules|dist|bin|build|_book|venv|\.tox|coverage|\.temp)$',
 	\ 'file': '\v\.(pyc|pyo|a|exe|dll|so|o|min.js|zip|7z|gzip|gz|jpg|png|gif|avi|mov|mpeg|doc|odt|ods)$'
 	\ }
 
@@ -362,7 +447,7 @@ let g:ctrlp_show_hidden = 1
 
 "====================================================
 " Setup vim-airline Plugin
-
+"
 " Setup for a vim-airline environment so that the environment will look and behave in the desired way.
 "====================================================
 
@@ -383,23 +468,13 @@ let g:airline_symbols.space = "\ua0"
 
 "====================================================
 " Setup vim-go Plugin
-
-" Setup for a vim-go environment so that the environment will look and behave in the desired way.
+"
+" Setup for a vim-go environment to enable features such as formatting on save.
 " More options and recommendations available from - https://github.com/fatih/vim-go/wiki/Tutorial#edit-it
 "====================================================
 
 " Automatically add missing imports on file save while also formatting the file like `gofmt` used to do.
 let g:go_fmt_command = "goimports"
-
-" Enable syntax highlighting available through `vim-go`. This feature must be manually enabled as it may signficantly impact the performance of Vim.
-let g:go_highlight_types = 1
-let g:go_highlight_fields = 1
-let g:go_highlight_functions = 1
-let g:go_highlight_function_calls = 1
-let g:go_highlight_operators = 1
-let g:go_highlight_extra_types = 1
-let g:go_highlight_build_constraints = 1
-let g:go_highlight_generate_tags = 1
 
 " Automatically invoke the `:GoMetaLinter` command on file save, which invokes `vet`, `golint`, and `errcheck` concurrently by default.
 let g:go_metalinter_autosave = 1
@@ -411,8 +486,20 @@ let g:go_auto_type_info = 1
 let g:go_rename_command = "gopls"
 
 "====================================================
-" Setup vim-signify Plugin
+" Setup vim-terraform Plugin
+"
+" Setup vim-terraform to enable features such as formatting on save.
+"====================================================
 
+" Automatically invoke `terraform fmt` on Terraform files on buffer save.
+let g:terraform_fmt_on_save = 1
+
+" Automatically align settings with Tabularize on buffer save.
+let g:terraform_align = 1
+
+"====================================================
+" Setup vim-signify Plugin
+"
 " Setup for the Signify plugin that adds the +, -, and ~ characters in the "gutter", a.k.a left sidebar, of Vim to indicate when lines have been added, removed, or modified as compared against a file managed by a VCS.
 "====================================================
 
@@ -428,9 +515,9 @@ set updatetime=100
 
 "====================================================
 " Setup Colorscheme
-
+"
 " Setup Vim to recognize our terminal as having a particular background color, and then set our preferred color scheme (a.k.a theme).
-
+"
 " Note: This setup step must be last so that the color scheme is setup properly. If configured earlier, some setting in this configuration file will cause Vim to revert to its default color scheme (or worse, you'll get a collision of multiple color schemes.).
 "====================================================
 
@@ -445,7 +532,7 @@ silent! colorscheme one
 
 "====================================================
 " Spellcheck Highlighting
-
+"
 " Setup Vim to use our own highlighting rules for words not recognized by Vim based on the `spelllang` setting. These highlight rules must be set _after_ a theme has been selected using `colorscheme`.
 
 " SpellBad: word not recognized
@@ -462,7 +549,7 @@ highlight clear SpellLocal
 
 " Set our own highlighting rules for Vim's spell checking.
 " We use `undercurl` to use squiggles under highlighted words when that option is available (gvim only). Otherwise words are simply underlined.
-highlight SpellBad   term=undercurl cterm=undercurl ctermfg=Red
-highlight SpellCap   term=undercurl cterm=undercurl ctermfg=Yellow
-highlight SpellRare  term=undercurl cterm=undercurl ctermfg=Magenta
+highlight SpellBad term=undercurl cterm=undercurl ctermfg=Red
+highlight SpellCap term=undercurl cterm=undercurl ctermfg=Yellow
+highlight SpellRare term=undercurl cterm=undercurl ctermfg=Magenta
 highlight SpellLocal term=undercurl cterm=undercurl ctermfg=Blue

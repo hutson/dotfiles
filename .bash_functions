@@ -270,6 +270,7 @@ installBrewPackages()
 
 		# Install resource orchestration tool.
 		brew install terraform
+		brew install hashicorp/tap/terraform-ls # Language server.
 
 		# Install terminal multiplexer.
 		brew install tmux
