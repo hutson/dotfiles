@@ -38,7 +38,8 @@ ln -s -f "$(pwd)/.gnupg/gpg-agent.conf" "${HOME}/.gnupg/gpg-agent.conf"
 # Symlink Neovim configuration files.
 echo "> Symlinking Neovim files into the config directory (${XDG_CONFIG_HOME}/nvim)."
 mkdir -p "${XDG_CONFIG_HOME}/nvim"
-ln -s -f "$(pwd)/.config/nvim/init.vim" "${XDG_CONFIG_HOME}/nvim/init.vim"
+ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
+ln -s -f "$(pwd)/.config/nvim/script.vim" "${XDG_CONFIG_HOME}/nvim/script.vim"
 
 # Symlink Powerline files.
 echo "> Symlinking powerline files into the config directory (${XDG_CONFIG_HOME}/powerline)."

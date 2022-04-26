@@ -1,25 +1,3 @@
-"====================================================
-" Vim Configuration
-"
-" This script provides useful Vim configuration settings.
-"====================================================
-
-"====================================================
-" General Features
-"
-" These options enable several useful baseline features for improving Vim functionality.
-"====================================================
-
-" Use Unix as the standard file type when saving a buffer back to file. This will cause Unix line terminators, \n, to be used for deliminating a file's newlines.
-set fileformat=unix
-
-" Disable modeline support within Vim. Modeline support within Vim has constantly introduced security vulnerabilities into the Vim editor. By disabling this feature any chance of a future vulnerability interfering with the use of Vim, or the operating system on which it runs, is mitigated. As for functionality, modelines are configuration lines contained within text files that instruct Vim how to behave when reading those files into a buffer.
-set nomodeline " Turn off modeline parsing altogether.
-set modelines=0 " Set the number of modelines Vim parses, when reading a file, to zero.
-
-" Set the default language to use for spell checking. `spelllang` is a comma separated list of word lists. Word lists are of the form LANGUAGE_REGION. The LANGUAGE segment may include a specification, such as `-rare` to indicate rare words in that language.
-setlocal spelllang=en_us
-
 " Create a directory if it doesn't already exist.
 function! EnsureDirectoryExists(directory)
 	" Take the given directory, trim white space, and then expand the path using any path wildcards; such as ~ for example. Also, the second argument to expand(...) instructs expand to ignore Vim's suffixes and wildignore options..
@@ -44,9 +22,6 @@ function! EnsureDirectoryExists(directory)
 
 	return isdirectory(l:path)
 endfunction
-
-" Automatically save the contents of the buffer to file whenever the `:make` command is invoked, which is used by plugins such as Go for their `GoBuild`, etc. functions.
-set autowrite
 
 "====================================================
 " Setup vim-plug Plugin
@@ -83,75 +58,6 @@ Plug 'https://github.com/ryanoasis/vim-devicons.git'
 
 " Add plugins to Vim's `runtimepath`.
 call plug#end()
-
-"====================================================
-" User Interface
-"
-" These options alter the graphical layout and visual color of the interface, and alter how file contents are rendered.
-"====================================================
-
-" Enable better command-line completion.
-set wildmenu " Enables a menu at the bottom of the window.
-set wildmode=list:longest,full " Allows the completion of commands on the command line via the tab button.
-
-" Ignore certain backup and compiled files based on file extensions when using tab completion.
-set wildignore=*.swp,*.bak,*.tmp,*~
-set wildignore+=*.zip,*.7z,*.gzip,*.gz
-set wildignore+=*.jpg,*.png,*.gif,*.avi,*.mov,*.mpeg
-
-" Try not to split words across multiple lines when a line wraps.
-set linebreak
-
-" Use case insensitive search, except when using capital letters.
-set ignorecase " Case insensitive search.
-set smartcase " Enable case-sensitive search when the search phrase contains capital letters.
-
-" Allows moving left when at the beginning of a line, or right when at the end of the line. When the end of the line has been reached, the cursor will progress to the next line, either up or down, depending on the direction of movement. < and > are left and right arrow keys, respectively, in normal and visual modes, and [ and ] are arrow keys, respectively, in insert mode.
-set whichwrap+=<,>,h,l,[,]
-
-" Instead of failing a command because of unsaved changes raise a dialogue asking if you wish to save changed files.
-set confirm
-
-" Enable use of the mouse for all Vim modes: Normal, Insert, Visual, and Command-line.
-set mouse=a
-
-" Use abbreviations when posting status messages to the command output line (The line right beneth Vim's statusline). Shortening command output may help avoid the 'press <Enter>' prompt that appears when the output is longer than the available space in the command output section. Furthermore, we append the 't' option to 'shortmess' so that if abbreviations are insufficient to keep output within the confines of the command output section, then content will be truncated as necessary; beginning at the start of the message.
-set shortmess=at
-
-" Display line numbers on the left with a column width of 4.
-set number
-
-" A buffer becomes hidden, not destroyed, when it's abandoned.
-set hidden
-
-" Don't redraw while executing macros, thereby improving performance.
-set lazyredraw
-
-" Show matching brackets when text indicator is over them.
-set showmatch
-
-" Disable error bells.
-set noerrorbells
-set novisualbell
-
-" Start scrolling when we're 3 lines from the bottom of the current window.
-set scrolloff=3
-
-" Enable the highlighting of the row on which the cursor resides, along with highlighting the row's row number.
-set cursorline
-
-" Instruct Vim to offer corrections in a pop-up on right-click of the mouse.
-set mousemodel=popup
-
-" Configure Vim's formatting options used by Vim to automatically for a line of text. Formatting not applied when 'paste' is enabled.
-" Options:
-" j - Where it makes sense, remove a comment leader when joining lines.
-" l - Do not break existing long lines when entering insert mode.
-" n - Recognize numbered lists and automatically continue the correct level of indention onto the next line.
-" o - Automatically insert the current comment leader after after entering 'o' or 'O' in Normal mode.
-" q - Allow formatting of comments using `gq`.
-" r - Automatically insert the current comment leader after pressing <ENTER> in Insert mode.
-set formatoptions+=jlnoqr
 
 "====================================================
 " Backups
