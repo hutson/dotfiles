@@ -91,3 +91,131 @@ vim.opt.mousemodel = 'popup'
 -- q - Allow formatting of comments using `gq`.
 -- r - Automatically insert the current comment leader after pressing <ENTER> in Insert mode.
 vim.opt.formatoptions = 'jlnoqr'
+
+--[[
+	Backups
+
+	These options manage settings associated with how backups are handled by Vim.
+--]]
+
+-- Turn off backups for files that are being edited by Neovim.
+vim.opt.backup = false -- Do not keep a backup of a file after overwriting the file.
+vim.opt.swapfile = false -- No temporary swap files.
+
+--[[
+	Tab and Indents
+
+	These options manage settings associated with tabs and automatically indenting new lines.
+--]]
+
+-- Number of spaces Vim should use to visually represent a TAB character when encountered within a file.
+vim.opt.tabstop = 2
+
+-- Number of spaces Vim should use when autoindenting a new line of text, or when using the `<<` and `>>` operations (Such as pressing > or < while text is selected to change the indentation of the text). Also used by `cindent` when that option is enabled.
+vim.opt.shiftwidth = 2
+
+-- Number of spaces Vim should insert when TAB is pressed, and the number of spaces Vim should remove when the <backspace> is pressed. This allows for a single backspace to go back this many white space characters.
+vim.opt.softtabstop = 2
+
+-- Copy the structure of the existing lines indent when autoindenting a new line.
+vim.opt.copyindent = true
+
+-- Enable special display options to show tabs and end-of-line characters within a non-GUI window. Tabs are represented using '>-' and a sequence of '-'s that will fill out to match the proper width of a tab. End-of-line is represented by a dollar sign '$'. Displaying tabs as '>-' and end-of-lines as '$'. Trailing white space is represented by '~'. Must be toggled by a mapping to ':set list!'.
+vim.opt.listchars = 'tab:>-,eol:$,trail:~,extends:>,precedes:<'
+
+--[[
+	Folding
+
+	These options manage settings associated with folding portions of code into condensed forms, leaving only an outline of the code visible. Folding is a form of collapsing of function definitions, class definitions, sections, etc. When a portion of code is collapsed only a header associated with that section is left visible along with a line indicating statistics associated with the collapsed code; such as the number of collapsed lines, etc. The terms 'folded' and 'collapsed' within this file are used interchangeably with one another.
+--]]
+
+-- Use tree-sitter to determine how source code or content should be folded.
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr   = 'nvim_treesitter#foldexpr()'
+
+--[[
+	Tree-sitter
+
+	Enable and configure the AST-aware tree-sitter for syntax highlighting and folding.
+--]]
+
+require'nvim-treesitter.configs'.setup {
+	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
+	ensure_installed = { 'bash', 'cooklang', 'css', 'dockerfile', 'go', 'hcl', 'help', 'html', 'javascript', 'json', 'lua', 'python', 'regex', 'toml', 'vim', 'yaml', 'zig' },
+
+	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
+	sync_install = false,
+
+	highlight = {
+		-- Enable syntax highlighting using tree-sitter.
+		enable = true,
+
+		-- Setting this to `true` will run `syntax` and `tree-sitter` at the same time.
+		-- Using this option may slow down neovim while it's attempting to run two syntax highlighers and may cause duplicate highlights.
+		additional_vim_regex_highlighting = false,
+	},
+}
+
+--[[
+	Language Server
+
+	Setup and configuration for language servers.
+--]]
+
+-- The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
+
+-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+local opts = { noremap=true, silent=true }
+vim.api.nvim_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
+vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
+vim.api.nvim_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
+
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr)
+	-- Enable completion triggered by <c-x><c-o>
+	vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+	-- Mappings.
+	-- See `:help vim.lsp.*` for documentation on any of the below functions
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+end
+
+-- Use a loop to conveniently call 'setup' on multiple servers and
+-- map buffer local keybindings when the language server attaches
+local servers = { 'gopls', 'terraformls' }
+for _, lsp in pairs(servers) do
+	require('lspconfig')[lsp].setup {
+		on_attach = on_attach,
+		flags = {
+			-- This will be the default in neovim 0.7+
+			debounce_text_changes = 150,
+		}
+	}
+end
+
+--[[
+	Vim Explorer
+
+
+	These options configure Vim's built-in file system explorer so that it behaves in a manner that meets user expectations. This includes showing files in a tree view so that entire projects can be seen at once.
+--]]
+
+-- Will cause files selected in the Explorer window to be opened in the most recently used buffer window (Causing the previous buffer to be pushed into the background).
+vim.g.netrw_browse_split = 4
+
+-- List files and directories in the Explorer window using the tree listing style.
+vim.g.netrw_liststyle = 3
