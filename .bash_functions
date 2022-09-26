@@ -293,11 +293,13 @@ installBrewPackages()
 			brew install pinentry-mac
 
 			brew install --cask firefox
-			brew install --cask keepassxc
+			brew install --cask google-chrome
 			brew install --cask gpg-suite
-			brew install --cask joplin
 			brew install --cask iterm2
-			brew install --cask slack
+			brew install --cask joplin
+			brew install --cask keepassxc
+			brew install --cask obs
+			brew install --cask qutebrowser
 		fi
 
 		if [ "$(uname -n)" == "startopia" ]; then
