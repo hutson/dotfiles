@@ -52,7 +52,7 @@ Plug 'https://github.com/preservim/nerdtree.git'
 Plug 'https://github.com/mbbill/undotree.git'
 Plug 'https://github.com/vim-airline/vim-airline.git' " At the time of writing Powerline (Python) does not support neovim.
 Plug 'https://github.com/tpope/vim-fugitive.git'
-Plug 'https://github.com/rakr/vim-one.git'
+Plug 'https://github.com/EdenEast/nightfox.nvim'
 Plug 'https://github.com/mhinz/vim-signify.git'
 Plug 'https://github.com/ryanoasis/vim-devicons.git'
 
@@ -218,15 +218,6 @@ let g:airline#extensions#tabline#enabled = 1
 " Automatically populate the `g:airline_symbols` dictionary with the correct font glyphs used as the special symbols for vim-airline's status bar.
 let g:airline_powerline_fonts = 1
 
-" Set airline theme to match the Vim editor theme.
-let g:airline_theme = 'one'
-
-" Correct a spacing issue that may occur with fonts loaded via the fontconfig approach.
-if !exists('g:airline_symbols')
-	let g:airline_symbols = {}
-endif
-let g:airline_symbols.space = "\ua0"
-
 "====================================================
 " Setup vim-go Plugin
 "
@@ -282,14 +273,8 @@ set updatetime=100
 " Note: This setup step must be last so that the color scheme is setup properly. If configured earlier, some setting in this configuration file will cause Vim to revert to its default color scheme (or worse, you'll get a collision of multiple color schemes.).
 "====================================================
 
-" Inform Vim to expect a dark terminal background. This will cause Vim to compensate by altering the color scheme.
-set background=dark
-
-" Enable support for italics in the One theme.
-let g:one_allow_italics = 1
-
 " Set Vim's color scheme. We purposely silence any failure notification if the desired colorscheme can't be loaded by Vim. If Vim is unable to load the desired colorscheme, it will be quite apparent to the user. By silencing error messages we gain the ability to automate tasks, such as installing plugins for the first time, that would otherwise block if an error message was displayed because the desired colorscheme wasn't available.
-silent! colorscheme one
+silent! colorscheme carbonfox
 
 "====================================================
 " Spellcheck Highlighting

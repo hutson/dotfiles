@@ -133,6 +133,9 @@ vim.opt.listchars = 'tab:>-,eol:$,trail:~,extends:>,precedes:<'
 vim.opt.foldmethod = 'expr'
 vim.opt.foldexpr   = 'nvim_treesitter#foldexpr()'
 
+-- Show 4 levels of nested content before automatically folding. 4 levels is usually good enough to find the section we are interested in before needing to expand that section, without being overwhelmed with all the content a file might contain.
+vim.opt.foldlevel = 4
+
 --[[
 	Tree-sitter
 
@@ -141,7 +144,7 @@ vim.opt.foldexpr   = 'nvim_treesitter#foldexpr()'
 
 require'nvim-treesitter.configs'.setup {
 	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
-	ensure_installed = { 'bash', 'cooklang', 'css', 'dockerfile', 'go', 'hcl', 'help', 'html', 'javascript', 'json', 'lua', 'python', 'regex', 'toml', 'vim', 'yaml', 'zig' },
+	ensure_installed = { 'bash', 'cooklang', 'css', 'dockerfile', 'go', 'hcl', 'help', 'html', 'javascript', 'json', 'lua', 'markdown', 'python', 'regex', 'toml', 'vim', 'yaml', 'zig' },
 
 	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
 	sync_install = false,
