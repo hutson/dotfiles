@@ -275,27 +275,3 @@ set updatetime=100
 
 " Set Vim's color scheme. We purposely silence any failure notification if the desired colorscheme can't be loaded by Vim. If Vim is unable to load the desired colorscheme, it will be quite apparent to the user. By silencing error messages we gain the ability to automate tasks, such as installing plugins for the first time, that would otherwise block if an error message was displayed because the desired colorscheme wasn't available.
 silent! colorscheme carbonfox
-
-"====================================================
-" Spellcheck Highlighting
-"
-" Setup Vim to use our own highlighting rules for words not recognized by Vim based on the `spelllang` setting. These highlight rules must be set _after_ a theme has been selected using `colorscheme`.
-
-" SpellBad: word not recognized
-" SpellCap: word not capitalized
-" SpellRare: rare word
-" SpellLocal: wrong spelling for selected region, but spelling exists in another region for given language.
-"====================================================
-
-" Clear existing highlighting rules used to make a spelling mistake stand out in text. The existing highlight rules must be cleared to correctly apply our custom rules.
-highlight clear SpellBad
-highlight clear SpellCap
-highlight clear SpellRare
-highlight clear SpellLocal
-
-" Set our own highlighting rules for Vim's spell checking.
-" We use `undercurl` to use squiggles under highlighted words when that option is available (gvim only). Otherwise words are simply underlined.
-highlight SpellBad term=undercurl cterm=undercurl ctermfg=Red
-highlight SpellCap term=undercurl cterm=undercurl ctermfg=Yellow
-highlight SpellRare term=undercurl cterm=undercurl ctermfg=Magenta
-highlight SpellLocal term=undercurl cterm=undercurl ctermfg=Blue

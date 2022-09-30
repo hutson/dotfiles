@@ -17,7 +17,7 @@ vim.opt.fileformat = 'unix'
 vim.opt.modeline = false -- Turn off modeline parsing altogether.
 
 -- Set the default language to use for spell checking. `spelllang` is a comma separated list of word lists. Word lists are of the form LANGUAGE_REGION. The LANGUAGE segment may include a specification, such as `-rare` to indicate rare words in that language.
-vim.opt.spelllang = 'en_us'
+vim.opt.spelllang = 'en_US,cjk'
 
 -- Automatically save the contents of the buffer to file whenever the `:make` command is invoked, which is used by plugins such as Go for their `GoBuild`, etc. functions.
 vim.opt.autowrite = true
