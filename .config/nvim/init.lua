@@ -217,8 +217,14 @@ end
 	These options configure Vim's built-in file system explorer so that it behaves in a manner that meets user expectations. This includes showing files in a tree view so that entire projects can be seen at once.
 --]]
 
+-- Do not display the help banner located at the top of the `netrw` window to free up space and avoid distraction.
+vim.g.netrw_banner = 0
+
 -- Will cause files selected in the Explorer window to be opened in the most recently used buffer window (Causing the previous buffer to be pushed into the background).
 vim.g.netrw_browse_split = 4
 
 -- List files and directories in the Explorer window using the tree listing style.
 vim.g.netrw_liststyle = 3
+
+-- Only consume 25% of available horizontal space when creating a `netrw` split.
+vim.g.netrw_winsize = 25

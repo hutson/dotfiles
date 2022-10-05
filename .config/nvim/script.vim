@@ -48,7 +48,6 @@ Plug 'https://github.com/hashivim/vim-terraform.git' " Terraform tools, such as 
 Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', { 'do': ':TSUpdate' }
 Plug 'https://github.com/ctrlpvim/ctrlp.vim.git'
 Plug 'https://github.com/editorconfig/editorconfig-vim.git'
-Plug 'https://github.com/preservim/nerdtree.git'
 Plug 'https://github.com/mbbill/undotree.git'
 Plug 'https://github.com/vim-airline/vim-airline.git' " At the time of writing Powerline (Python) does not support neovim.
 Plug 'https://github.com/tpope/vim-fugitive.git'
