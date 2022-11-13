@@ -207,7 +207,7 @@ updateEnvironment ()
 	# Configure our desktop environment.
 	setupTilingWindowManager
 
-	nvim +PlugUpgrade +PlugInstall +qa
+	nvim +PlugUpgrade +PlugInstall +PlugUpdate +qa
 }
 
 #! Setup HomeBrew.
