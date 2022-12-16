@@ -207,6 +207,8 @@ updateEnvironment ()
 	# Configure our desktop environment.
 	setupTilingWindowManager
 
+	flatpak update -y --noninteractive
+
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +qa
 }
 
