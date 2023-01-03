@@ -272,22 +272,22 @@ installBrewPackages()
 		# Static site generator and build tool.
 		brew install hugo
 
-		# Install resource orchestration tool.
-		brew install terraform
-		brew install hashicorp/tap/terraform-ls # Language server.
-
-		# Install terminal multiplexer.
-		brew install tmux
-
 		# Install command line text editor.
 		brew install neovim
 
-		if [ "$(uname)" == "Darwin" ]; then
+		if [ "$(uname)" = "Darwin" ]; then
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
 			brew install coreutils
 
 			# Store Docker Hub credentials in the OSX Keychain for improved security.
 			brew install docker-credential-helper
+
+			# Install resource orchestration tool.
+			brew install terraform
+			brew install hashicorp/tap/terraform-ls # Language server.
+
+			# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
+			brew install joplin-cli
 
 			# Cloud tools
 			brew install svn awscli
@@ -304,9 +304,8 @@ installBrewPackages()
 			brew install --cask keepassxc
 			brew install --cask obs
 			brew install --cask qutebrowser
-		fi
 
-		if [ "$(uname -n)" == "startopia" ]; then
+		elif [ "$(uname -n)" = "startopia" ]; then
 			# Install shell script linter.
 			# NOTE: We force the installation of `shellcheck` from the pre-compiled bottle as installing `shellcheck` from
 			# source requires `ghc` to be installed from source, and that build appears to never complete.
@@ -314,6 +313,16 @@ installBrewPackages()
 
 			# Tool for managing offline video archives.
 			brew install yt-dlp
+
+			# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
+			# TODO: Figure out why `open-mpi` fails on a missing symbol from glibc on this sytem
+			#       thereby forcing us to install from `npm`.
+			npm install -g joplin
+
+		else # For packages that should only be installed server-side and not on a desktop/local system.
+
+			# Install terminal multiplexer.
+			brew install tmux
 		fi
 	else
 		echo "ERROR: `brew` is required for building and installing tools from source, but it's not available in your PATH. Please install `brew` and ensure it's in your PATH. Then re-run `installBrewPackages`."
