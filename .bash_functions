@@ -209,7 +209,7 @@ updateEnvironment ()
 
 	flatpak update -y --noninteractive
 
-	nvim +PlugUpgrade +PlugInstall +PlugUpdate +qa
+	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +qa
 }
 
 #! Setup HomeBrew.
