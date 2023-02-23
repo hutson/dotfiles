@@ -218,25 +218,6 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
 
 "====================================================
-" Setup vim-go Plugin
-"
-" Setup for a vim-go environment to enable features such as formatting on save.
-" More options and recommendations available from - https://github.com/fatih/vim-go/wiki/Tutorial#edit-it
-"====================================================
-
-" Automatically add missing imports on file save while also formatting the file like `gofmt` used to do.
-let g:go_fmt_command = "goimports"
-
-" Automatically invoke the `:GoMetaLinter` command on file save, which invokes `vet`, `golint`, and `errcheck` concurrently by default.
-let g:go_metalinter_autosave = 1
-
-" Automatically show the function signature on the status line when moving your cursor over a valid identifier.
-let g:go_auto_type_info = 1
-
-" Switch to AST-aware identifier renamer that is module aware (No GOPATH necessary).
-let g:go_rename_command = "gopls"
-
-"====================================================
 " Setup vim-terraform Plugin
 "
 " Setup vim-terraform to enable features such as formatting on save.
@@ -260,9 +241,6 @@ nmap <leader>gk <plug>(signify-prev-hunk)
 
 " Use alternative signs for various states of a line under version control.
 let g:signify_sign_change = '~'
-
-" Update line status more quickly.
-set updatetime=100
 
 "====================================================
 " Setup Colorscheme

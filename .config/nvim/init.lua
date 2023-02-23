@@ -31,6 +31,9 @@ vim.cmd('source ~/.config/nvim/script.vim')
 	These options alter the graphical layout and visual color of the interface, and alter how file contents are rendered.
 --]]
 
+-- Update line status more quickly.
+vim.opt.updatetime = 100
+
 -- Enable better command-line completion.
 vim.opt.wildmenu = true -- Enables a menu at the bottom of the window.
 vim.opt.wildmode = 'list:longest,full' -- Allows the completion of commands on the command line via the tab button.
@@ -228,3 +231,26 @@ vim.g.netrw_liststyle = 3
 
 -- Only consume 25% of available horizontal space when creating a `netrw` split.
 vim.g.netrw_winsize = 25
+
+--[[
+	Setup vim-go Plugin
+
+	Setup for a vim-go environment to enable features such as formatting on save.
+	More options and recommendations available from - https://github.com/fatih/vim-go/wiki/Tutorial#edit-it
+--]]
+
+-- Automatically add missing imports on file save while also formatting the file like `gofmt` used to do.
+vim.g.go_fmt_command = "goimports"
+
+-- Automatically invoke the `:GoMetaLinter` command on file save, which by default, invokes `vet`, `golint`, and `errcheck` concurrently. The linter list can be extended with `go_metalinter_enabled = []`.
+vim.g.go_metalinter_autosave = 1
+
+-- Reduce the timeout for running metalinters, as anything over ~2 seconds becomes disruptive when trying to iterate quickly on code. If timeouts occur, refactor code.
+vim.g.go_metalinter_deadline = "2s"
+
+-- Automatically show the function signature on the status line when moving the cursor over a valid identifier.
+vim.g.go_auto_type_info = 1
+
+-- Switch to AST-aware identifier renamer that is module aware (No GOPATH necessary).
+-- TODO: `gopls` will be the `vim-go` default in the future.
+vim.g.go_rename_command = "gopls"
