@@ -274,6 +274,7 @@ installBrewPackages()
 
 		# Install command line text editor.
 		brew install neovim
+		brew install ripgrep # Used by `telescope` for fast in-file searching.
 
 		if [ "$(uname)" = "Darwin" ]; then
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
