@@ -7,9 +7,8 @@ UseFontLineChararacters=false
 CursorShape=2
 
 [General]
-Command=/bin/bash
+Command=/bin/bash -l
 DimWhenInactive=false
-Icon=/home/hutson/.local/share/konsole/noun_1058899_edited_white.png
 Name=hutson
 Parent=FALLBACK/
 StartInCurrentSessionDir=false

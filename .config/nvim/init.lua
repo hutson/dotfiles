@@ -254,3 +254,27 @@ vim.g.go_auto_type_info = 1
 -- Switch to AST-aware identifier renamer that is module aware (No GOPATH necessary).
 -- TODO: `gopls` will be the `vim-go` default in the future.
 vim.g.go_rename_command = "gopls"
+
+--[[
+	Setup nvim-telescope Plugin
+
+	Setup for the nvim-telescope plugin to make it easier to search for files and file contents within a project.
+--]]
+
+require('telescope').setup{
+  defaults = {
+  },
+  pickers = {
+    find_files = {
+    	hidden = true
+    }
+  },
+  extensions = {
+  }
+}
+
+local builtin = require('telescope.builtin')
+vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
+vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
+vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
+vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})

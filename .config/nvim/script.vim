@@ -55,6 +55,13 @@ Plug 'https://github.com/EdenEast/nightfox.nvim'
 Plug 'https://github.com/mhinz/vim-signify.git'
 Plug 'https://github.com/ryanoasis/vim-devicons.git'
 
+" Install and setup Telescope for in-file searching.
+Plug 'https://github.com/nvim-tree/nvim-web-devicons.git'
+Plug 'https://github.com/BurntSushi/ripgrep.git' " Required for grep within files.
+Plug 'https://github.com/nvim-telescope/telescope-fzf-native.nvim.git' " Required for fast sorting.
+Plug 'https://github.com/nvim-lua/plenary.nvim.git' " Lua function required.
+Plug 'https://github.com/nvim-telescope/telescope.nvim.git'
+
 " Add plugins to Vim's `runtimepath`.
 call plug#end()
 
