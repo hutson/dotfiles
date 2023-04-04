@@ -71,13 +71,13 @@ if command -v brew >/dev/null 2>&1 && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
 fi
 
 # Invoke Powerline setup script to configure our shell prompt.
-if [ -f "${HOMEBREW_PREFIX}/lib/python3.9/site-packages/powerline/bindings/bash/powerline.sh" ]; then
+if [ -f "${HOMEBREW_PREFIX}/lib/python3.11/site-packages/powerline/bindings/bash/powerline.sh" ]; then
 	# The following is to improve performance - https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt
 	powerline-daemon -q
 	POWERLINE_BASH_CONTINUATION=1
 	POWERLINE_BASH_SELECT=1
 
-	source "${HOMEBREW_PREFIX}/lib/python3.9/site-packages/powerline/bindings/bash/powerline.sh"
+	source "${HOMEBREW_PREFIX}/lib/python3.11/site-packages/powerline/bindings/bash/powerline.sh"
 fi
 
 # Source our custom shell aliases. All custom shell aliases should be in this external file rather than cluttering up this file.
