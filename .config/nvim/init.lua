@@ -147,7 +147,7 @@ vim.opt.foldlevel = 4
 
 require'nvim-treesitter.configs'.setup {
 	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
-	ensure_installed = { 'bash', 'cooklang', 'css', 'dockerfile', 'go', 'hcl', 'help', 'html', 'javascript', 'json', 'lua', 'markdown', 'python', 'regex', 'toml', 'vim', 'yaml', 'zig' },
+	ensure_installed = { 'bash', 'beancount', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase', 'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua', 'markdown', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' },
 
 	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
 	sync_install = false,
