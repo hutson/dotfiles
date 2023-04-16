@@ -275,6 +275,7 @@ installBrewPackages()
 		# Install command line text editor.
 		brew install neovim
 		brew install ripgrep # Used by `telescope` for fast in-file searching.
+		curl --quiet --location --output ${XDG_DATA_HOME}/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 		if [ "$(uname)" = "Darwin" ]; then
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.

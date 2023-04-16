@@ -140,30 +140,60 @@ vim.opt.foldexpr   = 'nvim_treesitter#foldexpr()'
 vim.opt.foldlevel = 4
 
 --[[
-	Tree-sitter
+	Vim Explorer
 
-	Enable and configure the AST-aware tree-sitter for syntax highlighting and folding.
+	These options configure Vim's built-in file system explorer so that it behaves in a manner that meets user expectations. This includes showing files in a tree view so that entire projects can be seen at once.
 --]]
 
-require'nvim-treesitter.configs'.setup {
-	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
-	ensure_installed = { 'bash', 'beancount', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase', 'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua', 'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' },
+-- Do not display the help banner located at the top of the `netrw` window to free up space and avoid distraction.
+vim.g.netrw_banner = 0
 
-	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
-	sync_install = false,
+-- Will cause files selected in the Explorer window to be opened in the most recently used buffer window (Causing the previous buffer to be pushed into the background).
+vim.g.netrw_browse_split = 4
 
-	highlight = {
-		-- Enable syntax highlighting using tree-sitter.
-		enable = true,
+-- List files and directories in the Explorer window using the tree listing style.
+vim.g.netrw_liststyle = 3
 
-		-- Setting this to `true` will run `syntax` and `tree-sitter` at the same time.
-		-- Using this option may slow down neovim while it's attempting to run two syntax highlighers and may cause duplicate highlights.
-		additional_vim_regex_highlighting = false,
-	},
-}
+-- Only consume 25% of available horizontal space when creating a `netrw` split.
+vim.g.netrw_winsize = 25
 
 --[[
-	Language Server
+	Setup vim-plug Plugin
+
+	Setup the vim-plug plugin so that it's aware of external plugins we're interested in incorporating into our Vim instance. vim-plug will manage those plugins by pulling in updates and placing them in the appropriate Vim directory.
+
+	Note: Plugins MUST be listed before any configuration steps involving these plugins can take place.
+--]]
+
+local Plug = vim.fn['plug#']
+vim.call('plug#begin')
+
+Plug('https://github.com/neovim/nvim-lspconfig.git') -- Language Server client for intelligent autocompletion.
+
+Plug('https://github.com/fatih/vim-go.git', { ['do'] = ':GoUpdateBinaries' }) -- Go tools, such as `goimports`.
+Plug('https://github.com/hashivim/vim-terraform.git') -- Terraform tools, such as `terraform fmt`.
+
+Plug('https://github.com/nvim-treesitter/nvim-treesitter.git', { ['do'] = ':TSUpdate' })
+Plug('https://github.com/editorconfig/editorconfig-vim.git')
+Plug('https://github.com/mbbill/undotree.git')
+Plug('https://github.com/vim-airline/vim-airline.git') -- At the time of writing Powerline (Python) does not support neovim.
+Plug('https://github.com/tpope/vim-fugitive.git')
+Plug('https://github.com/EdenEast/nightfox.nvim')
+Plug('https://github.com/mhinz/vim-signify.git')
+Plug('https://github.com/ryanoasis/vim-devicons.git')
+
+-- Install and setup Telescope for in-file searching.
+Plug('https://github.com/nvim-tree/nvim-web-devicons.git') -- Required to display icons in telescipe dialog (vim-devicons won't work).
+Plug('https://github.com/BurntSushi/ripgrep.git') -- Required for grep within files.
+Plug('https://github.com/nvim-telescope/telescope-fzf-native.nvim.git') -- Required for fast sorting.
+Plug('https://github.com/nvim-lua/plenary.nvim.git') -- Lua function required.
+Plug('https://github.com/nvim-telescope/telescope.nvim.git')
+
+-- Add plugins to Vim's `runtimepath`.
+vim.call('plug#end')
+
+--[[
+	Setup Language Server Plugin
 
 	Setup and configuration for language servers.
 --]]
@@ -214,23 +244,27 @@ for _, lsp in pairs(servers) do
 end
 
 --[[
-	Vim Explorer
+	Setup tree-sitter Plugin
 
-
-	These options configure Vim's built-in file system explorer so that it behaves in a manner that meets user expectations. This includes showing files in a tree view so that entire projects can be seen at once.
+	Enable and configure the AST-aware tree-sitter for syntax highlighting and folding.
 --]]
 
--- Do not display the help banner located at the top of the `netrw` window to free up space and avoid distraction.
-vim.g.netrw_banner = 0
+require'nvim-treesitter.configs'.setup {
+	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
+	ensure_installed = { 'bash', 'beancount', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase', 'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua', 'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' },
 
--- Will cause files selected in the Explorer window to be opened in the most recently used buffer window (Causing the previous buffer to be pushed into the background).
-vim.g.netrw_browse_split = 4
+	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
+	sync_install = false,
 
--- List files and directories in the Explorer window using the tree listing style.
-vim.g.netrw_liststyle = 3
+	highlight = {
+		-- Enable syntax highlighting using tree-sitter.
+		enable = true,
 
--- Only consume 25% of available horizontal space when creating a `netrw` split.
-vim.g.netrw_winsize = 25
+		-- Setting this to `true` will run `syntax` and `tree-sitter` at the same time.
+		-- Using this option may slow down neovim while it's attempting to run two syntax highlighers and may cause duplicate highlights.
+		additional_vim_regex_highlighting = false,
+	},
+}
 
 --[[
 	Setup vim-go Plugin
@@ -278,3 +312,33 @@ vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
+
+--[[
+	Setup vim-terraform Plugin
+
+	Setup vim-terraform to enable features such as formatting on save.
+--]]
+
+-- Automatically invoke `terraform fmt` on Terraform files on buffer save.
+vim.g.terraform_fmt_on_save = 1
+
+-- Automatically align settings with Tabularize on buffer save.
+vim.g.terraform_align = 1
+
+--[[
+	Setup vim-airline Plugin
+
+	Setup for a vim-airline environment so that the environment will look and behave in the desired way.
+--]]
+
+-- Automatically populate the `g:airline_symbols` dictionary with the correct font glyphs used as the special symbols for vim-airline's status bar.
+vim.g.airline_powerline_fonts = 1
+
+--[[
+	Setup Colorscheme
+
+	Note: This setup step must be last so that the color scheme is setup properly. If configured earlier, some setting in this configuration file will cause Neovim to revert to its default color scheme (or worse, you'll get a collision of multiple color schemes.).
+--]]
+
+-- Set Neovim's color scheme. We purposely silence any failure notification if the desired colorscheme can't be loaded by Neovim. If Neovim is unable to load the desired colorscheme, it will be quite apparent to the user. By silencing error messages we gain the ability to automate tasks, such as installing plugins for the first time, that would otherwise block if an error message was displayed because the desired colorscheme wasn't available.
+pcall(vim.cmd, "silent! colorscheme carbonfox")
