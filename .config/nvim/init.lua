@@ -234,13 +234,7 @@ end
 -- map buffer local keybindings when the language server attaches
 local servers = { 'gopls', 'terraformls' }
 for _, lsp in pairs(servers) do
-	require('lspconfig')[lsp].setup {
-		on_attach = on_attach,
-		flags = {
-			-- This will be the default in neovim 0.7+
-			debounce_text_changes = 150,
-		}
-	}
+	require('lspconfig')[lsp].setup { }
 end
 
 --[[
@@ -295,16 +289,17 @@ vim.g.go_rename_command = "gopls"
 	Setup for the nvim-telescope plugin to make it easier to search for files and file contents within a project.
 --]]
 
-require('telescope').setup{
-  defaults = {
-  },
+require('telescope').setup {
+	defaults = {
+		file_ignore_patterns = {
+			"node_modules", ".git/"
+		}
+	},
   pickers = {
     find_files = {
     	hidden = true
     }
   },
-  extensions = {
-  }
 }
 
 local builtin = require('telescope.builtin')
