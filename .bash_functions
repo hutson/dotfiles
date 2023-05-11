@@ -320,11 +320,6 @@ installBrewPackages()
 			# Tool for managing offline video archives.
 			brew install yt-dlp
 
-			# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
-			# TODO: Figure out why `open-mpi` fails on a missing symbol from glibc on this sytem
-			#       thereby forcing us to install from `npm`.
-			npm install -g joplin
-
 		else # For packages that should only be installed server-side and not on a desktop/local system.
 
 			# Install terminal multiplexer.
@@ -342,11 +337,18 @@ installNodePackages ()
 	if command -v npm &> /dev/null; then
 		printf "\n> Installing Node packages.\n"
 
-		# Install latest LTS release of NodeJS.
-		nvm install --lts
+		# Install Node 16 instead of the latest version 18. Version 18, along with `npmjs.org`'s IPv6 address, causes `npm install` to freeze.
+		nvm install v16
 
 		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
 		npm install -g doctoc
+
+		if [ "$(uname -n)" = "startopia" ]; then
+			# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
+			# TODO: Figure out why `open-mpi` fails on a missing symbol from glibc on this sytem
+			#       thereby forcing us to install from `npm`.
+			npm install -g joplin
+		fi
 
 		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
 		command -v npm --version >/dev/null 2>&1 && export PATH="$(npm -g bin):${PATH}"
