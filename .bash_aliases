@@ -11,7 +11,7 @@ if [ "$(uname)" = "Darwin" ]; then
 	alias rm='rm -i'
 else
 	# Do not allow deletion of content at the root level, /, and prompt the user once before removing more than three files or when removing files and directories recursively.
-	alias rm='rm -I --preserve-root'
+	alias rm='rm -I -v --preserve-root'
 fi
 
 # Enable common command confirmations with additional verbosity.
@@ -28,6 +28,7 @@ if command -v dircolors &> /dev/null; then
 		eval "$(dircolors --bourne-shell)"
 	fi
 
+	alias ip='ip --color=auto'
 	alias ls='ls --color=auto'
 	alias dir='dir --color=auto'
 	alias vdir='vdir --color=auto'
@@ -37,7 +38,7 @@ if command -v dircolors &> /dev/null; then
 fi
 
 # List content, including hidden files and folders, of a directory in long format.
-alias ll='ls -lha'
+alias ll='ls -A -F -b -h -l -v --time-style=long-iso'
 
 # Enable a traditional login shell when using sudo or su.
 alias root='sudo -i'
