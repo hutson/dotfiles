@@ -1,5 +1,5 @@
 # Use the same Ubuntu LTS release as used on personal device so that the development and testing environment is identical to the personal production environment.
-FROM ubuntu:20.04@sha256:adf73ca014822ad8237623d388cedf4d5346aa72c270c5acc01431cc93e18e2d
+FROM ubuntu:22.04@sha256:dfd64a3b4296d8c9b62aa3309984f8620b98d87e47492599ee20739e8eb54fbf
 
 # Container metadata describing the image and its maintainer.
 LABEL description="Docker container for testing scripts, installers, and workflows, in a production-like environment as part of a CI process."
