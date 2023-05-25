@@ -10,7 +10,7 @@
 	These options enable several useful baseline features for improving Vim functionality.
 --]]
 
--- Use Unix as the standard file type when saving a buffer back to file. This will cause Unix line terminators, \n, to be used for deliminating a file's newlines.
+-- Use Unix as the standard file type when saving a buffer back to file. This will cause Unix line terminators, \n, to be used for delimiting a file's newlines.
 vim.opt.fileformat = 'unix'
 
 -- Disable modeline support within Vim. Modeline support within Vim has constantly introduced security vulnerabilities into the Vim editor. By disabling this feature any chance of a future vulnerability interfering with the use of Vim, or the operating system on which it runs, is mitigated. As for functionality, modelines are configuration lines contained within text files that instruct Vim how to behave when reading those files into a buffer.
@@ -18,6 +18,9 @@ vim.opt.modeline = false -- Turn off modeline parsing altogether.
 
 -- Set the default language to use for spell checking. `spelllang` is a comma separated list of word lists. Word lists are of the form LANGUAGE_REGION. The LANGUAGE segment may include a specification, such as `-rare` to indicate rare words in that language.
 vim.opt.spelllang = 'en_US,cjk'
+
+-- Limit spelling suggestions to the 9 best options available. This will likely still provide the correct spelling while avoiding spell correction from taking over the entire window.
+vim.opt.spellsuggest = 'best,9'
 
 -- Automatically save the contents of the buffer to file whenever the `:make` command is invoked, which is used by plugins such as Go for their `GoBuild`, etc. functions.
 vim.opt.autowrite = true
