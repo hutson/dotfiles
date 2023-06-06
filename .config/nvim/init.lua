@@ -98,6 +98,9 @@ vim.opt.mousemodel = 'popup'
 -- r - Automatically insert the current comment leader after pressing <ENTER> in Insert mode.
 vim.opt.formatoptions = 'jlnoqr'
 
+-- Default behavior when displaying autocomplete options provided by `nvim-cmp`.
+vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
+
 --[[
 	Backups
 
@@ -173,6 +176,12 @@ vim.call('plug#begin')
 
 Plug('https://github.com/neovim/nvim-lspconfig.git') -- Language Server client for intelligent autocompletion.
 
+-- Plugins for autocompletion.
+Plug('https://github.com/hrsh7th/nvim-cmp.git')
+Plug('https://github.com/hrsh7th/cmp-nvim-lsp.git')
+Plug('https://github.com/hrsh7th/cmp-path.git')
+Plug('https://github.com/hrsh7th/cmp-buffer.git')
+
 Plug('https://github.com/fatih/vim-go.git', { ['do'] = ':GoUpdateBinaries' }) -- Go tools, such as `goimports`.
 Plug('https://github.com/hashivim/vim-terraform.git') -- Terraform tools, such as `terraform fmt`.
 
@@ -233,12 +242,60 @@ local on_attach = function(client, bufnr)
 	vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
 end
 
+-- Inform the LSP servers which options our clients, such as LSP and nvim-cmp, support in the editor.
+local lspconfig = require('lspconfig')
+local lsp_defaults = lspconfig.util.default_config
+lsp_defaults.capabilities = vim.tbl_deep_extend(
+	'force',
+	lsp_defaults.capabilities,
+	require('cmp_nvim_lsp').default_capabilities()
+)
+
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'gopls', 'terraformls' }
+local servers = { 'beancount', 'gopls', 'terraformls' }
 for _, lsp in pairs(servers) do
-	require('lspconfig')[lsp].setup { }
+	require('lspconfig')[lsp].setup {}
 end
+
+--[[
+	Setup nvim-cmp Plugin
+
+	Enable and configure the autocomplete plugin that leverages "sources", such as NeoVim's LSP client to provide autocomplete suggestions.
+--]]
+
+local cmp = require'cmp'
+cmp.setup({
+	formatting = {
+		fields = {'menu', 'abbr', 'kind'},
+		format = function(entry, item)
+			local menu_icon = {
+				buffer = 'Ω',
+				nvim_lsp = 'λ',
+				path = '🖫',
+			}
+
+			item.menu = menu_icon[entry.source.name]
+			return item
+		end,
+	},
+	mapping = cmp.mapping.preset.insert({
+		['<C-b>'] = cmp.mapping.scroll_docs(-4),
+		['<C-f>'] = cmp.mapping.scroll_docs(4),
+		['<C-Space>'] = cmp.mapping.complete(),
+		['<C-e>'] = cmp.mapping.abort(),
+		['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+	}),
+	sources = cmp.config.sources({
+		{ name = 'path' },
+		{ name = 'nvim_lsp', keyword_length = 1 },
+		{ name = 'buffer', keyword_length = 2 },
+	}),
+	window = {
+		completion = cmp.config.window.bordered(),
+		documentation = cmp.config.window.bordered(),
+	},
+})
 
 --[[
 	Setup tree-sitter Plugin

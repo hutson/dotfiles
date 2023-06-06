@@ -281,6 +281,10 @@ installBrewPackages()
 		brew install terraform
 		brew install hashicorp/tap/terraform-ls # Language server.
 
+		# Install beancount plain text accounting software and support tooling.
+		brew install beancount
+		brew install rust && cargo install beancount-language-server
+
 		# General purpose image builder.
 		brew install packer
 		## TODO: Add langauge server for Packer (HCL language).

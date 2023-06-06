@@ -14,7 +14,7 @@ export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew";
 
 # Add our local binary directories to our PATH. This will allow us to utilize locally installed binaries when available. Furthermore, because we prepend our local binary directory to our PATH our local binaries will be used in favor of globally-installed system binaries.
 # Adding `/opt/python/libexec/` to path so that `python` and `pip` point to Python 3, and pip 3, respectively, instead of Python 2.
-export PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${HOMEBREW_PREFIX}/opt/python/libexec/bin:${HOME}/Applications:${PATH}"
+export PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${HOMEBREW_PREFIX}/opt/python/libexec/bin:${HOME}/Applications:${HOME}/.cargo/bin:${PATH}"
 
 # Add our local info page directory to our MANPATH. This will allow the `man` utility to load manual pages from our local manual directory. Furthermore, because we prepend our local manual directory to our MANPATH, our local manual pages will be used in favor of globally installed manual pages.
 export MANPATH="${HOMEBREW_PREFIX}/share/man:${MANPATH:-}"
