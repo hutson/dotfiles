@@ -140,7 +140,7 @@ vim.opt.listchars = 'tab:>-,eol:$,trail:~,extends:>,precedes:<'
 
 -- Use tree-sitter to determine how source code or content should be folded.
 vim.opt.foldmethod = 'expr'
-vim.opt.foldexpr   = 'nvim_treesitter#foldexpr()'
+vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
 
 -- Show 4 levels of nested content before automatically folding. 4 levels is usually good enough to find the section we are interested in before needing to expand that section, without being overwhelmed with all the content a file might contain.
 vim.opt.foldlevel = 4
@@ -289,7 +289,7 @@ cmp.setup({
 	sources = cmp.config.sources({
 		{ name = 'path' },
 		{ name = 'nvim_lsp', keyword_length = 1 },
-		{ name = 'buffer', keyword_length = 2 },
+		{ name = 'buffer', keyword_length = 4 },
 	}),
 	window = {
 		completion = cmp.config.window.bordered(),
@@ -352,14 +352,19 @@ vim.g.go_rename_command = "gopls"
 require('telescope').setup {
 	defaults = {
 		file_ignore_patterns = {
-			"node_modules", ".git/"
+			"node_modules", ".git"
 		}
 	},
-  pickers = {
-    find_files = {
-    	hidden = true
-    }
-  },
+	pickers = {
+		find_files = {
+			hidden = true
+		},
+		live_grep = {
+			additional_args = function(opts)
+				return {"--hidden"}
+			end
+		}
+	},
 }
 
 local builtin = require('telescope.builtin')
