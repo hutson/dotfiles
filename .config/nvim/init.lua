@@ -157,11 +157,14 @@ vim.g.netrw_banner = 0
 -- Will cause files selected in the Explorer window to be opened in the most recently used buffer window (Causing the previous buffer to be pushed into the background).
 vim.g.netrw_browse_split = 4
 
+-- Always split the window vertically and place the contents of the selected file into a buffer in the newly created window pane.
+vim.g.netrw_preview = 1
+
 -- List files and directories in the Explorer window using the tree listing style.
 vim.g.netrw_liststyle = 3
 
--- Only consume 25% of available horizontal space when creating a `netrw` split.
-vim.g.netrw_winsize = 25
+-- Define how much of available horizontal space should be used when creating a `netrw` split.
+vim.g.netrw_winsize = 75
 
 --[[
 	Setup vim-plug Plugin
