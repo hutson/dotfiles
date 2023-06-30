@@ -315,7 +315,7 @@ installBrewPackages()
 			brew install tmux
 		fi
 	else
-		echo "ERROR: `brew` is required for building and installing tools from source, but it's not available in your PATH. Please install `brew` and ensure it's in your PATH. Then re-run `installBrewPackages`."
+		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
 	fi
 }
 
@@ -323,7 +323,7 @@ installBrewPackages()
 # Install NodeJS packages via `npm`.
 installNodePackages ()
 {
-	if command -v npm &> /dev/null; then
+	if command -v nvm &> /dev/null; then
 		printf "\n> Installing Node packages.\n"
 
 		nvm install v18
@@ -337,7 +337,7 @@ installNodePackages ()
 		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
 		command -v npm --version >/dev/null 2>&1 && export PATH="$(npm -g bin):${PATH}"
 	else
-		echo "ERROR: `npm` is required for installing NodeJS packages, but it's not available in your PATH. Please install `npm` and ensure it's in your PATH. Then re-run `installNodePackages`."
+		echo "ERROR: 'nvm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'nvm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
 	fi
 }
 
@@ -357,7 +357,7 @@ installPythonPackages ()
 		pip3 install powerline-status --user --upgrade
 		installPowerlineFonts
 	else
-		echo "ERROR: `pip` is required for installing Python packages, but it's not available in your PATH. Please install `pip` and ensure it's in your PATH. Then re-run `installPythonPackages`."
+		echo "ERROR: 'pip' is required for installing Python packages, but it's not available in your PATH. Please install 'pip' and ensure it's in your PATH. Then re-run 'installPythonPackages'."
 	fi
 }
 
