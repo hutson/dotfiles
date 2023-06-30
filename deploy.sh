@@ -41,15 +41,6 @@ mkdir -p "${XDG_CONFIG_HOME}/nvim"
 ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
 ln -s -f "$(pwd)/.config/nvim/script.vim" "${XDG_CONFIG_HOME}/nvim/script.vim"
 
-# Synlink Qutebrowser configuration files.
-echo "> Symlinking Qutebrowser files into the config directory (${XDG_CONFIG_HOME}/qutebrowser)."
-mkdir -p "${XDG_CONFIG_HOME}/qutebrowser"
-ln -s -f "$(pwd)/.config/qutebrowser/config.py" "${XDG_CONFIG_HOME}/qutebrowser/config.py"
-if [ -d "${HOME}/.var/app/org.qutebrowser.qutebrowser/config/qutebrowser/" ]; then
-	# Hardlink of the configuration file is required to work inside of Flatpak isolated directory.
-	ln -f "$(pwd)/.config/qutebrowser/config.py" "${HOME}/.var/app/org.qutebrowser.qutebrowser/config/qutebrowser/config.py"
-fi
-
 # Symlink Powerline files.
 echo "> Symlinking powerline files into the config directory (${XDG_CONFIG_HOME}/powerline)."
 mkdir -p "${XDG_CONFIG_HOME}"

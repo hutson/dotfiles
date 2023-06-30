@@ -14,29 +14,29 @@
 # \param $2 Archive type; such as 'tar' or 'zip'.
 compress()
 {
-	local dirPriorToExe=`pwd`
-	local dirName=`dirname ${1}`
-	local baseName=`basename ${1}`
+	local dirPriorToExe="$(pwd)"
+	local dirName="$(dirname ${1})"
+	local baseName="$(basename ${1})"
 
 	if [ -f "${1}" ]; then
 		echo "Selected a file for compression. Changing directory to '${dirName}''."
-		cd "${dirName}"
+		cd "${dirName}" || exit
 		case "${2}" in
-			tar.bz2)   tar cjf ${baseName}.tar.bz2 ${baseName} ;;
-			tar.gz)    tar czf ${baseName}.tar.gz ${baseName}  ;;
-			gz)        gzip ${baseName}                        ;;
-			tar)       tar -cvvf ${baseName}.tar ${baseName}   ;;
-			zip)       zip -r ${baseName}.zip ${baseName}      ;;
+			tar.bz2)   tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
+			tar.gz)    tar czf "${baseName}.tar.gz" "${baseName}"  ;;
+			gz)        gzip "${baseName}"                        ;;
+			tar)       tar -cvvf "${baseName}.tar" "${baseName}"   ;;
+			zip)       zip -r "${baseName}.zip" "${baseName}"      ;;
 			*)
 				echo "A compression format was not chosen. Defaulting to tar.gz"
-				tar czf ${baseName}.tar.gz ${baseName}
+				tar czf "${baseName}.tar.gz" "${baseName}"
 				;;
 		esac
 		echo "Navigating back to ${dirPriorToExe}"
-		cd "${dirPriorToExe}"
+		cd "${dirPriorToExe}" || exit
 	elif [ -d "${1}" ]; then
 		echo "Selected a directory for compression. Changing directory to '${dirName}''."
-		cd "${dirName}"
+		cd "${dirName}" || exit
 		case "${2}" in
 			tar.bz2)   tar cjf ${baseName}.tar.bz2 ${baseName} ;;
 			tar.gz)    tar czf ${baseName}.tar.gz ${baseName}  ;;
@@ -49,7 +49,7 @@ compress()
 				;;
 		esac
 		echo "Navigating back to ${dirPriorToExe}"
-		cd "${dirPriorToExe}"
+		cd "${dirPriorToExe}" || exit
 	else
 		echo "'${1}' is not a valid file or directory."
 	fi
@@ -207,7 +207,9 @@ updateEnvironment ()
 	# Configure our desktop environment.
 	setupTilingWindowManager
 
-	flatpak update -y --noninteractive
+	if [ "$(uname -n)" = "startopia" ]; then
+		flatpak update -y --noninteractive
+	fi
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 }
@@ -269,21 +271,10 @@ installBrewPackages()
 		# Install ncdu, a command line tool for displaying disk usage information.
 		brew install ncdu
 
-		# Static site generator and build tool.
-		brew install hugo
-
 		# Install command line text editor.
 		brew install neovim
 		brew install ripgrep # Used by `telescope` for fast in-file searching.
 		curl --location --output ${XDG_DATA_HOME}/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
-
-		# Install resource orchestration tool.
-		brew install terraform
-		brew install hashicorp/tap/terraform-ls # Language server.
-
-		# General purpose image builder.
-		brew install packer
-		## TODO: Add langauge server for Packer (HCL language).
 
 		if [ "$(uname)" = "Darwin" ]; then
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
@@ -292,30 +283,24 @@ installBrewPackages()
 			# Store Docker Hub credentials in the OSX Keychain for improved security.
 			brew install docker-credential-helper
 
-			# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
-			brew install joplin-cli
-
-			# Cloud tools
-			brew install svn awscli
-			brew install aws-iam-authenticator
+			# Install resource orchestration tool.
+			brew install hashicorp/tap/terraform-ls # Language server.
 
 			brew install wget
 			brew install pinentry-mac
 
 			brew install --cask firefox
-			brew install --cask google-chrome
 			brew install --cask gpg-suite
 			brew install --cask iterm2
-			brew install --cask joplin
 			brew install --cask keepassxc
 			brew install --cask obs
-			brew install --cask qutebrowser
 
 		elif [ "$(uname -n)" = "startopia" ]; then
 			# Install shell script linter.
-			# NOTE: We force the installation of `shellcheck` from the pre-compiled bottle as installing `shellcheck` from
-			# source requires `ghc` to be installed from source, and that build appears to never complete.
-			brew install shellcheck --force-bottle
+			brew install shellcheck
+
+			# Static site generator and build tool.
+			brew install hugo
 
 			# Tool for managing offline video archives.
 			brew install yt-dlp
@@ -341,18 +326,13 @@ installNodePackages ()
 	if command -v npm &> /dev/null; then
 		printf "\n> Installing Node packages.\n"
 
-		# Install Node 16 instead of the latest version 18. Version 18, along with `npmjs.org`'s IPv6 address, causes `npm install` to freeze.
-		nvm install v16
+		nvm install v18
 
 		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
 		npm install -g doctoc
 
-		if [ "$(uname -n)" = "startopia" ]; then
-			# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
-			# TODO: Figure out why `open-mpi` fails on a missing symbol from glibc on this sytem
-			#       thereby forcing us to install from `npm`.
-			npm install -g joplin
-		fi
+		# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
+		npm install -g joplin
 
 		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
 		command -v npm --version >/dev/null 2>&1 && export PATH="$(npm -g bin):${PATH}"
@@ -386,10 +366,10 @@ installPythonPackages ()
 installPowerlineFonts ()
 {
 	mkdir -p "${XDG_DATA_HOME}/fonts/"
-	curl -L https://github.com/powerline/powerline/raw/develop/font/PowerlineSymbols.otf -o "${XDG_DATA_HOME}/fonts/PowerlineSymbols.otf"
+	curl -L https://github.com/powerline/powerline/raw/833f30e88efa51246dadc6daf21638ec61b6b912/font/PowerlineSymbols.otf -o "${XDG_DATA_HOME}/fonts/PowerlineSymbols.otf"
 
 	mkdir -p "${XDG_CONFIG_HOME}/fontconfig/conf.d/"
-	curl -L https://github.com/powerline/powerline/raw/develop/font/10-powerline-symbols.conf -o "${XDG_CONFIG_HOME}/fontconfig/conf.d/10-powerline-symbols.conf"
+	curl -L https://github.com/powerline/powerline/raw/833f30e88efa51246dadc6daf21638ec61b6b912/font/10-powerline-symbols.conf -o "${XDG_CONFIG_HOME}/fontconfig/conf.d/10-powerline-symbols.conf"
 
 	if [ "$(uname)" == "Darwin" ]; then
 		mkdir -p "${HOME}/Library/Fonts"
@@ -425,7 +405,7 @@ checkAndConvert ()
 {
 	# TODO: Prompt user whether global permissions should be revoked from listed files.
 	printf "\n> List of globally accessible files.\n"
-	find . \( -perm -o+r -or -perm -o+w -or -perm -o+x \) | xargs ls -l
+	find . ! -type l \( -perm -o+r -or -perm -o+w -or -perm -o+x \) | xargs ls -l
 
 	## TODO: Rename all files to be all lower-case.
 	# for i in $( ls | grep [A-Z] ); do mv -i $i `echo $i | tr 'A-Z' 'a-z'`; done
@@ -441,7 +421,7 @@ checkAndConvert ()
 setupTilingWindowManager () {
 	# Only install the tiling window manager on KDE.
 	if command -v plasmapkg2 &> /dev/null; then
-		local dirPriorToExe=`pwd`
+		local dirPriorToExe="$(pwd)"
 		local tmpdir="$(mktemp -d)"
 
 		git clone https://github.com/kwin-scripts/kwin-tiling.git "${tmpdir}"
