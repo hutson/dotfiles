@@ -1,9 +1,0 @@
-jobs:
-  test:
-    container: koalaman/shellcheck-alpine:v0.9.0
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3.5.2
-      - run: sh test.sh
-name: Shellcheck
-on: [push, pull_request]

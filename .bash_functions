@@ -1,10 +1,251 @@
 #!/usr/bin/env bash
 
-#====================================================
-# Custom Bash Functions
-#
-# This script only needs to be sourced upon opening a new shell to configure the Bash shell environment.
-#====================================================
+#! Setup a local environment.
+# Setup a local environment that contains all the tools and libraries needed for development work, and play.
+setupEnvironment ()
+{
+	printf "\n> Removing %s directory.\n" "${HOMEBREW_PREFIX}"
+
+	# Clear out our local system directory.
+	if [ -d "${HOMEBREW_PREFIX}" ]; then
+		rm -fr "${HOMEBREW_PREFIX}" &> /dev/null
+	fi
+
+	# Setup Brew.
+	setupHomeBrew
+	installBrewPackages
+	brew cleanup -s
+
+	# Install additional tools.
+	installNodePackages
+	installPythonPackages
+
+	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
+
+	if [ "$(uname -n)" = "startopia" ]; then
+		setupTilingWindowManager
+	fi
+}
+
+#! Update environment.
+# Update our development environment by installing the latest version of our desired tools.
+updateEnvironment ()
+{
+	# Update Brew.
+	brew update
+
+	# Upgrade all Brew-installed packages.
+	brew upgrade
+
+	# Cleanup Brew installation.
+	brew cleanup -s
+
+	# Update general tools.
+	installNodePackages
+	installPythonPackages
+
+	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
+
+	if [ "$(uname -n)" = "startopia" ]; then
+		setupTilingWindowManager
+		flatpak update -y --noninteractive
+	fi
+}
+
+#! Setup HomeBrew.
+# Install HomeBrew locally so that we can download, build, and install tools from source.
+setupHomeBrew ()
+{
+	printf "\n> Installing HomeBrew.\n"
+
+	# Create a local binary directory before any setup steps require its existence. It must exist for the tar extraction process to extract the contents of Brew into the `.local/` directory.
+	mkdir -p "${HOMEBREW_PREFIX}/Homebrew"
+
+	# Download an archive version of the #master branch of Brew to the local system for future extraction. We download an archive version of Brew, rather than cloning the #master branch, because we must assume that the local system does not have the `git` tool available (A tool that will be installed later using Brew).
+	curl -L https://github.com/Homebrew/brew/archive/master.tar.gz -o "/tmp/homebrew.tar.gz"
+
+	# Extract archive file into local system directory.
+	tar -xf "/tmp/homebrew.tar.gz" -C "${HOMEBREW_PREFIX}/Homebrew/" --strip-components=1
+
+	# Symlink the dedicated brew binary into our Homebrew binary directory.
+	mkdir -p "${HOMEBREW_PREFIX}/bin/"
+	ln -s "${HOMEBREW_PREFIX}/Homebrew/bin/brew" "${HOMEBREW_PREFIX}/bin/"
+
+	rm -f "/tmp/homebrew.tar.gz"
+}
+
+#! Install packages via Brew.
+# Install packages via Brew's `brew` CLI tool.
+installBrewPackages()
+{
+	if command -v brew &> /dev/null; then
+		printf "\n> Installing Brew packages.\n"
+
+		if [ "$(uname)" = "Darwin" ] || [ "$(uname -n)" = "startopia" ]; then
+			# Install the latest Bash shell environment. This will give us access to the latest features in our primary work environment.
+			brew install bash
+
+			# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew installed packages. Version @2 is required for Bash > 2.
+			brew install bash-completion@2
+
+			# Install ncdu, a command line tool for displaying disk usage information.
+			brew install ncdu
+
+			# Install shell script linter.
+			brew install shellcheck
+
+			# Install Go compiler and development stack.
+			brew install go
+
+			# Install nvm, a CLI tool for managing Node interpreter versions within the current shell environment.
+			brew install nvm
+			# shellcheck source=/dev/null
+			source "$(brew --prefix nvm)/nvm.sh"
+
+			# Install git, a distributed source code management tool.
+			brew install git
+
+			# Install the Large File Storage (LFS) git extension. The Large File Storage extension replaces large files that would normally be committed into the git repository, with a text pointer. Each revision of a file managed by the Large File Storage extension is stored server-side. Requires a remote git server with support for the Large File Storage extension.
+			brew install git-lfs
+
+			# Install command line text editor.
+			brew install neovim
+			brew install ripgrep # Used by `telescope` for fast in-file searching.
+			curl --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
+
+			# Fancy cross-shell command line prompt.
+			brew install starship
+		fi
+
+		if [ "$(uname)" = "Darwin" ]; then
+			# Latest GNU core utilities, such as `rm`, `ls`, etc.
+			brew install coreutils
+
+			# Store Docker Hub credentials in the OSX Keychain for improved security.
+			brew install docker-credential-helper
+
+			# Install resource orchestration tool.
+			brew install hashicorp/tap/terraform-ls # Language server.
+
+			# Install python version 3, which `pip` is also included, as the header files are required by natively-built pip packages.
+			brew install python
+
+			brew install wget
+			brew install pinentry-mac
+
+			brew install --cask firefox
+			brew install --cask gpg-suite
+			brew install --cask iterm2
+			brew install --cask keepassxc
+			brew install --cask obs
+
+		elif [ "$(uname -n)" = "startopia" ]; then
+			# Static site generator and build tool.
+			brew install hugo
+
+			# Tool for managing offline video archives.
+			brew install yt-dlp
+
+			# Install beancount plain text accounting software and support tooling.
+			brew install beancount
+			brew install rust && cargo install beancount-language-server
+
+		# For packages that should only be installed server-side and not on a desktop/local system.
+		else
+			# Install terminal multiplexer if it does not already exist on the target system.
+			if ! command -v tmux &> /dev/null; then
+				brew install tmux
+			fi
+		fi
+	else
+		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
+	fi
+}
+
+#! Install NodeJS packages.
+# Install NodeJS packages via `npm`.
+installNodePackages ()
+{
+	if command -v nvm &> /dev/null; then
+		printf "\n> Installing Node packages.\n"
+
+		nvm install v18
+
+		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
+		npm install -g doctoc
+
+		# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
+		npm install -g joplin
+
+		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
+		if command -v npm --version >/dev/null 2>&1; then
+			local PATH; PATH="$(npm -g bin):${PATH}"; export PATH
+		fi
+
+	else
+		echo "ERROR: 'nvm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'nvm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
+	fi
+}
+
+#! Install Python packages.
+# Install Python packages via `pip`.
+installPythonPackages ()
+{
+	if command -v pip3 &> /dev/null; then
+		printf "\n> Installing Python packages.\n"
+
+		# Package and virtual environment manager for Python.
+		pip3 install pipenv --user --upgrade
+
+	else
+		echo "ERROR: 'pip' is required for installing Python packages, but it's not available in your PATH. Please install 'pip' and ensure it's in your PATH. Then re-run 'installPythonPackages'."
+	fi
+}
+
+#! Setup tiling window manager on KDE.
+# Setup a tiling window manager on a KDE desktop by extending KDE's existing KWin window manager using KDE's ability to load arbitrary scripts as plugins.
+setupTilingWindowManager () {
+	# Only install the tiling window manager on KDE.
+	if command -v plasmapkg2 &> /dev/null; then
+		local dirPriorToExe; dirPriorToExe="$(pwd)"
+		local tmpdir; tmpdir="$(mktemp -d)"
+
+		git clone https://github.com/kwin-scripts/kwin-tiling.git "${tmpdir}"
+
+		cd "${tmpdir}" || exit
+
+		# Download a fixed commit to install as our tiling window management script to minimize the chance of breaking changes.
+		git checkout 51e51f4bb129dce6ab876d07cfd8bdb3506390e1
+
+		plasmapkg2 --type kwinscript -u .
+
+		# Fix documented here - https://github.com/kwin-scripts/kwin-tiling/issues/79#issuecomment-311465357
+		# Upstream KDE bug report - https://bugs.kde.org/show_bug.cgi?id=386509
+		mkdir --parent "${HOMEBREW_PREFIX}/share/kservices5"
+		ln --force --symbolic "${HOMEBREW_PREFIX}/share/kwin/scripts/kwin-script-tiling/metadata.desktop" "${HOMEBREW_PREFIX}/share/kservices5/kwin-script-tiling.desktop"
+
+		cd "${dirPriorToExe}" || exit
+
+		echo "Navigate to the KWin scripts manager to enable the 'kwinscript' script."
+	fi
+}
+
+#! Find all file types in use and convert to standard types.
+# Find all file types in use within a given directory and offer to convert files to a known set of standard file types, such as WAV to FLAC, using appropriate permissions (not globally readable).
+checkAndConvert ()
+{
+	# TODO: Prompt user whether global permissions should be revoked from listed files.
+	printf "\n> List of globally accessible files.\n"
+	find . ! -type l \( -perm -o+r -or -perm -o+w -or -perm -o+x \) -print0 | xargs -0 ls -l
+
+	## TODO: Rename all files to be all lower-case.
+	# for i in $( ls | grep [A-Z] ); do mv -i $i `echo $i | tr 'A-Z' 'a-z'`; done
+	# ls | sed -n 's/.*/mv "&" $(tr "[A-Z]" "[a-z]" <<< "&")/p' | bash
+
+	# TODO: Convert some known file formats to an alternative, "open", file format.
+	# To convert Office documents to ODF formats such as `.ods`.
+	# lowriter --headless --convert-to ods *.xlsx
+}
 
 #! Compress a file or folder into one of many types of archive formats.
 # Compress a file or folder into one of many types of archive formats. Compression is based on the archive type specified.
@@ -14,9 +255,9 @@
 # \param $2 Archive type; such as 'tar' or 'zip'.
 compress()
 {
-	local dirPriorToExe="$(pwd)"
-	local dirName="$(dirname ${1})"
-	local baseName="$(basename ${1})"
+	local dirPriorToExe; dirPriorToExe="$(pwd)"
+	local dirName; dirName="$(dirname "${1}")"
+	local baseName; baseName="$(basename "${1}")"
 
 	if [ -f "${1}" ]; then
 		echo "Selected a file for compression. Changing directory to '${dirName}''."
@@ -24,7 +265,7 @@ compress()
 		case "${2}" in
 			tar.bz2)   tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
 			tar.gz)    tar czf "${baseName}.tar.gz" "${baseName}"  ;;
-			gz)        gzip "${baseName}"                        ;;
+			gz)        gzip "${baseName}"                          ;;
 			tar)       tar -cvvf "${baseName}.tar" "${baseName}"   ;;
 			zip)       zip -r "${baseName}.zip" "${baseName}"      ;;
 			*)
@@ -38,14 +279,14 @@ compress()
 		echo "Selected a directory for compression. Changing directory to '${dirName}''."
 		cd "${dirName}" || exit
 		case "${2}" in
-			tar.bz2)   tar cjf ${baseName}.tar.bz2 ${baseName} ;;
-			tar.gz)    tar czf ${baseName}.tar.gz ${baseName}  ;;
-			gz)        gzip -r ${baseName}                     ;;
-			tar)       tar -cvvf ${baseName}.tar ${baseName}   ;;
-			zip)       zip -r ${baseName}.zip ${baseName}      ;;
+			tar.bz2)   tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
+			tar.gz)    tar czf "${baseName}.tar.gz" "${baseName}"  ;;
+			gz)        gzip -r "${baseName}"                       ;;
+			tar)       tar -cvvf "${baseName}.tar" "${baseName}"   ;;
+			zip)       zip -r "${baseName}.zip" "${baseName}"      ;;
 			*)
 				echo "A compression format was not chosen. Defaulting to tar.gz"
-				tar czf ${baseName}.tar.gz ${baseName}
+				tar czf "${baseName}.tar.gz" "${baseName}"
 				;;
 		esac
 		echo "Navigating back to ${dirPriorToExe}"
@@ -101,7 +342,7 @@ convertZip ()
 
 	unzip -q "${1}" -d "${tmpdir}/"
 
-	outfilename="$(echo "$(basename "${1}")" | rev | cut -d. -f2- | rev).tar"
+	outfilename="$(basename "${1}" | rev | cut -d. -f2- | rev).tar"
 
 	tar --create --exclude="${outfilename}" --file="${tmpdir}/${outfilename}" -C "${tmpdir}/" .
 
@@ -113,333 +354,3 @@ convertZip ()
 	rm -f "${1}"
 }
 
-#! Setup a watch and run a command.
-# Watch for changes to files that match a given file specification, and on change, run the given command.
-#
-# \param $1 A command accessible in the user's PATH to execute.
-# \param $2 A filespec; for example '*' or '/home/user'.
-# \param [$3=modify] Any combination of comma-delimited inotify events to listen for on the given filespec. Defaults to listening for "modify" events.
-watch ()
-{
-	if [ -z `command -v inotifywait` ]; then
-		echo "'inotifywait', needed to run the watch command, is not accessible in your PATH."
-		return
-	fi
-
-	# Validate the command parameter.
-	if [ -z "${1}" ]; then
-		echo "Invalid command, ${1}, provided. This command does not exist in your PATH."
-		return
-	fi
-
-	# Validate the filespec parameter.
-	if [ -z "${2}" ]; then
-		echo "Invalid filespec."
-		return
-	fi
-
-	# Set an appropriate inotify watch event default.
-	local default="modify"
-	local events="${3:-$default}"
-
-	while inotifywait -e "${events}" "${2}"; do
-
-		# If the script failed (thereby returning an error), exit rather than loop again.
-		if [ "${?}" -gt 0 ]; then
-			return
-		fi
-
-		# Evaluate the expression passed to the watch command so that commands that include command line arguments can be properly executed.
-		eval "${1}"
-
-		# If the requested command fails, exit rather than loop again.
-		if [ "${?}" -gt 0 ]; then
-			return
-		fi
-	done
-}
-
-#! Setup a local environment.
-# Setup a local environment that contains all the tools and libraries needed for development work, and play.
-setupEnvironment ()
-{
-	printf "\n> Removing ${HOMEBREW_PREFIX} directory.\n"
-
-	# Clear out our local system directory.
-	if [ -d "${HOMEBREW_PREFIX}" ]; then
-		rm -fr "${HOMEBREW_PREFIX}" &> /dev/null
-	fi
-
-	# Setup Brew.
-	setupHomeBrew
-	installBrewPackages
-
-	# Execute `nvm` script to configure our local environment to work with `nvm`.
-	source "$(brew --prefix nvm)/nvm.sh"
-
-	# Install additional tools.
-	installNodePackages
-	installPythonPackages
-	installNerdFonts
-
-	# Configure our desktop environment.
-	setupTilingWindowManager
-}
-
-#! Update environment.
-# Update our development environment by installing the latest version of our desired tools.
-updateEnvironment ()
-{
-	# Update Brew.
-	brew update
-
-	# Upgrade all Brew-installed packages.
-	brew upgrade
-
-	# Cleanup Brew installation.
-	brew cleanup -s
-
-	# Update general tools.
-	installNodePackages
-	installPythonPackages
-	installNerdFonts
-
-	# Configure our desktop environment.
-	setupTilingWindowManager
-
-	if [ "$(uname -n)" = "startopia" ]; then
-		flatpak update -y --noninteractive
-	fi
-
-	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
-}
-
-#! Setup HomeBrew.
-# Install HomeBrew locally so that we can download, build, and install tools from source.
-setupHomeBrew ()
-{
-	printf "\n> Installing HomeBrew.\n"
-
-	# Create a local binary directory before any setup steps require its existence. It must exist for the tar extraction process to extract the contents of Brew into the `.local/` directory.
-	mkdir -p "${HOMEBREW_PREFIX}/Homebrew"
-
-	# Download an archive version of the #master branch of Brew to the local system for future extraction. We download an archive version of Brew, rather than cloning the #master branch, because we must assume that the local system does not have the `git` tool available (A tool that will be installed later using Brew).
-	curl -L https://github.com/Homebrew/brew/archive/master.tar.gz -o "/tmp/homebrew.tar.gz"
-
-	# Extract archive file into local system directory.
-	tar -xf "/tmp/homebrew.tar.gz" -C "${HOMEBREW_PREFIX}/Homebrew/" --strip-components=1
-
-	# Symlink the dedicated brew binary into our Homebrew binary directory.
-	mkdir -p "${HOMEBREW_PREFIX}/bin/"
-	ln -s "${HOMEBREW_PREFIX}/Homebrew/bin/brew" "${HOMEBREW_PREFIX}/bin/"
-
-	# Cleanup.
-	rm -f "/tmp/homebrew.tar.gz"
-}
-
-#! Install packages via Brew.
-# Install packages via Brew's `brew` CLI tool.
-installBrewPackages()
-{
-	if command -v brew &> /dev/null; then
-		printf "\n> Installing Brew packages.\n"
-
-		# Install the latest Bash shell environment. This will give us access to the latest features in our primary work environment.
-		brew install bash
-
-		# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew installed packages. Version @2 is required for Bash > 2.
-		brew install bash-completion@2
-
-		# Install python version 3, which `pip` is also included, as the header files are required by natively-built pip packages.
-		brew install python
-
-		# Install Go compiler and development stack.
-		brew install go
-
-		# Install nvm, a CLI tool for managing Node interpreter versions within the current shell environment.
-		brew install nvm
-
-		# Install htop, a human-readable version of top.
-		brew install htop
-
-		# Install git, a distributed source code management tool.
-		brew install git
-
-		# Install the Large File Storage (LFS) git extension. The Large File Storage extension replaces large files that would normally be committed into the git repository, with a text pointer. Each revision of a file managed by the Large File Storage extension is stored server-side. Requires a remote git server with support for the Large File Storage extension.
-		brew install git-lfs
-
-		# Install ncdu, a command line tool for displaying disk usage information.
-		brew install ncdu
-
-		# Install command line text editor.
-		brew install neovim
-		brew install ripgrep # Used by `telescope` for fast in-file searching.
-		curl --location --output ${XDG_DATA_HOME}/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
-
-		if [ "$(uname)" = "Darwin" ]; then
-			# Latest GNU core utilities, such as `rm`, `ls`, etc.
-			brew install coreutils
-
-			# Store Docker Hub credentials in the OSX Keychain for improved security.
-			brew install docker-credential-helper
-
-			# Install resource orchestration tool.
-			brew install hashicorp/tap/terraform-ls # Language server.
-
-			brew install wget
-			brew install pinentry-mac
-
-			brew install --cask firefox
-			brew install --cask gpg-suite
-			brew install --cask iterm2
-			brew install --cask keepassxc
-			brew install --cask obs
-
-		elif [ "$(uname -n)" = "startopia" ]; then
-			# Install shell script linter.
-			brew install shellcheck
-
-			# Static site generator and build tool.
-			brew install hugo
-
-			# Tool for managing offline video archives.
-			brew install yt-dlp
-
-			# Install beancount plain text accounting software and support tooling.
-			brew install beancount
-			brew install rust && cargo install beancount-language-server
-
-		else # For packages that should only be installed server-side and not on a desktop/local system.
-
-			# Install terminal multiplexer.
-			brew install tmux
-		fi
-	else
-		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
-	fi
-}
-
-#! Install NodeJS packages.
-# Install NodeJS packages via `npm`.
-installNodePackages ()
-{
-	if command -v nvm &> /dev/null; then
-		printf "\n> Installing Node packages.\n"
-
-		nvm install v18
-
-		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
-		npm install -g doctoc
-
-		# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
-		npm install -g joplin
-
-		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
-		command -v npm --version >/dev/null 2>&1 && export PATH="$(npm -g bin):${PATH}"
-	else
-		echo "ERROR: 'nvm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'nvm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
-	fi
-}
-
-#! Install Python packages.
-# Install Python packages via `pip`.
-installPythonPackages ()
-{
-	if command -v pip3 &> /dev/null; then
-		printf "\n> Installing Python packages.\n"
-
-		# Using `pip3` to install other packages is necessary to avoid errors like `pkg_resources.VersionConflict: (pip 19.0.3 (~.local/lib/python3.7/site-packages), Requirement.parse('pip==19.0.2'))`
-
-		# Package and virtual environment manager for Python.
-		pip3 install pipenv --user --upgrade
-
-		# Shell prompt configuration and theming tool.
-		pip3 install powerline-status --user --upgrade
-		installPowerlineFonts
-	else
-		echo "ERROR: 'pip' is required for installing Python packages, but it's not available in your PATH. Please install 'pip' and ensure it's in your PATH. Then re-run 'installPythonPackages'."
-	fi
-}
-
-#! Install Powerline fonts.
-# Install Powerline fonts into our fontconfig directory so apply to our current chosen font.
-installPowerlineFonts ()
-{
-	mkdir -p "${XDG_DATA_HOME}/fonts/"
-	curl -L https://github.com/powerline/powerline/raw/833f30e88efa51246dadc6daf21638ec61b6b912/font/PowerlineSymbols.otf -o "${XDG_DATA_HOME}/fonts/PowerlineSymbols.otf"
-
-	mkdir -p "${XDG_CONFIG_HOME}/fontconfig/conf.d/"
-	curl -L https://github.com/powerline/powerline/raw/833f30e88efa51246dadc6daf21638ec61b6b912/font/10-powerline-symbols.conf -o "${XDG_CONFIG_HOME}/fontconfig/conf.d/10-powerline-symbols.conf"
-
-	if [ "$(uname)" == "Darwin" ]; then
-		mkdir -p "${HOME}/Library/Fonts"
-		command cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
-	else
-		fc-cache -vf "${XDG_DATA_HOME}/fonts/"
-	fi
-}
-
-#! Install Nerd fonts.
-# Install Nerd fonts into our fontconfig directory so apply to our current chosen font and leverage in Neovim.
-installNerdFonts ()
-{
-	local tmpdir="$(mktemp -d)"
-
-	# Always download the latest release.
-	curl https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest | grep "browser_download_url.*Hack.zip" | cut -d '"' -f 4 | wget -qi - -P "${tmpdir}"
-
-	# Extract Hack glyps into our `fonts` directory by updating existing files and adding new files.
-	unzip -u -q "${tmpdir}/Hack.zip" -d "${XDG_DATA_HOME}/fonts/"
-
-	if [ "$(uname)" == "Darwin" ]; then
-		mkdir -p "${HOME}/Library/Fonts"
-		command cp -f ${XDG_DATA_HOME}/fonts/* "${HOME}/Library/Fonts/"
-	else
-		fc-cache -vf "${XDG_DATA_HOME}/fonts/"
-	fi
-}
-
-#! Find all file types in use and convert to standard types.
-# Find all file types in use within a given directory and offer to convert files to a known set of standard file types, such as WAV to FLAC, using appropriate permissions (not globally readable).
-checkAndConvert ()
-{
-	# TODO: Prompt user whether global permissions should be revoked from listed files.
-	printf "\n> List of globally accessible files.\n"
-	find . ! -type l \( -perm -o+r -or -perm -o+w -or -perm -o+x \) | xargs ls -l
-
-	## TODO: Rename all files to be all lower-case.
-	# for i in $( ls | grep [A-Z] ); do mv -i $i `echo $i | tr 'A-Z' 'a-z'`; done
-	# ls | sed -n 's/.*/mv "&" $(tr "[A-Z]" "[a-z]" <<< "&")/p' | bash
-
-	# TODO: Convert some known file formats to an alternative, "open", file format.
-	# To convert Office documents to ODF formats such as `.ods`.
-	# lowriter --headless --convert-to ods *.xlsx
-}
-
-#! Setup tiling window manager on KDE.
-# Setup a tiling window manager on a KDE desktop by extending KDE's existing KWin window manager using KDE's ability to load arbitrary scripts as plugins.
-setupTilingWindowManager () {
-	# Only install the tiling window manager on KDE.
-	if command -v plasmapkg2 &> /dev/null; then
-		local dirPriorToExe="$(pwd)"
-		local tmpdir="$(mktemp -d)"
-
-		git clone https://github.com/kwin-scripts/kwin-tiling.git "${tmpdir}"
-
-		cd "${tmpdir}"
-
-		# Download a fixed commit to install as our tiling window management script to minimize the chance of breaking changes.
-		git checkout 51e51f4bb129dce6ab876d07cfd8bdb3506390e1
-
-		plasmapkg2 --type kwinscript -u .
-
-		# Fix documented here - https://github.com/kwin-scripts/kwin-tiling/issues/79#issuecomment-311465357
-		# Upstream KDE bug report - https://bugs.kde.org/show_bug.cgi?id=386509
-		mkdir --parent "${HOMEBREW_PREFIX}/share/kservices5"
-		ln --force --symbolic "${HOMEBREW_PREFIX}/share/kwin/scripts/kwin-script-tiling/metadata.desktop" "${HOMEBREW_PREFIX}/share/kservices5/kwin-script-tiling.desktop"
-
-		cd "${dirPriorToExe}"
-
-		echo "Navigate to the KWin scripts manager to enable the 'kwinscript' script."
-	fi
-}

@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-#====================================================
-# Bash Environment Configuration
-#
-# This script only needs to be sourced upon opening a new shell to configure the Bash shell environment.
-#====================================================
-
 # BEGIN HISTORY
 
 # Don't push duplicate lines, or lines starting with a space, in the history. The second ignore condition allows you to execute commands with a leading space, thereby instructing Bash to not place them into history.
@@ -70,14 +64,9 @@ if command -v brew >/dev/null 2>&1 && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
     command -v yarn --version >/dev/null 2>&1 && export PATH="$(yarn global bin):${PATH}"
 fi
 
-# Invoke Powerline setup script to configure our shell prompt.
-if [ -f "${HOMEBREW_PREFIX}/lib/python3.11/site-packages/powerline/bindings/bash/powerline.sh" ]; then
-	# The following is to improve performance - https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt
-	powerline-daemon -q
-	POWERLINE_BASH_CONTINUATION=1
-	POWERLINE_BASH_SELECT=1
-
-	source "${HOMEBREW_PREFIX}/lib/python3.11/site-packages/powerline/bindings/bash/powerline.sh"
+# Execute `starship` to configure our fancy cross-shell command line prompt.
+if command -v starship >/dev/null 2>&1; then
+	eval "$(starship init bash)"
 fi
 
 # Source our custom shell aliases. All custom shell aliases should be in this external file rather than cluttering up this file.

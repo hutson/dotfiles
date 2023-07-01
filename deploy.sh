@@ -41,18 +41,10 @@ mkdir -p "${XDG_CONFIG_HOME}/nvim"
 ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
 ln -s -f "$(pwd)/.config/nvim/script.vim" "${XDG_CONFIG_HOME}/nvim/script.vim"
 
-# Symlink Powerline files.
-echo "> Symlinking powerline files into the config directory (${XDG_CONFIG_HOME}/powerline)."
-mkdir -p "${XDG_CONFIG_HOME}"
-rm "${XDG_CONFIG_HOME}/powerline" &> "/dev/null"
-ln -s -f "$(pwd)/.config/powerline" "${XDG_CONFIG_HOME}/powerline"
-
-# Symlink Visual Studio Code files.
-if [ "$(uname)" = "Darwin" ]; then
-	echo "> Symlinking Visual Studio Code files into the Library directory (Library/Application Support/Code/User)."
-	mkdir -p "${HOME}/Library/Application Support/Code/User"
-	ln -s -f "$(pwd)/.config/Code/User/settings.json" "${HOME}/Library/Application Support/Code/User/settings.json"
-fi
+# Symlink Top configuration files.
+echo "> Symlinking top files into the config directory (${XDG_CONFIG_HOME}/nvim)."
+mkdir -p "${XDG_CONFIG_HOME}/procps"
+ln -s -f "$(pwd)/.config/procps/toprc" "${XDG_CONFIG_HOME}/procps/toprc"
 
 # Symlink Konsole files.
 if [ "$(uname -n)" == "startopia" ]; then

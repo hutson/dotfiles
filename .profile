@@ -68,18 +68,6 @@ if [ -z "${SSH_CLIENT}" ] && [ -z "${SSH_TTY}" ]; then
 	gpgconf --launch gpg-agent
 fi
 
-if [ "$(uname -n)" == "startopia" ]; then
-	# Disable the prompt from AppImage binaries that ask to integrate with your desktop environment.
-	# Asking to integrate with the desktop environment does not work natively with KDE Plasma.
-	mkdir -p "${HOMEBREW_PREFIX}/share/appimagekit/"
-	touch "${HOMEBREW_PREFIX}/share/appimagekit/no_desktopintegration"]]
-
-	# Unknown issue where the `repo` directory exists but not the `objects` sub-directory.
-	# The `objects` sub-directory is required when launching Flatpak applications, either through the UI or via `flatpak run [APPLICATION]`.
-	# When the `repo` directory is deleted, the next Flatpak application to launch will re-create the required directory structure and the application will launch correctly.
-	rm -rf "${HOMEBREW_PREFIX}/share/flatpak/repo"
-fi
-
 # Must be at end of file to allow the environment (variables) to be configured.
 case $- in
 	*i*)
