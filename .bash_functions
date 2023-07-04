@@ -118,6 +118,10 @@ installBrewPackages()
 		fi
 
 		if [ "$(uname)" = "Darwin" ]; then
+			# Install the Nerd Font patched Hack monspace font for our development environment.
+			brew tap homebrew/cask-fonts
+			brew install font-hack-nerd-font
+
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
 			brew install coreutils
 
@@ -140,6 +144,11 @@ installBrewPackages()
 			brew install --cask obs
 
 		elif [ "$(uname -n)" = "startopia" ]; then
+			# Install the Nerd Font patched Hack monspace font for our development environment.
+			brew tap homebrew/linux-fonts
+			brew install font-hack-nerd-font
+			fc-cache -fv
+
 			# Static site generator and build tool.
 			brew install hugo
 
