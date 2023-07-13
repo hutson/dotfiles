@@ -18,7 +18,6 @@ setupEnvironment ()
 
 	# Install additional tools.
 	installNodePackages
-	installPythonPackages
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
@@ -42,7 +41,6 @@ updateEnvironment ()
 
 	# Update general tools.
 	installNodePackages
-	installPythonPackages
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
