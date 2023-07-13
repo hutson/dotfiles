@@ -111,7 +111,6 @@ installBrewPackages()
 			# Install command line text editor.
 			brew install neovim
 			brew install ripgrep # Used by `telescope` for fast in-file searching.
-			brew install xclip # Used to interact with the X11 system clipboard.
 			curl --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 			# Fancy cross-shell command line prompt.
@@ -126,14 +125,15 @@ installBrewPackages()
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
 			brew install coreutils
 
+			# Docker/container support.
+			brew install colima
+			brew install docker
+
 			# Store Docker Hub credentials in the OSX Keychain for improved security.
 			brew install docker-credential-helper
 
 			# Install resource orchestration tool.
 			brew install hashicorp/tap/terraform-ls # Language server.
-
-			# Install python version 3, which `pip` is also included, as the header files are required by natively-built pip packages.
-			brew install python
 
 			brew install wget
 			brew install pinentry-mac
@@ -149,6 +149,9 @@ installBrewPackages()
 			brew tap homebrew/linux-fonts
 			brew install font-hack-nerd-font
 			fc-cache -fv
+
+			# Used to interact with the X11 system clipboard for Neovim.
+			brew install xclip
 
 			# Static site generator and build tool.
 			brew install hugo
@@ -194,21 +197,6 @@ installNodePackages ()
 
 	else
 		echo "ERROR: 'nvm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'nvm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
-	fi
-}
-
-#! Install Python packages.
-# Install Python packages via `pip`.
-installPythonPackages ()
-{
-	if command -v pip3 &> /dev/null; then
-		printf "\n> Installing Python packages.\n"
-
-		# Package and virtual environment manager for Python.
-		pip3 install pipenv --user --upgrade
-
-	else
-		echo "ERROR: 'pip' is required for installing Python packages, but it's not available in your PATH. Please install 'pip' and ensure it's in your PATH. Then re-run 'installPythonPackages'."
 	fi
 }
 
