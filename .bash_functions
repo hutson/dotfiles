@@ -111,6 +111,7 @@ installBrewPackages()
 			# Install command line text editor.
 			brew install neovim
 			brew install ripgrep # Used by `telescope` for fast in-file searching.
+			brew install xclip # Used to interact with the X11 system clipboard.
 			curl --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 			# Fancy cross-shell command line prompt.
@@ -226,7 +227,9 @@ setupTilingWindowManager () {
 		# Download a fixed commit to install as our tiling window management script to minimize the chance of breaking changes.
 		git checkout 51e51f4bb129dce6ab876d07cfd8bdb3506390e1
 
-		plasmapkg2 --type kwinscript -u .
+		if ! plasmapkg2 --type kwinscript -u .; then
+			plasmapkg2 --type kwinscript -i .
+		fi
 
 		# Fix documented here - https://github.com/kwin-scripts/kwin-tiling/issues/79#issuecomment-311465357
 		# Upstream KDE bug report - https://bugs.kde.org/show_bug.cgi?id=386509

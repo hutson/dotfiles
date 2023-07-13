@@ -25,6 +25,9 @@ vim.opt.spellsuggest = 'best,9'
 -- Automatically save the contents of the buffer to file whenever the `:make` command is invoked, which is used by plugins such as Go for their `GoBuild`, etc. functions.
 vim.opt.autowrite = true
 
+-- Enable use of system clipboard for all copy operations.
+vim.opt.clipboard = 'unnamedplus'
+
 -- TODO: Convert remaining Vimscript to Lua.
 vim.cmd('source ~/.config/nvim/script.vim')
 
