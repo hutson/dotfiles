@@ -151,6 +151,9 @@ installBrewPackages()
 			# Used to interact with the X11 system clipboard for Neovim.
 			brew install xclip
 
+			# A commandline first note taking tool.
+			brew install nb
+
 			# Static site generator and build tool.
 			brew install hugo
 

@@ -21,7 +21,10 @@ cd ~/.dotfiles
 bash deploy.sh
 ```
 
-If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux) website and install all the required packages for your Linux distribution.
+If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux) website and install all the required packages for your Linux distribution. A few of the tools installed by this `dotfiles` project require libraries and system-level packages. For Debian-based systems, please ensure you install (`sudo apt install [package] --no-install-recommends`) the following packages in addition to the packages required by Homebrew.
+
+- `python-distutils` - Needed for `nb`. (`distutils` is deprecated and will be removed from Python in version 3.12 - https://docs.python.org/3/whatsnew/3.10.html#distutils-deprecated)
+- `g++-multilib` - Needed for `neovim`.
 
 If using macOS, navigate to the [Homebrew](https://docs.brew.sh/Installation) website and install all the required packages for your Linux distribution. Then run `git` on the Terminal once, and follow the instructions to install Apple's Developer Tools. This will ensure `git` is available for use by Homebrew, when we use Homebrew to install both command line tools and applications.
 
