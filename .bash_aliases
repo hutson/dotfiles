@@ -25,7 +25,6 @@ if command -v dircolors &> /dev/null; then
 	alias ip='ip --color=auto'
 	alias ls='ls --color=auto'
 	alias dir='dir --color=auto'
-	alias vdir='vdir --color=auto'
 	alias grep='grep --color=auto'
 	alias fgrep='fgrep --color=auto'
 	alias egrep='egrep --color=auto'
@@ -44,12 +43,6 @@ alias scram='history -c; clear; /usr/bin/env rm -rf ${XDG_DATA_HOME}/nvim/shada/
 # Find the top 5 largest files within the current, and sub, directories.
 alias findbig='find . -type f -exec ls -lha {} \; | sort --stable --parallel=2 -t" " -k5rh | head -5'
 
-# List all ports currently opened on the system with port numbers and processes shown.
-alias ports='netstat -tulanp'
-
-# Alias wget so that it will always attempt to continue a file that was not successfully downloaded to begin with.
-alias wget='wget -c'
-
 # Quickly find and print the top five processes consuming CPU cycles.
 alias pscpu='ps aux | sort --stable --parallel=2 -k3rh | head -n 5'
 
@@ -65,20 +58,11 @@ alias update='updateSystem && updateEnvironment'
 # Update system packages.
 alias updateSystem='sudo apt update && sudo apt full-upgrade && sudo apt autoremove'
 
-# Print out the status, using `git status`, of each top-level git directory under the current working directory.
-alias gitGroupStatus='find . -maxdepth 1 -type d -not -path . -exec sh -c "echo \"{}\"; cd \"{}\"; git status --short --branch; cd ..; echo;" \;'
-
-# Run `git setup` within each top-level folder under the current working directory to clean-up each working repository of any build artifacts, un-committed changes, etc.
-alias gitGroupSetup='find . -maxdepth 1 -type d -not -path . -exec sh -c "echo \"{}\"; cd \"{}\"; git setup && git cleanup; cd ..; echo;" \;'
-
-# Call `git diff` within every sub-folder under the current working directory, with the assumption that each sub-folder is a git directory.
-alias gitGroupDiff='find . -maxdepth 1 -type d -not -path . -exec sh -c "echo \"{}\"; cd \"{}\"; git diff --unified; cd ..; echo;" \;'
-
 # Reset our GPG environment to work with a different Yubikey (One Yubikey was removed from the system and another Yubikey key was plugged in.)
 alias yubiset='rm -rf ~/.gnupg/private-keys-v1.d/ && gpgconf --kill gpg-agent && gpgconf --launch gpg-agent'
 
 # List file extensions in use, starting at the current working directory and searching recursively.
-alias fileExtensions='find . -type f | perl -ne "print $1 if m/\.([^.\/]+)$/" | sort | uniq -c | sort -n'
+alias fileExtensions='find . -type f | egrep -i -E -o "\.{1}\w*$" | sort | uniq -c | sort -n'
 
 # Convert each zip file in the current, and sub, directories to a compressed Tar archive.
 alias convertDirectoryZips='export -f convertZip && find . -type f -name "*.zip" -not -path "*/.*" -print | xargs -I % bash -c "convertZip \"%\""'
