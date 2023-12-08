@@ -136,11 +136,12 @@ installBrewPackages()
 			brew install wget
 			brew install pinentry-mac
 
-			brew install --cask firefox
-			brew install --cask gpg-suite
-			brew install --cask iterm2
-			brew install --cask keepassxc
-			brew install --cask obs
+			brew install yubico-yubikey-manager
+			brew install firefox
+			brew install gpg-suite
+			brew install iterm2
+			brew install keepassxc
+			brew install obs
 
 		elif [ "$(uname -n)" = "startopia" ]; then
 			# Install the Nerd Font patched Hack monspace font for our development environment.
