@@ -135,6 +135,7 @@ installBrewPackages()
 
 			brew install wget
 			brew install pinentry-mac
+			brew install gpg
 
 			brew install yubico-yubikey-manager
 			brew install firefox
