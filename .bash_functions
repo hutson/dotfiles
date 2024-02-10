@@ -37,7 +37,7 @@ updateEnvironment ()
 	brew upgrade
 
 	# Cleanup Brew installation.
-	brew cleanup -s
+	brew cleanup -s --prune=all
 
 	# Update general tools.
 	installNodePackages
@@ -46,6 +46,11 @@ updateEnvironment ()
 
 	if [ "$(uname -n)" = "startopia" ]; then
 		setupTilingWindowManager
+
+		# Delete the `flatpak` directory and re-create it via the `repair` command, because `brew cleanup` deletes the directories in the `repo/` folder, though not the `config` file in that directory. Therefore, the directory ends up in a corrupted state.
+		rm -rf ~/.linuxbrew/share/flatpak/repo/
+		flatpak --user repair
+
 		flatpak update -y --noninteractive
 	fi
 }
