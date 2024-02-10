@@ -28,9 +28,6 @@ vim.opt.autowrite = true
 -- Enable use of system clipboard for all copy operations.
 vim.opt.clipboard = 'unnamedplus'
 
--- TODO: Convert remaining Vimscript to Lua.
-vim.cmd('source ~/.config/nvim/script.vim')
-
 --[[
 	User Interface
 
@@ -103,6 +100,9 @@ vim.opt.formatoptions = 'jlnoqr'
 
 -- Default behavior when displaying autocomplete options provided by `nvim-cmp`.
 vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
+
+-- Set a map leader so that extra key combinations can be used for quick operations.
+vim.g.mapleader=','
 
 --[[
 	Backups
@@ -336,7 +336,7 @@ require'nvim-treesitter.configs'.setup {
 -- Automatically add missing imports on file save while also formatting the file like `gofmt` used to do.
 vim.g.go_fmt_command = "goimports"
 
--- Automatically invoke the `:GoMetaLinter` command on file save, which by default, invokes `vet`, `golint`, and `errcheck` concurrently. The linter list can be extended with `go_metalinter_enabled = []`.
+-- Automatically invoke the `:GoMetaLinter` command on file save, which by default, invokes `vet`, `golint`, and `errcheck` concurrently. The linter list can be shortened or extended with `go_metalinter_autosave_enabled = []`.
 vim.g.go_metalinter_autosave = 1
 
 -- Reduce the timeout for running metalinters, as anything over ~2 seconds becomes disruptive when trying to iterate quickly on code. If timeouts occur, refactor code.
@@ -408,3 +408,58 @@ vim.g.airline_powerline_fonts = 1
 
 -- Set Neovim's color scheme. We purposely silence any failure notification if the desired colorscheme can't be loaded by Neovim. If Neovim is unable to load the desired colorscheme, it will be quite apparent to the user. By silencing error messages we gain the ability to automate tasks, such as installing plugins for the first time, that would otherwise block if an error message was displayed because the desired colorscheme wasn't available.
 pcall(vim.cmd, "silent! colorscheme carbonfox")
+
+--[[
+	Normal Mode keybindings
+--]]
+
+local opts = { noremap=true, silent=true }
+
+-- Make it easier to navigate around the `quickfix` window using keyboard shortcuts.
+vim.keymap.set('n', '<C-n>', '<cmd>cnext<CR>', opts)
+vim.keymap.set('n', '<C-m>', '<cmd>cnext<CR>', opts)
+vim.keymap.set('n', '<leader>a', '<cmd>cclose<CR>', opts)
+
+-- Remove the Window's ^M character when the encoding is messed up.
+vim.keymap.set('n', '<leader>m', 'mmHmt<cmd>%s/<C-V><CR>//ge<CR>\'tzt\'m', opts)
+
+-- Toggle the display of the left pane Undo history tree.
+vim.keymap.set('n', '<F2>', '<cmd>UndotreeToggle<CR>', opts)
+
+-- Support switching between Vim splits using ALT and the arrow keys.
+vim.keymap.set('n', '<A-Up>', '<cmd>wincmd k<CR>', opts)
+vim.keymap.set('n', '<A-Down>', '<cmd>wincmd j<CR>', opts)
+vim.keymap.set('n', '<A-Left>', '<cmd>wincmd h<CR>', opts)
+vim.keymap.set('n', '<A-Right>', '<cmd>wincmd l<CR>', opts)
+
+-- Resize current window by +/- 3 rows/columns using CTRL and the arrow keys.
+vim.keymap.set('n', '<C-Up>', '<cmd>resize +3<CR>', opts)
+vim.keymap.set('n', '<C-Down>', '<cmd>resize -3<CR>', opts)
+vim.keymap.set('n', '<C-Right>', '<cmd>vertical resize +3<CR>', opts)
+vim.keymap.set('n', '<C-Left>', '<cmd>vertical resize -3<CR>', opts)
+
+-- Pressing CTRL-A selects all text within the current buffer.
+vim.keymap.set('n', '<C-A>', 'gggH<C-OG', opts)
+
+--[[
+	Multi-Mode Mappings
+
+	General options are define such that they are available within all operating modes. Also a collection of mappings usable within two or more modes are defined.
+--]]
+
+local opts = { noremap=true, silent=true }
+
+-- Toggle all folds to unfold if one or more are closed.
+vim.keymap.set('n', '<F9>', 'zR', opts)
+vim.keymap.set('i', '<F9>', '<C-O>zR', opts)
+vim.keymap.set('v', '<F9>', 'zR', opts)
+
+-- Manage spell check by supporting mappings that turn spell check on and off.
+vim.keymap.set('n', '<F7>', '<ESC><cmd>setlocal spell!<CR>', opts)
+vim.keymap.set('i', '<F7>', '<ESC><cmd>setlocal spell!<CR>i', opts)
+vim.keymap.set('v', '<F7>', '<ESC><cmd>setlocal spell!<CR>v', opts)
+
+-- Enable the displaying of whitespace characters, including tab characters.
+vim.keymap.set('n', '<F6>', '<ESC><cmd>set list!<CR>', opts)
+vim.keymap.set('i', '<F6>', '<ESC><cmd>set list!<CR>i', opts)
+vim.keymap.set('v', '<F6>', '<ESC><cmd>set list!<CR>v', opts)
