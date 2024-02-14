@@ -341,10 +341,6 @@ vim.g.go_metalinter_deadline = "2s"
 -- Automatically show the function signature on the status line when moving the cursor over a valid identifier.
 vim.g.go_auto_type_info = 1
 
--- Switch to AST-aware identifier renamer that is module aware (No GOPATH necessary).
--- TODO: `gopls` will be the `vim-go` default in the future.
-vim.g.go_rename_command = "gopls"
-
 --[[
 	Setup nvim-telescope Plugin
 
