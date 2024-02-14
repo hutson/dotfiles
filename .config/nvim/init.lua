@@ -186,7 +186,6 @@ Plug('https://github.com/neovim/nvim-lspconfig.git') -- Language Server client f
 Plug('https://github.com/hrsh7th/nvim-cmp.git')
 Plug('https://github.com/hrsh7th/cmp-nvim-lsp.git')
 Plug('https://github.com/hrsh7th/cmp-path.git')
-Plug('https://github.com/hrsh7th/cmp-buffer.git')
 
 Plug('https://github.com/fatih/vim-go.git', { ['do'] = ':GoUpdateBinaries' }) -- Go tools, such as `goimports`.
 Plug('https://github.com/hashivim/vim-terraform.git') -- Terraform tools, such as `terraform fmt`.
@@ -258,7 +257,6 @@ lsp_defaults.capabilities = vim.tbl_deep_extend(
 )
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
--- map buffer local keybindings when the language server attaches
 local servers = { 'beancount', 'gopls', 'terraformls' }
 for _, lsp in pairs(servers) do
 	require('lspconfig')[lsp].setup {}
@@ -276,7 +274,6 @@ cmp.setup({
 		fields = {'menu', 'abbr', 'kind'},
 		format = function(entry, item)
 			local menu_icon = {
-				buffer = 'Ω',
 				nvim_lsp = 'λ',
 				path = '🖫',
 			}
@@ -295,7 +292,6 @@ cmp.setup({
 	sources = cmp.config.sources({
 		{ name = 'path' },
 		{ name = 'nvim_lsp', keyword_length = 1 },
-		{ name = 'buffer', keyword_length = 4 },
 	}),
 	window = {
 		completion = cmp.config.window.bordered(),
