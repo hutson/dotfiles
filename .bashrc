@@ -49,19 +49,29 @@ fi
 
 # Source the Brew bash completion initialization script if it exists, otherwise, just source each tool's completion script.
 if type brew &>/dev/null; then
-  if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
-    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
-  else
-    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
-      [[ -r "$COMPLETION" ]] && source "$COMPLETION"
-    done
-  fi
+	if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
+		# Ignoring ShellCheck issue because it is not possible to know where `HOMEBREW_PREFIX` points to ahead of time.
+		# shellcheck source=/dev/null
+		source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+	else
+		for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+			if [[ -r "$COMPLETION" ]]; then
+				# Ignoring ShellCheck issue because it is not possible to know every file in `bash_completion.d/` that will be sourced from here.
+				# shellcheck source=/dev/null
+				source "${COMPLETION}"
+			fi
+		done
+	fi
 fi
 
 # Execute `nvm` script to configure our local environment to work with `nvm`.
 if command -v brew >/dev/null 2>&1 && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
-    source "$(brew --prefix nvm)/nvm.sh"
-    command -v yarn --version >/dev/null 2>&1 && export PATH="$(yarn global bin):${PATH}"
+	# Ignoring ShellCheck issue because it is not possible to know where `brew --prefix` points to ahead of time.
+	# shellcheck source=/dev/null
+	source "$(brew --prefix nvm)/nvm.sh"
+	if command -v yarn --version >/dev/null 2>&1; then
+		PATH="$(yarn global bin):${PATH}"
+	fi
 fi
 
 # Execute `starship` to configure our fancy cross-shell command line prompt.
