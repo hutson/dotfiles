@@ -7,5 +7,5 @@ for file in *.wav; do
 	fileName="${file%.wav}"
 
 	# Re-compress using FLAC.
-	flac --verify --best "$file" "$fileName.flac" < /dev/null
+	flac --verify --best "$file" "$fileName.flac" </dev/null
 done
