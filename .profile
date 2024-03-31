@@ -8,9 +8,9 @@
 #====================================================
 
 # Set the path to our prefix directory containing our local build, and development, environment as setup by Linuxbrew.
-export HOMEBREW_PREFIX="${HOME}/.linuxbrew";
-export HOMEBREW_CELLAR="${HOMEBREW_PREFIX}/Cellar";
-export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew";
+export HOMEBREW_PREFIX="${HOME}/.linuxbrew"
+export HOMEBREW_CELLAR="${HOMEBREW_PREFIX}/Cellar"
+export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
 
 # Add our local binary directories to our PATH. This will allow us to utilize locally installed binaries when available. Furthermore, because we prepend our local binary directory to our PATH our local binaries will be used in favor of globally-installed system binaries.
 # Adding `/opt/python/libexec/` to path so that `python` and `pip` point to Python 3, and pip 3, respectively, instead of Python 2.
@@ -70,15 +70,16 @@ fi
 
 # Must be at end of file to allow the environment (variables) to be configured.
 case $- in
-	*i*)
-		bash=$(type -p bash)
-		if [ -z "${TMUX}" ] && [ -n "${SSH_TTY}" ]; then
-			exec tmux new-session -A -D -s hutson
+*i*)
+	bash=$(type -p bash)
+	if [ -z "${TMUX}" ] && [ -n "${SSH_TTY}" ]; then
+		exec tmux new-session -A -D -s hutson
 
-		# If this is an interactive login session (Such as SSH connection), attempt to launch the version of Bash installed with Homebrew.
-		elif [ -x "${bash}" ]; then
-			# Set SHELL so that other tools, such as TMUX, know which shell launched them.
-			export SHELL="${bash}"
-			exec "${bash}"
-		fi
+	# If this is an interactive login session (Such as SSH connection), attempt to launch the version of Bash installed with Homebrew.
+	elif [ -x "${bash}" ]; then
+		# Set SHELL so that other tools, such as TMUX, know which shell launched them.
+		export SHELL="${bash}"
+		exec "${bash}"
+	fi
+	;;
 esac
