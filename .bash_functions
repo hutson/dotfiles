@@ -94,8 +94,9 @@ installBrewPackages()
 			# Install ncdu, a command line tool for displaying disk usage information.
 			brew install ncdu
 
-			# Install shell script linter.
-			brew install shellcheck
+			# Bash development tooling.
+			brew install bash-language-server # Language server for the Bash language.
+			brew install shellcheck # Linter for shell scripts, including Bash.
 
 			# Install Go compiler and development stack.
 			brew install go
