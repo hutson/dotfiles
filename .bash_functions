@@ -2,13 +2,12 @@
 
 #! Setup a local environment.
 # Setup a local environment that contains all the tools and libraries needed for development work, and play.
-setupEnvironment ()
-{
+setupEnvironment() {
 	printf "\n> Removing %s directory.\n" "${HOMEBREW_PREFIX}"
 
 	# Clear out our local system directory.
 	if [ -d "${HOMEBREW_PREFIX}" ]; then
-		rm -fr "${HOMEBREW_PREFIX}" &> /dev/null
+		rm -fr "${HOMEBREW_PREFIX}" &>/dev/null
 	fi
 
 	# Setup Brew.
@@ -28,8 +27,7 @@ setupEnvironment ()
 
 #! Update environment.
 # Update our development environment by installing the latest version of our desired tools.
-updateEnvironment ()
-{
+updateEnvironment() {
 	# Update Brew.
 	brew update
 
@@ -57,8 +55,7 @@ updateEnvironment ()
 
 #! Setup HomeBrew.
 # Install HomeBrew locally so that we can download, build, and install tools from source.
-setupHomeBrew ()
-{
+setupHomeBrew() {
 	printf "\n> Installing HomeBrew.\n"
 
 	# Create a local binary directory before any setup steps require its existence. It must exist for the tar extraction process to extract the contents of Brew into the `.local/` directory.
@@ -79,9 +76,8 @@ setupHomeBrew ()
 
 #! Install packages via Brew.
 # Install packages via Brew's `brew` CLI tool.
-installBrewPackages()
-{
-	if command -v brew &> /dev/null; then
+installBrewPackages() {
+	if command -v brew &>/dev/null; then
 		printf "\n> Installing Brew packages.\n"
 
 		if [ "$(uname)" = "Darwin" ] || [ "$(uname -n)" = "startopia" ]; then
@@ -96,7 +92,7 @@ installBrewPackages()
 
 			# Bash development tooling.
 			brew install bash-language-server # Language server for the Bash language.
-			brew install shellcheck # Linter for shell scripts, including Bash.
+			brew install shellcheck           # Linter for shell scripts, including Bash.
 
 			# Install Go compiler and development stack.
 			brew install go
@@ -114,7 +110,7 @@ installBrewPackages()
 
 			# Install command line text editor.
 			brew install neovim
-			brew install ripgrep # Used by `telescope` for fast in-file searching.
+			brew install ripgrep                                                                                                                                                                        # Used by `telescope` for fast in-file searching.
 			curl --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 			# Fancy cross-shell command line prompt.
@@ -175,7 +171,7 @@ installBrewPackages()
 		# For packages that should only be installed server-side and not on a desktop/local system.
 		else
 			# Install terminal multiplexer if it does not already exist on the target system.
-			if ! command -v tmux &> /dev/null; then
+			if ! command -v tmux &>/dev/null; then
 				brew install tmux
 			fi
 		fi
@@ -186,9 +182,8 @@ installBrewPackages()
 
 #! Install NodeJS packages.
 # Install NodeJS packages via `npm`.
-installNodePackages ()
-{
-	if command -v nvm &> /dev/null; then
+installNodePackages() {
+	if command -v nvm &>/dev/null; then
 		printf "\n> Installing Node packages.\n"
 
 		nvm install v18
@@ -201,7 +196,9 @@ installNodePackages ()
 
 		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
 		if command -v npm --version >/dev/null 2>&1; then
-			local PATH; PATH="$(npm -g bin):${PATH}"; export PATH
+			local PATH
+			PATH="$(npm -g bin):${PATH}"
+			export PATH
 		fi
 
 	else
@@ -211,11 +208,13 @@ installNodePackages ()
 
 #! Setup tiling window manager on KDE.
 # Setup a tiling window manager on a KDE desktop by extending KDE's existing KWin window manager using KDE's ability to load arbitrary scripts as plugins.
-setupTilingWindowManager () {
+setupTilingWindowManager() {
 	# Only install the tiling window manager on KDE.
-	if command -v plasmapkg2 &> /dev/null; then
-		local dirPriorToExe; dirPriorToExe="$(pwd)"
-		local tmpdir; tmpdir="$(mktemp -d)"
+	if command -v plasmapkg2 &>/dev/null; then
+		local dirPriorToExe
+		dirPriorToExe="$(pwd)"
+		local tmpdir
+		tmpdir="$(mktemp -d)"
 
 		git clone https://github.com/kwin-scripts/kwin-tiling.git "${tmpdir}"
 
@@ -241,8 +240,7 @@ setupTilingWindowManager () {
 
 #! Find all file types in use and convert to standard types.
 # Find all file types in use within a given directory and offer to convert files to a known set of standard file types, such as WAV to FLAC, using appropriate permissions (not globally readable).
-checkAndConvert ()
-{
+checkAndConvert() {
 	# TODO: Prompt user whether global permissions should be revoked from listed files.
 	printf "\n> List of globally accessible files.\n"
 	find . ! -type l \( -perm -o+r -or -perm -o+w -or -perm -o+x \) -print0 | xargs -0 ls -l
@@ -262,25 +260,27 @@ checkAndConvert ()
 #
 # \param $1 Path to the file or folder to be archived.
 # \param $2 Archive type; such as 'tar' or 'zip'.
-compress()
-{
-	local dirPriorToExe; dirPriorToExe="$(pwd)"
-	local dirName; dirName="$(dirname "${1}")"
-	local baseName; baseName="$(basename "${1}")"
+compress() {
+	local dirPriorToExe
+	dirPriorToExe="$(pwd)"
+	local dirName
+	dirName="$(dirname "${1}")"
+	local baseName
+	baseName="$(basename "${1}")"
 
 	if [ -f "${1}" ]; then
 		echo "Selected a file for compression. Changing directory to '${dirName}''."
 		cd "${dirName}" || exit
 		case "${2}" in
-			tar.bz2)   tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
-			tar.gz)    tar czf "${baseName}.tar.gz" "${baseName}"  ;;
-			gz)        gzip "${baseName}"                          ;;
-			tar)       tar -cvvf "${baseName}.tar" "${baseName}"   ;;
-			zip)       zip -r "${baseName}.zip" "${baseName}"      ;;
-			*)
-				echo "A compression format was not chosen. Defaulting to tar.gz"
-				tar czf "${baseName}.tar.gz" "${baseName}"
-				;;
+		tar.bz2) tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
+		tar.gz) tar czf "${baseName}.tar.gz" "${baseName}" ;;
+		gz) gzip "${baseName}" ;;
+		tar) tar -cvvf "${baseName}.tar" "${baseName}" ;;
+		zip) zip -r "${baseName}.zip" "${baseName}" ;;
+		*)
+			echo "A compression format was not chosen. Defaulting to tar.gz"
+			tar czf "${baseName}.tar.gz" "${baseName}"
+			;;
 		esac
 		echo "Navigating back to ${dirPriorToExe}"
 		cd "${dirPriorToExe}" || exit
@@ -288,15 +288,15 @@ compress()
 		echo "Selected a directory for compression. Changing directory to '${dirName}''."
 		cd "${dirName}" || exit
 		case "${2}" in
-			tar.bz2)   tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
-			tar.gz)    tar czf "${baseName}.tar.gz" "${baseName}"  ;;
-			gz)        gzip -r "${baseName}"                       ;;
-			tar)       tar -cvvf "${baseName}.tar" "${baseName}"   ;;
-			zip)       zip -r "${baseName}.zip" "${baseName}"      ;;
-			*)
-				echo "A compression format was not chosen. Defaulting to tar.gz"
-				tar czf "${baseName}.tar.gz" "${baseName}"
-				;;
+		tar.bz2) tar cjf "${baseName}.tar.bz2" "${baseName}" ;;
+		tar.gz) tar czf "${baseName}.tar.gz" "${baseName}" ;;
+		gz) gzip -r "${baseName}" ;;
+		tar) tar -cvvf "${baseName}.tar" "${baseName}" ;;
+		zip) zip -r "${baseName}.zip" "${baseName}" ;;
+		*)
+			echo "A compression format was not chosen. Defaulting to tar.gz"
+			tar czf "${baseName}.tar.gz" "${baseName}"
+			;;
 		esac
 		echo "Navigating back to ${dirPriorToExe}"
 		cd "${dirPriorToExe}" || exit
@@ -310,8 +310,7 @@ compress()
 # This function is based on https://github.com/xvoland/Extract.
 #
 # \param $1 Path to the archive file.
-extract ()
-{
+extract() {
 	if [ -z "${1}" ]; then
 		echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
 		exit
@@ -319,22 +318,22 @@ extract ()
 
 	if [ -f "${1}" ]; then
 		case "${1}" in
-			*.tar.bz2)   tar xvjf "${1}"    ;;
-			*.tar.gz)    tar xvzf "${1}"    ;;
-			*.tar.xz)    tar xvJf "${1}"    ;;
-			*.lzma)      unlzma "${1}"      ;;
-			*.bz2)       bunzip2 "${1}"     ;;
-			*.rar)       unrar x -ad "${1}" ;;
-			*.gz)        gunzip "${1}"      ;;
-			*.tar)       tar xvf "${1}"     ;;
-			*.tbz2)      tar xvjf "${1}"    ;;
-			*.tgz)       tar xvzf "${1}"    ;;
-			*.zip)       unzip "${1}"       ;;
-			*.Z)         uncompress "${1}"  ;;
-			*.7z)        7z x "${1}"        ;;
-			*.xz)        unxz "${1}"        ;;
-			*.exe)       cabextract "${1}"  ;;
-			*)           echo "extract: '${1}' - unknown archive method" ;;
+		*.tar.bz2) tar xvjf "${1}" ;;
+		*.tar.gz) tar xvzf "${1}" ;;
+		*.tar.xz) tar xvJf "${1}" ;;
+		*.lzma) unlzma "${1}" ;;
+		*.bz2) bunzip2 "${1}" ;;
+		*.rar) unrar x -ad "${1}" ;;
+		*.gz) gunzip "${1}" ;;
+		*.tar) tar xvf "${1}" ;;
+		*.tbz2) tar xvjf "${1}" ;;
+		*.tgz) tar xvzf "${1}" ;;
+		*.zip) unzip "${1}" ;;
+		*.Z) uncompress "${1}" ;;
+		*.7z) 7z x "${1}" ;;
+		*.xz) unxz "${1}" ;;
+		*.exe) cabextract "${1}" ;;
+		*) echo "extract: '${1}' - unknown archive method" ;;
 		esac
 	else
 		echo "${1} - file does not exist"
@@ -345,8 +344,7 @@ extract ()
 # Take a Zip file, extract the contents to a temporary directory, and then re-archive the extracted contents into a compressed Tar file.
 #
 # \param $1 Path to the Zip archive file.
-convertZip ()
-{
+convertZip() {
 	tmpdir="$(mktemp -d)"
 
 	unzip -q "${1}" -d "${tmpdir}/"
@@ -362,4 +360,3 @@ convertZip ()
 	rm -rf "${tmpdir}"
 	rm -f "${1}"
 }
-
