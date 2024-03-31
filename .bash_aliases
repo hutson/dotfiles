@@ -14,7 +14,7 @@ alias cp='cp -iv'
 alias ln='ln -i'
 
 # Enable color support for those GNU tools that support colorized output.
-if command -v dircolors &> /dev/null; then
+if command -v dircolors &>/dev/null; then
 	# Check if user has a dircolors database (a file that maps file types, and file permissions, to colors). If the user has such a file, then instruct dircolors to use that file to map Bash color commands to the desired colors.
 	if [ -f "${HOME}/.dircolors" ]; then
 		eval "$(dircolors --bourne-shell "${HOME}/.dircolors")"
