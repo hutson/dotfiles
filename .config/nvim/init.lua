@@ -188,7 +188,6 @@ Plug('https://github.com/hrsh7th/cmp-nvim-lsp.git')
 Plug('https://github.com/hrsh7th/cmp-path.git')
 
 Plug('https://github.com/fatih/vim-go.git', { ['do'] = ':GoUpdateBinaries' }) -- Go tools, such as `goimports`.
-Plug('https://github.com/hashivim/vim-terraform.git') -- Terraform tools, such as `terraform fmt`.
 
 Plug('https://github.com/nvim-treesitter/nvim-treesitter.git', { ['do'] = ':TSUpdate' })
 Plug('https://github.com/editorconfig/editorconfig-vim.git')
@@ -243,6 +242,19 @@ vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('UserLspConfig', {}),
   callback = function(ev)
+  	--[[
+  	-- TODO: Remove `pattern` list to format all files supported by the `servers` list above once the following have been completed:
+  	-- 1. `bash-language-server`. See https://github.com/bash-lsp/bash-language-server/issues/320
+  	-- 2. Golang. I have not tried auto-formatting using the language server yet. Could this replace `vim-go`?
+  	-- 3. Beancount. I have not tried auto-formatting using the language server yet.
+  	--]]
+		vim.api.nvim_create_autocmd('BufWritePre', {
+			pattern = {'*.tf', '*.tfvars'},
+			callback = function()
+				vim.lsp.buf.format()
+			end
+		})
+
     local opts = { buffer = ev.buf }
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
     vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
@@ -375,18 +387,6 @@ vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
 vim.keymap.set('n', '<leader>fg', builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fb', builtin.buffers, {})
 vim.keymap.set('n', '<leader>fh', builtin.help_tags, {})
-
---[[
-	Setup vim-terraform Plugin
-
-	Setup vim-terraform to enable features such as formatting on save.
---]]
-
--- Automatically invoke `terraform fmt` on Terraform files on buffer save.
-vim.g.terraform_fmt_on_save = 1
-
--- Automatically align settings with Tabularize on buffer save.
-vim.g.terraform_align = 1
 
 --[[
 	Setup vim-airline Plugin

@@ -133,6 +133,7 @@ installBrewPackages() {
 			brew install docker-credential-helper
 
 			# Install resource orchestration tool.
+			brew install terraform
 			brew install hashicorp/tap/terraform-ls # Language server.
 
 			brew install wget
