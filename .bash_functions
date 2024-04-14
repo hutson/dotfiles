@@ -96,6 +96,7 @@ installBrewPackages() {
 
 			# Install Go compiler and development stack.
 			brew install go
+			brew install gopls # Language server for the Go language.
 
 			# Install nvm, a CLI tool for managing Node interpreter versions within the current shell environment.
 			brew install nvm
