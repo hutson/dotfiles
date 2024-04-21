@@ -245,11 +245,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
   	--[[
   	-- TODO: Remove `pattern` list to format all files supported by the `servers` list above once the following have been completed:
   	-- 1. `bash-language-server`. See https://github.com/bash-lsp/bash-language-server/issues/320
-  	-- 2. Golang. I have not tried auto-formatting using the language server yet. Could this replace `vim-go`?
   	-- 3. Beancount. I have not tried auto-formatting using the language server yet.
   	--]]
 		vim.api.nvim_create_autocmd('BufWritePre', {
-			pattern = {'*.tf', '*.tfvars'},
+			pattern = {'*.tf', '*.tfvars', '*.go'},
 			callback = function()
 				vim.lsp.buf.format()
 			end
@@ -345,9 +344,6 @@ require('nvim-treesitter.configs').setup {
 	Setup for a vim-go environment to enable features such as formatting on save.
 	More options and recommendations available from - https://github.com/fatih/vim-go/wiki/Tutorial#edit-it
 --]]
-
--- Automatically add missing imports on file save while also formatting the file like `gofmt` used to do.
-vim.g.go_fmt_command = "goimports"
 
 -- Automatically invoke the `:GoMetaLinter` command on file save, which by default, invokes `vet`, `golint`, and `errcheck` concurrently. The linter list can be shortened or extended with `go_metalinter_autosave_enabled = []`.
 vim.g.go_metalinter_autosave = 1
