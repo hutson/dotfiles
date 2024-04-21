@@ -224,11 +224,39 @@ lsp_defaults.capabilities = vim.tbl_deep_extend(
 	require('cmp_nvim_lsp').default_capabilities()
 )
 
--- Use a loop to conveniently call 'setup' on multiple servers.
-local servers = { 'bashls', 'beancount', 'gopls', 'terraformls' }
+-- Use a loop to conveniently call 'setup' on multiple servers in situations where we do not need to provide additional configuration. Otherwise, call the `setup` function on the language server directly.
+local servers = { 'bashls', 'beancount', 'terraformls' }
 for _, lsp in pairs(servers) do
 	lspconfig[lsp].setup {}
 end
+
+lspconfig.gopls.setup {
+	settings = {
+		gopls = {
+			analyses = {
+				-- Find opportunities to rearrange structs to use less memory, but in some cases this optimization may introduce memory contention known as "false sharing" as outlined in the documentation reference below.
+				-- https://github.com/golang/tools/blob/daf94608b5e2caf763ba634b84e7a5ba7970e155/gopls/doc/analyzers.md#fieldalignment
+				fieldalignment =  true,
+
+				-- Find potentionally unintended shadowing of variables.
+				--https://github.com/golang/tools/blob/daf94608b5e2caf763ba634b84e7a5ba7970e155/gopls/doc/analyzers.md#shadow
+				shadow =  true,
+			},
+
+			-- TODO: Codelenses do not appear to work with `vim-go`.
+			codelenses = {
+				-- Enable code overlay to assist with reporting and remediating imports containing vulnerabilities invoked by our Go code.
+				run_govulncheck = true,
+			},
+
+			-- Inject results from `staticcheck` inline. This may be in addition to executing `staticcheck` on buffer save, which would place the results in the Quick Fix list.
+			staticcheck = true,
+			
+			-- Enable import vulnerability analysis.
+			vulncheck = "Imports",
+		},
+	},
+}
 
 -- The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
 --
