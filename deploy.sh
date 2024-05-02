@@ -28,6 +28,7 @@ echo "> Symlinking SSH files into the SSH directory (${HOME}/.ssh)."
 mkdir -p "${HOME}/.ssh"
 chmod 700 "${HOME}/.ssh"
 ln -s -f "$(pwd)/.ssh/config" "${HOME}/.ssh/config"
+ln -s -f "$(pwd)/.ssh/allowed_signers" "${HOME}/.ssh/allowed_signers"
 
 # Symlink GNUPG files.
 echo "> Symlinking GNUPG files into GNUPG directory (${HOME}/.gnupg)."

@@ -36,8 +36,16 @@
 	# By enabling git's UI color option git will color its output if the output goes to a terminal. Output will not be colored for other output modes such as piping to files or other commands. ui=true enables color output for color.branch, color.diff, color.interactive, and color.status.
 	ui = true
 
+[gpg "ssh"]
+	# Location of SSH public keys for signature verification for those using SSH signing keys instead of GPG signing keys.
+	allowedSignersFile = ~/.ssh/allowed_signers
+
 [commit]
 	# Instruct Git to always cyptographically sign commits when the `signingkey` option is set in `.gitconfig`.
+	gpgsign = true
+
+[tag]
+	# Instruct Git to always cyptographically sign tags when the `signingkey` option is set in `.gitconfig`.
 	gpgsign = true
 
 [diff]
