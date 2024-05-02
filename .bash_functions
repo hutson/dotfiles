@@ -116,6 +116,10 @@ installBrewPackages() {
 
 			# Fancy cross-shell command line prompt.
 			brew install starship
+
+			# A commandline first note taking tool.
+			brew install nb
+
 		fi
 
 		if [ "$(uname)" = "Darwin" ]; then
@@ -138,6 +142,8 @@ installBrewPackages() {
 			brew install hashicorp/tap/terraform-ls # Language server.
 
 			brew install wget
+
+			# Required to get a prompt for a security key pin when using GPG for SSH authentication on Mac devices.
 			brew install pinentry-mac
 			brew install gpg
 
@@ -147,6 +153,7 @@ installBrewPackages() {
 			brew install iterm2
 			brew install keepassxc
 			brew install obs
+			brew install rectangle
 
 		elif [ "$(uname -n)" = "startopia" ]; then
 			# Install the Nerd Font patched Hack monspace font for our development environment.
@@ -156,9 +163,6 @@ installBrewPackages() {
 
 			# Used to interact with the X11 system clipboard for Neovim.
 			brew install xclip
-
-			# A commandline first note taking tool.
-			brew install nb
 
 			# Static site generator and build tool.
 			brew install hugo
@@ -192,9 +196,6 @@ installNodePackages() {
 
 		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
 		npm install -g doctoc
-
-		# Terminal version of the Markdown note taking application which will interface with the desktop version via the sync point.
-		npm install -g joplin
 
 		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
 		if command -v npm --version >/dev/null 2>&1; then
