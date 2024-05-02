@@ -142,15 +142,3 @@
 	# Print out sorted list of files in a repository based on the number of commits that touched those files. Helps indicate
 	# which files are "hot spots" and therefore might need to be refactored or required additional testing for safety.
 	hotspot = "!sh -c 'git log --format=\"format:\" --name-only | egrep -v \"^$\" | sort | uniq -c | sort -nr'"
-
-[includeIf "gitdir:/Users/hbetts/"]
-	# When using an account associated with my work laptop, defer to any work-specific configuration.
-	path = ~/.dotfiles/.gitconfig-factset
-
-[includeIf "gitdir:/home/hbetts/"]
-	# When using an account associated with my work laptop, defer to any work-specific configuration.
-	path = ~/.dotfiles/.gitconfig-factset
-
-[includeIf "gitdir:/home/hutson/"]
-	# Options that only work, or are compatible, with my personal laptop.
-	path = ~/.dotfiles/.gitconfig-hutson
