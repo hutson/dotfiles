@@ -90,13 +90,23 @@
 	fetch = +refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*
 	fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
 
+	# Fetch all notes references from the remote origin. For any given project we do not know what notes reference name will be used, so it's easier to just fetch them all.
+	fetch = +refs/notes/*:refs/notes/*
+
+	# Push all notes created locally to the remote origin so that they can be shared with collaborators who might benefit from the additional context notes provide.
+	push = +refs/notes/*:refs/notes/*
+
+[notes]
+	# Show all notes regardless of the reference name when viewing commit messages, because we can't assume what name may be used by any given project.
+	displayRef = refs/notes/*
+
 [alias]
 	# Minimized log that displays commit messages and a graphical representation of merges and branches. (The 'l' alias relies upon default colors and ordering)
 	l = log --abbrev-commit --decorate --graph --oneline
 	lf = log --graph --pretty=tformat:'%C(cyan)%h %C(bold yellow)%d %C(white)%s %C(cyan)(%cr) %C(green)<%an> %C(cyan)<%G?>%Creset'
 
 	# Standard log output with additional statistics indicating the number of lines added or removed.
-	ll = log --abbrev-commit --decorate --graph --show-signature --stat --pretty=fuller
+	ll = log --abbrev-commit --decorate --graph --show-signature --stat --pretty=fuller --notes
 
 	# Show commits that are on the local branch and on the remote branch that don't exist on the other. By including the cherry-pick option commits that were pushed or pulled between branches (Even when out of order) will be excluded.
 	missing = log --graph  --left-right --cherry-pick --pretty=tformat:'%C(cyan)%h%Creset %C(bold yellow)%d%Creset %s %C(cyan)(%cr) %C(magenta)<%an> %C(cyan)<%G?>%Creset'
