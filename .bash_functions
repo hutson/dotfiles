@@ -32,7 +32,9 @@ updateEnvironment() {
 	brew update
 
 	# Upgrade all Brew-installed packages.
+	brew unlink util-linux # To work around `uuid.h no such file` error. See https://github.com/orgs/Homebrew/discussions/4899#discussioncomment-7564355
 	brew upgrade
+	brew link util-linux
 
 	# Cleanup Brew installation.
 	brew cleanup -s --prune=all
