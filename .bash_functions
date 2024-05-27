@@ -16,7 +16,9 @@ setupEnvironment() {
 	brew cleanup -s
 
 	# Install additional tools.
-	installNodePackages
+	if [ "$(uname)" = "Darwin" ]; then
+		installNodePackages
+	fi
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
@@ -40,7 +42,9 @@ updateEnvironment() {
 	brew cleanup -s --prune=all
 
 	# Update general tools.
-	installNodePackages
+	if [ "$(uname)" = "Darwin" ]; then
+		installNodePackages
+	fi
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
@@ -93,7 +97,9 @@ installBrewPackages() {
 			brew install ncdu
 
 			# Bash development tooling.
-			brew install bash-language-server # Language server for the Bash language.
+			if [ "$(uname)" = "Darwin" ]; then
+				brew install bash-language-server # Language server for the Bash language.
+			fi
 			brew install shellcheck           # Linter for shell scripts, including Bash.
 
 			# Install Go compiler and development stack.
