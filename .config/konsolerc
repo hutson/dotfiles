@@ -1,16 +1,33 @@
+2 screens: Height=588
+2 screens: Width=1097
+MenuBar=Disabled
+State=AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAiAFEAdQBpAGMAawBDAG8AbQBtAGEAbgBkAHMARABvAGMAawAAAAAA/////wAAAXwBAAAD+wAAABwAUwBTAEgATQBhAG4AYQBnAGUAcgBEAG8AYwBrAAAAAAD/////AAABFQEAAAMAAARJAAACHgAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAQAAAOj/////AAAAAAAAAAA=
+
 [Desktop Entry]
-DefaultProfile=
+DefaultProfile=startopia.profile
 
 [Favorite Profiles]
 Favorites=
 
+[General]
+ConfigVersion=1
+
 [KonsoleWindow]
-SaveGeometryOnExit=false
+RememberWindowSize=false
 ShowMenuBarByDefault=false
 
 [MainWindow]
-MenuBar=Disabled
+1536x864 screen: Height=359
+1536x864 screen: Width=768
+2 screens: Height=588
+2 screens: Width=1097
+RestorePositionForNextInstance=false
+State=AAAA/wAAAAD9AAAAAQAAAAAAAAAAAAAAAPwCAAAAAvsAAAAiAFEAdQBpAGMAawBDAG8AbQBtAGEAbgBkAHMARABvAGMAawAAAAAA/////wAAAXwBAAAD+wAAABwAUwBTAEgATQBhAG4AYQBnAGUAcgBEAG8AYwBrAAAAAAD/////AAABFQEAAAMAAARJAAACAAAAAAQAAAAEAAAACAAAAAj8AAAAAQAAAAIAAAACAAAAFgBtAGEAaQBuAFQAbwBvAGwAQgBhAHIBAAAAAP////8AAAAAAAAAAAAAABwAcwBlAHMAcwBpAG8AbgBUAG8AbwBsAGIAYQByAQAAAOj/////AAAAAAAAAAA=
 ToolBarsMovable=Disabled
 
 [TabBar]
+ExpandTabWidth=true
 TabBarVisibility=ShowTabBarWhenNeeded
+
+[UiSettings]
+ColorScheme=
