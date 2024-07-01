@@ -2,6 +2,8 @@
 	name = Hutson Betts
 	email = hutson@hyper-expanse.net
 	signingkey = 0x84FDCF3387D59200
+
+	# Instruct Git to require that I have a name and email set either globally, or at the repository level, within a `.gitconfig` file. Git will not guess the name and e-mail based on the account used to execute the `git` command. 
 	useConfigOnly = true
 
 [core]
