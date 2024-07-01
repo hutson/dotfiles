@@ -60,6 +60,9 @@
 	# In addition to having Git detect, and display, simple file renames, instruct Git to diplay when a file has been copied from one location to another.
 	renames = copies
 
+	# Use the patience-extended algorithm for improved readability.
+	algorithm = histogram
+
 [difftool "fugitive"]
 	cmd = nvim -f -c "Gvdiffsplit!" "$MERGED"
 
