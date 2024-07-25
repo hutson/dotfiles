@@ -96,20 +96,16 @@ installBrewPackages() {
 			# Install ncdu, a command line tool for displaying disk usage information.
 			brew install ncdu
 
-			# Bash development tooling.
-			if [ "$(uname)" = "Darwin" ]; then
-				brew install bash-language-server # Language server for the Bash language.
-			fi
-			brew install shellcheck           # Linter for shell scripts, including Bash.
+			# Linter for shell scripts, including Bash.
+			brew install shellcheck
 
 			# Install Go compiler and development stack.
 			brew install go
 			brew install gopls # Language server for the Go language.
 
-			# Install nvm, a CLI tool for managing Node interpreter versions within the current shell environment.
-			brew install nvm
-			# shellcheck source=/dev/null
-			source "$(brew --prefix nvm)/nvm.sh"
+			# Install a CLI tool for managing Node interpreter versions within the current shell environment.
+			brew install fnm
+			eval "$(fnm env --use-on-cd)"
 
 			# Install git, a distributed source code management tool.
 			brew install git
@@ -197,15 +193,20 @@ installBrewPackages() {
 #! Install NodeJS packages.
 # Install NodeJS packages via `npm`.
 installNodePackages() {
-	if command -v nvm &>/dev/null; then
+	if command -v fnm &>/dev/null; then
 		printf "\n> Installing Node packages.\n"
 
-		nvm install v18
+		fnm install 22
 
 		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
 		npm install -g doctoc
 
-		# Update PATH to reflect the current location of Node packages, which may have changed if `nvm` installed a new version of Node or Npm.
+		# Language server for the Bash language.
+		# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
+		#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
+		npm install -g bash-language-server
+
+		# Update PATH to reflect the current location of Node packages, which may have changed if `fnm` installed a new version of Node or Npm.
 		if command -v npm --version >/dev/null 2>&1; then
 			local PATH
 			PATH="$(npm -g bin):${PATH}"
@@ -213,7 +214,7 @@ installNodePackages() {
 		fi
 
 	else
-		echo "ERROR: 'nvm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'nvm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
+		echo "ERROR: 'fnm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'fnm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
 	fi
 }
 

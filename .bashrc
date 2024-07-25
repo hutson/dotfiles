@@ -64,14 +64,9 @@ if type brew &>/dev/null; then
 	fi
 fi
 
-# Execute `nvm` script to configure our local environment to work with `nvm`.
-if command -v brew >/dev/null 2>&1 && [ -f "$(brew --prefix nvm)/nvm.sh" ]; then
-	# Ignoring ShellCheck issue because it is not possible to know where `brew --prefix` points to ahead of time.
-	# shellcheck source=/dev/null
-	source "$(brew --prefix nvm)/nvm.sh"
-	if command -v yarn --version >/dev/null 2>&1; then
-		PATH="$(yarn global bin):${PATH}"
-	fi
+# Execute `fnm` to configure our local environment to allow installation of Node versions.
+if command -v fnm >/dev/null 2>&1; then
+	eval "$(fnm env --use-on-cd)"
 fi
 
 # Execute `starship` to configure our fancy cross-shell command line prompt.
