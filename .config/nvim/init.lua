@@ -50,6 +50,7 @@ vim.opt.linebreak = true
 -- Use case insensitive search, except when using capital letters.
 vim.opt.ignorecase =true -- Case insensitive search.
 vim.opt.smartcase = true -- Enable case-sensitive search when the search phrase contains capital letters.
+vim.opt.inccommand = 'split' -- In addition to the default 'nosplit', for all matches found in the current buffer, show those matches, and their substitions in a split pane.
 
 -- Allows moving left when at the beginning of a line, or right when at the end of the line. When the end of the line has been reached, the cursor will progress to the next line, either up or down, depending on the direction of movement. < and > are left and right arrow keys, respectively, in normal and visual modes, and [ and ] are arrow keys, respectively, in insert mode.
 vim.opt.whichwrap = '<,>,h,l,[,]'
@@ -60,7 +61,7 @@ vim.opt.confirm = true
 -- Enable use of the mouse for all Vim modes: Normal, Insert, Visual, and Command-line.
 vim.opt.mouse = 'a'
 
--- Use abbreviations when posting status messages to the command output line (The line right beneth Vim's statusline). Shortening command output may help avoid the 'press <Enter>' prompt that appears when the output is longer than the available space in the command output section. Furthermore, we append the 't' option to 'shortmess' so that if abbreviations are insufficient to keep output within the confines of the command output section, then content will be truncated as necessary; beginning at the start of the message.
+-- Use abbreviations when posting status messages to the command output line (The line right beneath Vim's statusline). Shortening command output may help avoid the 'press <Enter>' prompt that appears when the output is longer than the available space in the command output section. Furthermore, we append the 't' option to 'shortmess' so that if abbreviations are insufficient to keep output within the confines of the command output section, then content will be truncated as necessary; beginning at the start of the message.
 vim.opt.shortmess = 'at'
 
 -- Display line numbers on the left with a column width of 4.
@@ -479,6 +480,7 @@ vim.keymap.set('v', '<F9>', 'zR', opts)
 vim.keymap.set('n', '<F7>', '<ESC><cmd>setlocal spell!<CR>', opts)
 vim.keymap.set('i', '<F7>', '<ESC><cmd>setlocal spell!<CR>i', opts)
 vim.keymap.set('v', '<F7>', '<ESC><cmd>setlocal spell!<CR>v', opts)
+vim.keymap.set('n', '<leader>z', 'z=', opts)
 
 -- Enable the displaying of whitespace characters, including tab characters.
 vim.keymap.set('n', '<F6>', '<ESC><cmd>set list!<CR>', opts)
