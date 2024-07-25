@@ -1,6 +1,7 @@
 [Appearance]
-ColorScheme=Breeze
+ColorScheme=Linux
 Font=Hack,11,-1,5,50,0,0,0,0,0
+TabColor=128,128,128
 UseFontLineChararacters=false
 
 [Cursor Options]
