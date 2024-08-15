@@ -41,19 +41,14 @@ echo "> Symlinking Neovim files into the config directory (${XDG_CONFIG_HOME}/nv
 mkdir -p "${XDG_CONFIG_HOME}/nvim"
 ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
 
+# Symlink WezTerm configuration files.
+echo "> Symlinking WezTerm files into the config directory (${XDG_CONFIG_HOME}/wezterm)."
+mkdir -p "${XDG_CONFIG_HOME}/wezterm"
+ln -s -f "$(pwd)/.config/wezterm/wezterm.lua" "${XDG_CONFIG_HOME}/wezterm/wezterm.lua"
+
 # Symlink Top configuration files.
 echo "> Symlinking top files into the config directory (${XDG_CONFIG_HOME}/nvim)."
 mkdir -p "${XDG_CONFIG_HOME}/procps"
 ln -s -f "$(pwd)/.config/procps/toprc" "${XDG_CONFIG_HOME}/procps/toprc"
-
-# Symlink Konsole files.
-if [ "$(uname -n)" == "startopia" ]; then
-	echo "> Symlinking Konsole files."
-	mkdir -p "${XDG_CONFIG_HOME}"
-	mkdir -p "${XDG_DATA_HOME}/konsole"
-	ln -s -f "$(pwd)/.config/konsolerc" "${XDG_CONFIG_HOME}/konsolerc"
-	ln -s -f "$(pwd)/icons/noun_1058899_edited_white.png" "${XDG_DATA_HOME}/konsole/noun_1058899_edited_white.png"
-	ln -s -f "$(pwd)/konsole/hutson.profile" "${XDG_DATA_HOME}/konsole/hutson.profile"
-fi
 
 echo "Finished deploying your dotfiles. Please run 'source ~/.profile' to use your new setup."

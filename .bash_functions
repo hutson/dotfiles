@@ -99,6 +99,9 @@ installBrewPackages() {
 			# Linter for shell scripts, including Bash.
 			brew install shellcheck
 
+			# Install shell script formatter.
+			brew instal shfmt
+
 			# Install Go compiler and development stack.
 			brew install go
 			brew install gopls # Language server for the Go language.
@@ -115,7 +118,7 @@ installBrewPackages() {
 
 			# Install command line text editor.
 			brew install neovim
-			brew install ripgrep                                                                                                                                                                        # Used by `telescope` for fast in-file searching.
+			brew install ripgrep # Used by `telescope` for fast in-file searching.
 			curl --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 			# Fancy cross-shell command line prompt.
@@ -127,6 +130,9 @@ installBrewPackages() {
 		fi
 
 		if [ "$(uname)" = "Darwin" ]; then
+			# Install cross-platform terminal emulator.
+			brew install wezterm
+
 			# Install the Nerd Font patched Hack monspace font for our development environment.
 			brew tap homebrew/cask-fonts
 			brew install font-hack-nerd-font
@@ -154,12 +160,14 @@ installBrewPackages() {
 			brew install yubico-yubikey-manager
 			brew install firefox
 			brew install gpg-suite
-			brew install iterm2
 			brew install keepassxc
 			brew install obs
 			brew install rectangle
 
 		elif [ "$(uname -n)" = "startopia" ]; then
+			# Install cross-platform terminal emulator.
+			brew install wez/wezterm-linuxbrew/wezterm
+
 			# Install the Nerd Font patched Hack monspace font for our development environment.
 			brew tap homebrew/linux-fonts
 			brew install font-hack-nerd-font
