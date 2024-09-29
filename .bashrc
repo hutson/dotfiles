@@ -34,19 +34,6 @@ shopt -s direxpand
 # Check the window size after each command and, if necessary update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# Enable programmable completion features (you don't need to enable this, if it's already enabled in /etc/bash.bashrc and /etc/profile sources /etc/bash.bashrc).
-if ! shopt -oq posix; then
-	if [ -f /usr/share/bash-completion/bash_completion ]; then
-		source /usr/share/bash-completion/bash_completion
-	elif [ -f /etc/bash_completion ]; then
-		source /etc/bash_completion
-	fi
-fi
-
-# Setup Bash prompt auto-completion for PIP; Python's package manager.
-# This step is incredibly slow to execute.
-# command -v pip >/dev/null 2>&1 && eval "$(pip completion --bash)"
-
 # Source the Brew bash completion initialization script if it exists, otherwise, just source each tool's completion script.
 if type brew &>/dev/null; then
 	if [[ -r "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]]; then
