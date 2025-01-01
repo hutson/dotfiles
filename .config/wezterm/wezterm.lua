@@ -5,8 +5,6 @@ if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
 
-config.font = wezterm.font('Hack Nerd Font')
-
 if wezterm.gui and wezterm.gui.get_appearance():find("Dark") then
 	config.color_scheme = 'carbonfox'
 end
