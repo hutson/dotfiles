@@ -5,6 +5,11 @@ if wezterm.config_builder then
 	config = wezterm.config_builder()
 end
 
+-- The default font size, 12pt as of writing, is too large
+-- relative to other text on the screen while using the
+-- default font used by WezTerm.
+config.font_size = 11
+
 if wezterm.gui and wezterm.gui.get_appearance():find("Dark") then
 	config.color_scheme = 'carbonfox'
 end
