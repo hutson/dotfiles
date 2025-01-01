@@ -51,14 +51,19 @@ if [ -z "${XDG_CONFIG_HOME:-}" ]; then
 	export XDG_CONFIG_HOME="${HOME}/.config"
 fi
 
-# If the XDG data home directory is not already set within the current environment, then default it to the value below, which matches the XDG specification.
-if [ -z "${XDG_DATA_HOME:-}" ]; then
-	export XDG_DATA_HOME="${HOMEBREW_PREFIX}/share"
-fi
-
 # If the XDG cache home directory is not already set within the current environment, then default it to the value below, which matches the XDG specification.
 if [ -z "${XDG_CACHE_HOME:-}" ]; then
 	export XDG_CACHE_HOME="${HOME}/.cache"
+fi
+
+# If the XDG data home directory is not already set within the current environment, then default it to the value below, which matches the XDG specification.
+if [ -z "${XDG_DATA_HOME:-}" ]; then
+	export XDG_DATA_HOME="${HOME}/.data"
+fi
+
+# If the XDG state home directory is not already set within the current environment, then default it to the value below, which matches the XDG specification.
+if [ -z "${XDG_STATE_HOME:-}" ]; then
+	export XDG_STATE_HOME="${HOME}/.state"
 fi
 
 # Start our GPG agent so that it can begin responding to requests for a private key (SSH or signing requests), but only from the local system.
