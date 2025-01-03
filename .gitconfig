@@ -95,12 +95,6 @@
 	fetch = +refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*
 	fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
 
-	# Fetch all notes references from the remote origin. For any given project we do not know what notes reference name will be used, so it's easier to just fetch them all.
-	fetch = +refs/notes/*:refs/notes/*
-
-	# Push all notes created locally to the remote origin so that they can be shared with collaborators who might benefit from the additional context notes provide.
-	push = +refs/notes/*:refs/notes/*
-
 [notes]
 	# Show all notes regardless of the reference name when viewing commit messages, because we can't assume what name may be used by any given project.
 	displayRef = refs/notes/*
