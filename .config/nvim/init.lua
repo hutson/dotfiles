@@ -17,7 +17,7 @@ vim.opt.fileformat = 'unix'
 vim.opt.modeline = false -- Turn off modeline parsing altogether.
 
 -- Set the default language to use for spell checking. `spelllang` is a comma separated list of word lists. Word lists are of the form LANGUAGE_REGION. The LANGUAGE segment may include a specification, such as `-rare` to indicate rare words in that language.
-vim.opt.spelllang = 'en_US,cjk'
+vim.opt.spelllang = 'en_us,cjk'
 
 -- Limit spelling suggestions to the 9 best options available. This will likely still provide the correct spelling while avoiding spell correction from taking over the entire window.
 vim.opt.spellsuggest = 'best,9'
