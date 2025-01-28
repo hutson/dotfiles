@@ -226,7 +226,7 @@ lsp_defaults.capabilities = vim.tbl_deep_extend(
 )
 
 -- Use a loop to conveniently call 'setup' on multiple servers in situations where we do not need to provide additional configuration. Otherwise, call the `setup` function on the language server directly.
-local servers = { 'bashls', 'beancount', 'terraformls' }
+local servers = { 'bashls', 'terraformls' }
 for _, lsp in pairs(servers) do
 	lspconfig[lsp].setup {}
 end
@@ -271,13 +271,7 @@ vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('UserLspConfig', {}),
   callback = function(ev)
-  	--[[
-  	-- TODO: Remove `pattern` list to format all files supported by the `servers` list above once the following have been completed:
-  	-- 1. `bash-language-server`. See https://github.com/bash-lsp/bash-language-server/issues/320
-  	-- 3. Beancount. I have not tried auto-formatting using the language server yet.
-  	--]]
 		vim.api.nvim_create_autocmd('BufWritePre', {
-			pattern = {'*.tf', '*.tfvars', '*.go'},
 			callback = function()
 				vim.lsp.buf.format()
 			end
@@ -352,7 +346,7 @@ cmp.setup({
 
 require('nvim-treesitter.configs').setup {
 	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
-	ensure_installed = { 'bash', 'beancount', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase', 'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua', 'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' },
+	ensure_installed = { 'bash', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase', 'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua', 'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' },
 
 	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
 	sync_install = false,
