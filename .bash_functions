@@ -13,12 +13,8 @@ setupEnvironment() {
 	# Setup Brew.
 	setupHomeBrew
 	installBrewPackages
+	installNodePackages
 	brew cleanup -s
-
-	# Install additional tools.
-	if [ "$(uname)" = "Darwin" ]; then
-		installNodePackages
-	fi
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
@@ -118,15 +114,11 @@ installBrewPackages() {
 
 			# Install command line text editor.
 			brew install neovim
-			brew install ripgrep # Used by `telescope` for fast in-file searching.
+			brew install ripgrep                                                                                                                                                                        # Used by `telescope` for fast in-file searching.
 			curl --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 			# Fancy cross-shell command line prompt.
 			brew install starship
-
-			# A commandline first note taking tool.
-			brew install nb
-
 		fi
 
 		if [ "$(uname)" = "Darwin" ]; then
@@ -150,6 +142,9 @@ installBrewPackages() {
 			# Install resource orchestration tool.
 			brew install terraform
 			brew install hashicorp/tap/terraform-ls # Language server.
+
+			# A commandline first note taking tool.
+			brew install nb
 
 			brew install wget
 
@@ -181,11 +176,6 @@ installBrewPackages() {
 
 			# Tool for managing offline video archives.
 			brew install yt-dlp
-
-			# Install beancount plain text accounting software and support tooling.
-			brew install beancount
-			brew install rust && cargo install beancount-language-server
-
 		# For packages that should only be installed server-side and not on a desktop/local system.
 		else
 			# Install terminal multiplexer if it does not already exist on the target system.
@@ -210,6 +200,7 @@ installNodePackages() {
 		npm install -g doctoc
 
 		# Language server for the Bash language.
+
 		# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
 		#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
 		npm install -g bash-language-server
