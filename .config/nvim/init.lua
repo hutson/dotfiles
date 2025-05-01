@@ -198,6 +198,7 @@ Plug('https://github.com/tpope/vim-fugitive.git')
 Plug('https://github.com/EdenEast/nightfox.nvim')
 Plug('https://github.com/mhinz/vim-signify.git')
 Plug('https://github.com/ryanoasis/vim-devicons.git')
+Plug('https://github.com/github/copilot.vim')
 
 -- Install and setup Telescope for in-file searching.
 Plug('https://github.com/nvim-tree/nvim-web-devicons.git') -- Required to display icons in telescope dialog (vim-devicons won't work).
