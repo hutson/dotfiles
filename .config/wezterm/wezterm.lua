@@ -8,13 +8,12 @@ end
 -- The default font size, 12pt as of writing, is too large
 -- relative to other text on the screen while using the
 -- default font used by WezTerm.
-config.font_size = 11
+config.font_size = 10
 
-if wezterm.gui and wezterm.gui.get_appearance():find("Dark") then
-	config.color_scheme = 'carbonfox'
-end
+-- Prefer a more traditional square tab style in the terminal. 
+config.use_fancy_tab_bar = false
 
-config.window_background_opacity = 0.95
+config.window_background_opacity = 0.70
 config.macos_window_background_blur = 10
 config.scrollback_lines = 10000
 
@@ -29,14 +28,31 @@ config.leader = {
 -- containing information relavent to the current terminal environment.
 local SOLID_LEFT_ARROW = utf8.char(0xe0b2)
 wezterm.on('update-status', function(window)
+	local tab = window:active_tab()
+	local panes = tab:panes()
+	local alt_screen_active = false
+
+	for i = 1, #panes, 1 do
+		local pane = panes[i]
+		if pane:is_alt_screen_active() then
+			alt_screen_active = true
+			break
+		end
+	end
+
+	if alt_screen_active then
+		window:set_config_overrides({
+			window_padding = { left = 0, right = 0, top = 0, bottom = 0 },
+		})
+	else
+		window:set_config_overrides({
+			window_padding = default_padding,
+		})
+	end
+
 	local color_scheme = window:effective_config().resolved_palette
-	local background = color_scheme.background
-	local foreground = color_scheme.foreground
 	window:set_right_status(wezterm.format({
-		{ Background = { Color = 'none' } },
-		{ Foreground = { Color = background } },
-		{ Text = SOLID_LEFT_ARROW },
-		{ Background = { Color = background } },
+		{ Background = { Color = color_scheme.background } },
 		{ Foreground = { Color = 'Green' } },
 		{ Text = ' ' .. wezterm.hostname() .. ' ' },
 	}))
