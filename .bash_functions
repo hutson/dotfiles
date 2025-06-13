@@ -102,6 +102,9 @@ installBrewPackages() {
 			brew install go
 			brew install gopls # Language server for the Go language.
 
+			# Language server for the Markdown language.
+			brew install marksman
+
 			# Install a CLI tool for managing Node interpreter versions within the current shell environment.
 			brew install fnm
 			eval "$(fnm env --use-on-cd)"
@@ -153,11 +156,10 @@ installBrewPackages() {
 			brew install gpg
 
 			brew install yubico-yubikey-manager
-			brew install firefox
+			brew install firefox@esr
 			brew install gpg-suite
 			brew install keepassxc
 			brew install obs
-			brew install rectangle
 
 		elif [ "$(uname -n)" = "startopia" ]; then
 			# Install cross-platform terminal emulator.
