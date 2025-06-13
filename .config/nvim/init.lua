@@ -226,13 +226,7 @@ lsp_defaults.capabilities = vim.tbl_deep_extend(
 	require('cmp_nvim_lsp').default_capabilities()
 )
 
--- Use a loop to conveniently call 'setup' on multiple servers in situations where we do not need to provide additional configuration. Otherwise, call the `setup` function on the language server directly.
-local servers = { 'bashls', 'terraformls' }
-for _, lsp in pairs(servers) do
-	lspconfig[lsp].setup {}
-end
-
-lspconfig.gopls.setup {
+vim.lsp.config('gopls', {
 	settings = {
 		gopls = {
 			analyses = {
@@ -258,7 +252,12 @@ lspconfig.gopls.setup {
 			vulncheck = "Imports",
 		},
 	},
-}
+})
+
+local servers = { 'bashls', 'marksman', 'terraformls', 'gopls' }
+for _, lsp in pairs(servers) do
+	vim.lsp.enable(lsp)
+end
 
 -- The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
 --
