@@ -8,7 +8,7 @@
 #====================================================
 
 # Set the path to our prefix directory containing our local build, and development, environment as setup by Linuxbrew.
-export HOMEBREW_PREFIX="${HOME}/.linuxbrew"
+export HOMEBREW_PREFIX="${HOME}/.local"
 export HOMEBREW_CELLAR="${HOMEBREW_PREFIX}/Cellar"
 export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
 
