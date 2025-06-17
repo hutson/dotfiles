@@ -17,10 +17,6 @@ setupEnvironment() {
 	brew cleanup -s
 
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
-
-	if [ "$(uname -n)" = "startopia" ]; then
-		setupTilingWindowManager
-	fi
 }
 
 #! Update environment.
@@ -45,10 +41,8 @@ updateEnvironment() {
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
 	if [ "$(uname -n)" = "startopia" ]; then
-		setupTilingWindowManager
-
 		# Delete the `flatpak` directory and re-create it via the `repair` command, because `brew cleanup` deletes the directories in the `repo/` folder, though not the `config` file in that directory. Therefore, the directory ends up in a corrupted state.
-		rm -rf ~/.linuxbrew/share/flatpak/repo/
+		rm -rf ~/.local/share/flatpak/repo/
 		flatpak --user repair
 
 		flatpak update -y --noninteractive
@@ -217,54 +211,6 @@ installNodePackages() {
 	else
 		echo "ERROR: 'fnm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'fnm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
 	fi
-}
-
-#! Setup tiling window manager on KDE.
-# Setup a tiling window manager on a KDE desktop by extending KDE's existing KWin window manager using KDE's ability to load arbitrary scripts as plugins.
-setupTilingWindowManager() {
-	# Only install the tiling window manager on KDE.
-	if command -v plasmapkg2 &>/dev/null; then
-		local dirPriorToExe
-		dirPriorToExe="$(pwd)"
-		local tmpdir
-		tmpdir="$(mktemp -d)"
-
-		git clone https://github.com/kwin-scripts/kwin-tiling.git "${tmpdir}"
-
-		cd "${tmpdir}" || exit
-
-		# Download a fixed commit to install as our tiling window management script to minimize the chance of breaking changes.
-		git checkout 51e51f4bb129dce6ab876d07cfd8bdb3506390e1
-
-		if ! plasmapkg2 --type kwinscript -u .; then
-			plasmapkg2 --type kwinscript -i .
-		fi
-
-		# Fix documented here - https://github.com/kwin-scripts/kwin-tiling/issues/79#issuecomment-311465357
-		# Upstream KDE bug report - https://bugs.kde.org/show_bug.cgi?id=386509
-		mkdir --parent "${HOMEBREW_PREFIX}/share/kservices5"
-		ln --force --symbolic "${HOMEBREW_PREFIX}/share/kwin/scripts/kwin-script-tiling/metadata.desktop" "${HOMEBREW_PREFIX}/share/kservices5/kwin-script-tiling.desktop"
-
-		cd "${dirPriorToExe}" || exit
-
-		echo "Navigate to the KWin scripts manager to enable the 'kwinscript' script."
-	fi
-}
-
-#! Find all file types in use and convert to standard types.
-# Find all file types in use within a given directory and offer to convert files to a known set of standard file types, such as WAV to FLAC, using appropriate permissions (not globally readable).
-checkAndConvert() {
-	# TODO: Prompt user whether global permissions should be revoked from listed files.
-	printf "\n> List of globally accessible files.\n"
-	find . ! -type l \( -perm -o+r -or -perm -o+w -or -perm -o+x \) -print0 | xargs -0 ls -l
-
-	## TODO: Rename all files to be all lower-case.
-	# for i in $( ls | grep [A-Z] ); do mv -i $i `echo $i | tr 'A-Z' 'a-z'`; done
-	# ls | sed -n 's/.*/mv "&" $(tr "[A-Z]" "[a-z]" <<< "&")/p' | bash
-
-	# TODO: Convert some known file formats to an alternative, "open", file format.
-	# To convert Office documents to ODF formats such as `.ods`.
-	# lowriter --headless --convert-to ods *.xlsx
 }
 
 #! Compress a file or folder into one of many types of archive formats.
