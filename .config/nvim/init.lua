@@ -38,7 +38,7 @@ vim.opt.clipboard = 'unnamedplus'
 vim.opt.updatetime = 100
 
 -- Enable better command-line completion.
-vim.opt.wildmenu = true -- Enables a menu at the bottom of the window.
+vim.opt.wildmenu = true                -- Enables a menu at the bottom of the window.
 vim.opt.wildmode = 'list:longest,full' -- Allows the completion of commands on the command line via the tab button.
 
 -- Ignore certain backup and compiled files based on file extensions when using tab completion.
@@ -48,9 +48,10 @@ vim.opt.wildignore = '*.swp,*.bak,*.tmp,*~,.zip,*.7z,*.gzip,*.gz,*.jpg,*.png,*.g
 vim.opt.linebreak = true
 
 -- Use case insensitive search, except when using capital letters.
-vim.opt.ignorecase =true -- Case insensitive search.
-vim.opt.smartcase = true -- Enable case-sensitive search when the search phrase contains capital letters.
-vim.opt.inccommand = 'split' -- In addition to the default 'nosplit', for all matches found in the current buffer, show those matches, and their substitions in a split pane.
+vim.opt.ignorecase = true -- Case insensitive search.
+vim.opt.smartcase = true  -- Enable case-sensitive search when the search phrase contains capital letters.
+vim.opt.inccommand =
+'split'                   -- In addition to the default 'nosplit', for all matches found in the current buffer, show those matches, and their substitions in a split pane.
 
 -- Allows moving left when at the beginning of a line, or right when at the end of the line. When the end of the line has been reached, the cursor will progress to the next line, either up or down, depending on the direction of movement. < and > are left and right arrow keys, respectively, in normal and visual modes, and [ and ] are arrow keys, respectively, in insert mode.
 vim.opt.whichwrap = '<,>,h,l,[,]'
@@ -100,10 +101,10 @@ vim.opt.mousemodel = 'popup'
 vim.opt.formatoptions = 'jlnoqr'
 
 -- Default behavior when displaying autocomplete options provided by `nvim-cmp`.
-vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
+vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 
 -- Set a map leader so that extra key combinations can be used for quick operations.
-vim.g.mapleader=','
+vim.g.mapleader = ','
 
 --[[
 	Backups
@@ -112,7 +113,7 @@ vim.g.mapleader=','
 --]]
 
 -- Turn off backups for files that are being edited by Neovim.
-vim.opt.backup = false -- Do not keep a backup of a file after overwriting the file.
+vim.opt.backup = false   -- Do not keep a backup of a file after overwriting the file.
 vim.opt.swapfile = false -- No temporary swap files.
 
 --[[
@@ -201,10 +202,10 @@ Plug('https://github.com/ryanoasis/vim-devicons.git')
 Plug('https://github.com/github/copilot.vim')
 
 -- Install and setup Telescope for in-file searching.
-Plug('https://github.com/nvim-tree/nvim-web-devicons.git') -- Required to display icons in telescope dialog (vim-devicons won't work).
-Plug('https://github.com/BurntSushi/ripgrep.git') -- Required for grep within files.
+Plug('https://github.com/nvim-tree/nvim-web-devicons.git')              -- Required to display icons in telescope dialog (vim-devicons won't work).
+Plug('https://github.com/BurntSushi/ripgrep.git')                       -- Required for grep within files.
 Plug('https://github.com/nvim-telescope/telescope-fzf-native.nvim.git') -- Required for fast sorting.
-Plug('https://github.com/nvim-lua/plenary.nvim.git') -- Lua function required.
+Plug('https://github.com/nvim-lua/plenary.nvim.git')                    -- Lua function required.
 Plug('https://github.com/nvim-telescope/telescope.nvim.git')
 
 -- Add plugins to Vim's `runtimepath`.
@@ -232,11 +233,11 @@ vim.lsp.config('gopls', {
 			analyses = {
 				-- Find opportunities to rearrange structs to use less memory, but in some cases this optimization may introduce memory contention known as "false sharing" as outlined in the documentation reference below.
 				-- https://github.com/golang/tools/blob/daf94608b5e2caf763ba634b84e7a5ba7970e155/gopls/doc/analyzers.md#fieldalignment
-				fieldalignment =  true,
+				fieldalignment = true,
 
 				-- Find potentionally unintended shadowing of variables.
 				--https://github.com/golang/tools/blob/daf94608b5e2caf763ba634b84e7a5ba7970e155/gopls/doc/analyzers.md#shadow
-				shadow =  true,
+				shadow = true,
 			},
 
 			-- TODO: Codelenses do not appear to work with `vim-go`.
@@ -247,14 +248,29 @@ vim.lsp.config('gopls', {
 
 			-- Inject results from `staticcheck` inline. This may be in addition to executing `staticcheck` on buffer save, which would place the results in the Quick Fix list.
 			staticcheck = true,
-			
+
 			-- Enable import vulnerability analysis.
 			vulncheck = "Imports",
 		},
 	},
 })
 
-local servers = { 'bashls', 'marksman', 'terraformls', 'gopls' }
+vim.lsp.config('lua_ls', {
+	settings = {
+		Lua = {
+			diagnostics = {
+				-- Disable the warning about using `vim` as a global variable as `vim` is a global variable exposed by Neovim in `init.lua`.
+				globals = { 'vim' },
+			},
+			workspace = {
+				-- Add the Vim runtime directory to the workspace library so that `lua_ls` can access Neovim's standard library and provide autocompletion for it.
+				library = { vim.env.VIMRUNTIME },
+			},
+		},
+	},
+})
+
+local servers = { 'bashls', 'marksman', 'terraformls', 'gopls', 'lua_ls' }
 for _, lsp in pairs(servers) do
 	vim.lsp.enable(lsp)
 end
@@ -262,40 +278,37 @@ end
 -- The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
 --
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
-vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
 
 -- Use LspAttach autocommand to only map the following keys after the language server attaches to the current buffer
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-  callback = function(ev)
+	group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+	callback = function(ev)
 		vim.api.nvim_create_autocmd('BufWritePre', {
 			callback = function()
 				vim.lsp.buf.format()
 			end
 		})
 
-    local opts = { buffer = ev.buf }
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
-    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
-    vim.keymap.set('n', '<space>wl', function()
-      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-    end, opts)
-    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
-    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-    vim.keymap.set('n', '<space>f', function()
-      vim.lsp.buf.format { async = true }
-    end, opts)
-  end,
+		local opts = { buffer = ev.buf }
+		vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+		vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+		vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+		vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+		vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+		vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+		vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+		vim.keymap.set('n', '<space>wl', function()
+			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+		end, opts)
+		vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+		vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+		vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+		vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+		vim.keymap.set('n', '<space>f', function()
+			vim.lsp.buf.format { async = true }
+		end, opts)
+	end,
 })
 
 --[[
@@ -307,7 +320,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 local cmp = require('cmp')
 cmp.setup({
 	formatting = {
-		fields = {'menu', 'abbr', 'kind'},
+		fields = { 'menu', 'abbr', 'kind' },
 		format = function(entry, item)
 			local menu_icon = {
 				nvim_lsp = 'λ',
@@ -395,7 +408,7 @@ require('telescope').setup {
 		},
 		live_grep = {
 			additional_args = function(opts)
-				return {"--hidden"}
+				return { "--hidden" }
 			end
 		}
 	},
@@ -429,7 +442,7 @@ pcall(vim.cmd, "silent! colorscheme carbonfox")
 	Normal Mode keybindings
 --]]
 
-local opts = { noremap=true, silent=true }
+local opts = { noremap = true, silent = true }
 
 -- Make it easier to navigate around the `quickfix` window using keyboard shortcuts.
 vim.keymap.set('n', '<C-n>', '<cmd>cnext<CR>', opts)
@@ -463,7 +476,7 @@ vim.keymap.set('n', '<C-A>', 'gggH<C-OG', opts)
 	General options are define such that they are available within all operating modes. Also a collection of mappings usable within two or more modes are defined.
 --]]
 
-local opts = { noremap=true, silent=true }
+local opts = { noremap = true, silent = true }
 
 -- Toggle all folds to unfold if one or more are closed.
 vim.keymap.set('n', '<F9>', 'zR', opts)

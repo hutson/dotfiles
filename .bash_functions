@@ -99,6 +99,9 @@ installBrewPackages() {
 			# Language server for the Markdown language.
 			brew install marksman
 
+			# Language server for the Lua language.
+			brew install lua-language-server
+
 			# Install a CLI tool for managing Node interpreter versions within the current shell environment.
 			brew install fnm
 			eval "$(fnm env --use-on-cd)"

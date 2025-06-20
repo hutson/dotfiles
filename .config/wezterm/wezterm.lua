@@ -10,7 +10,7 @@ end
 -- default font used by WezTerm.
 config.font_size = 10
 
--- Prefer a more traditional square tab style in the terminal. 
+-- Prefer a more traditional square tab style in the terminal.
 config.use_fancy_tab_bar = false
 
 config.window_background_opacity = 0.70
@@ -26,7 +26,6 @@ config.leader = {
 
 -- Create a powerline line tab bar with regularly updated segments
 -- containing information relavent to the current terminal environment.
-local SOLID_LEFT_ARROW = utf8.char(0xe0b2)
 wezterm.on('update-status', function(window)
 	local tab = window:active_tab()
 	local panes = tab:panes()
@@ -75,7 +74,6 @@ config.key_tables = {
 }
 
 config.keys = {
-	-- Allow resizing split panes using arrow keys.
 	{
 		key = 'r',
 		mods = 'LEADER',
@@ -86,22 +84,20 @@ config.keys = {
 		}
 	},
 
-	-- Close tab with same hotkey as used in a browser.
 	{
 		key = 'w',
-		mods = 'CTRL',
-		action = wezterm.action.CloseCurrentTab{ confirm = false },
+		mods = 'LEADER',
+		action = wezterm.action.CloseCurrentTab { confirm = false },
 	},
 
-	-- Split horizonal.
-  {
-    key = 'h',
-    mods = 'LEADER',
-    action = wezterm.action.SplitPane {
-      direction = 'Down',
-      size = { Percent = 50 },
-    },
-  },
+	{
+		key = 'h',
+		mods = 'LEADER',
+		action = wezterm.action.SplitPane {
+			direction = 'Down',
+			size = { Percent = 50 },
+		},
+	},
 }
 
 return config
