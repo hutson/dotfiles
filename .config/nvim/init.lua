@@ -106,6 +106,9 @@ vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 -- Set a map leader so that extra key combinations can be used for quick operations.
 vim.g.mapleader = ','
 
+-- Always default to splitting to the right.
+vim.opt.splitright = true
+
 --[[
 	Backups
 
@@ -199,7 +202,7 @@ Plug('https://github.com/tpope/vim-fugitive.git')
 Plug('https://github.com/EdenEast/nightfox.nvim')
 Plug('https://github.com/mhinz/vim-signify.git')
 Plug('https://github.com/ryanoasis/vim-devicons.git')
-Plug('https://github.com/github/copilot.vim')
+
 
 -- Install and setup Telescope for in-file searching.
 Plug('https://github.com/nvim-tree/nvim-web-devicons.git')              -- Required to display icons in telescope dialog (vim-devicons won't work).
@@ -207,6 +210,10 @@ Plug('https://github.com/BurntSushi/ripgrep.git')                       -- Requi
 Plug('https://github.com/nvim-telescope/telescope-fzf-native.nvim.git') -- Required for fast sorting.
 Plug('https://github.com/nvim-lua/plenary.nvim.git')                    -- Lua function required.
 Plug('https://github.com/nvim-telescope/telescope.nvim.git')
+
+-- Plugins for GenAI.
+Plug('https://github.com/github/copilot.vim')
+Plug('https://github.com/olimorris/codecompanion.nvim.git')
 
 -- Add plugins to Vim's `runtimepath`.
 vim.call('plug#end')
@@ -309,6 +316,29 @@ vim.api.nvim_create_autocmd('LspAttach', {
 			vim.lsp.buf.format { async = true }
 		end, opts)
 	end,
+})
+
+
+--[[
+	Setup codecompanion.
+
+	Enable and configure the CodeCompanion plugin to provide AI-assisted code completion and suggestions.
+--]]
+
+require('codecompanion').setup({
+	strategies = {
+		chat = {
+			adapter = {
+				name = "copilot",
+				model = "claude-sonnet-4-20250514",
+			},
+		},
+	},
+	display = {
+		chat = {
+			show_settings = true
+		}
+	}
 })
 
 --[[
