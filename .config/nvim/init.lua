@@ -330,7 +330,7 @@ require('codecompanion').setup({
 		chat = {
 			adapter = {
 				name = "copilot",
-				model = "claude-sonnet-4-20250514",
+				model = "claude-sonnet-4",
 			},
 		},
 	},
