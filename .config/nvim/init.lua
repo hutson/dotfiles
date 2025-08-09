@@ -341,6 +341,13 @@ require('codecompanion').setup({
 	}
 })
 
+vim.keymap.set({ 'n', 'v' }, '<leader>i', '<ESC><cmd>CodeCompanionActions<CR>', {})
+vim.keymap.set({ 'n', 'v' }, '<leader>c', '<ESC><cmd>CodeCompanionChat<CR>', {})
+vim.keymap.set('v', 'ga', '<ESC><cmd>CodeCompanionChat Add!<CR>', {})
+
+-- Expand 'cc' into 'CodeCompanion' in the command line
+vim.cmd([[cab cc CodeCompanion]])
+
 --[[
 	Setup nvim-cmp Plugin
 
