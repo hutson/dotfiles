@@ -13,8 +13,9 @@ config.font_size = 10
 -- Prefer a more traditional square tab style in the terminal.
 config.use_fancy_tab_bar = false
 
-config.window_background_opacity = 0.70
-config.macos_window_background_blur = 10
+config.window_background_opacity = 0.90
+config.macos_window_background_blur = 20
+-- config.kde_window_background_blur = true -- Only available in nightly build at this time.
 config.scrollback_lines = 10000
 
 -- Set my LEADER key to be something familiar.
@@ -95,6 +96,15 @@ config.keys = {
 		mods = 'LEADER',
 		action = wezterm.action.SplitPane {
 			direction = 'Down',
+			size = { Percent = 50 },
+		},
+	},
+
+	{
+		key = 'v',
+		mods = 'LEADER',
+		action = wezterm.action.SplitPane {
+			direction = 'Right',
 			size = { Percent = 50 },
 		},
 	},
