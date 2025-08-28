@@ -238,10 +238,6 @@ vim.lsp.config('gopls', {
 	settings = {
 		gopls = {
 			analyses = {
-				-- Find opportunities to rearrange structs to use less memory, but in some cases this optimization may introduce memory contention known as "false sharing" as outlined in the documentation reference below.
-				-- https://github.com/golang/tools/blob/daf94608b5e2caf763ba634b84e7a5ba7970e155/gopls/doc/analyzers.md#fieldalignment
-				fieldalignment = true,
-
 				-- Find potentionally unintended shadowing of variables.
 				--https://github.com/golang/tools/blob/daf94608b5e2caf763ba634b84e7a5ba7970e155/gopls/doc/analyzers.md#shadow
 				shadow = true,
