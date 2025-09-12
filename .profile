@@ -28,6 +28,10 @@ export NVM_DIR="${HOMEBREW_PREFIX}/var/nvm"
 # Inform `pkg-config` of additional pkgconfig metadata available from our brew installation.
 export PKG_CONFIG_PATH="${HOMEBREW_PREFIX}/lib/pkgconfig/:${HOMEBREW_PREFIX}/share/pkgconfig/:${PKG_CONFIG_PATH}"
 
+# Specify the directory where Go should store its packages, binaries, and source files.
+export GOPATH="${HOMEBREW_PREFIX}/share/go"
+export PATH="${GOPATH}/bin:${PATH}"
+
 # Disable Brew analytics so that my usage is not reported to the Brew account on the Google Analytics platform.
 export HOMEBREW_NO_ANALYTICS=1
 
