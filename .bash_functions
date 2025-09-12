@@ -90,7 +90,10 @@ installBrewPackages() {
 			brew install shellcheck
 
 			# Install shell script formatter.
-			brew instal shfmt
+			brew install shfmt
+
+			# Install tool for finding security vulnerabilities in container images, file systems, and Git repositories.
+			brew install trivy
 
 			# Install Go compiler and development stack.
 			brew install go
