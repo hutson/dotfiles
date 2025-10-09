@@ -155,7 +155,7 @@ installBrewPackages() {
 			brew install pinentry-mac
 			brew install gpg
 
-			brew install yubico-yubikey-manager
+			brew install yubico-authenticator
 			brew install firefox@esr
 			brew install gpg-suite
 			brew install keepassxc
