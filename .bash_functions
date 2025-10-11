@@ -172,9 +172,8 @@ installBrewPackages() {
 			brew install wez/wezterm-linuxbrew/wezterm
 
 			# Install the Nerd Font patched Hack monspace font for our development environment.
-			brew tap homebrew/linux-fonts
-			brew install font-hack-nerd-font
-			fc-cache -fv
+			brew install --cask font-hack-nerd-font
+			fc-cache -f "${HOMEBREW_PREFIX}/share/fonts/"
 
 			# Used to interact with the X11 system clipboard for Neovim.
 			brew install xclip
