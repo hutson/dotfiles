@@ -86,8 +86,14 @@ installBrewPackages() {
 			# Install ncdu, a command line tool for displaying disk usage information.
 			brew install ncdu
 
+			# Output file contents with syntax highlighting and Git integration.
+			brew install bat
+
 			# Linter for shell scripts, including Bash.
 			brew install shellcheck
+
+			# Linter for YAML files.
+			brew install yamllint
 
 			# Install shell script formatter.
 			brew install shfmt
