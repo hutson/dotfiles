@@ -330,3 +330,38 @@ convertZip() {
 	rm -rf "${tmpdir}"
 	rm -f "${1}"
 }
+
+#! Display repository status of all Git repositories.
+# Recursively scan the current working directory for Git repositories and display their current branch, uncommitted changes, and remote tracking status. The intent is to provide a quick overview of the status of code repositories to ensure I do not forget to commit and push changes.
+gits() {
+	local currentWorkingDirectory
+	currentWorkingDirectory="$(pwd)"
+
+	find . -type d -name ".git" 2>/dev/null | while read -r gitDirectory; do
+		local repositoryDirectory
+		repositoryDirectory="$(dirname "${gitDirectory}")"
+
+		if cd "${repositoryDirectory}" 2>/dev/null; then
+			printf "\n\033[36mRepository: %s\033[0m\n" "${repositoryDirectory#./}"
+
+			printf "  Branch:\n"
+			git -c color.ui=always branch -v 2>/dev/null | sed 's/^/    /'
+
+			local gitStatusOutput
+			gitStatusOutput="$(git -c color.ui=always status --short 2>/dev/null)"
+			if [ -n "${gitStatusOutput}" ]; then
+				printf "  Changes:\n"
+				printf "%s\n" "${gitStatusOutput}" | sed 's/^/    /'
+			fi
+
+			local remoteStatusInfo
+			remoteStatusInfo="$(git -c color.ui=always status 2>/dev/null | grep -E "Your branch is (ahead|behind|up to date|have diverged)")"
+			if [ -n "${remoteStatusInfo}" ]; then
+				printf "  Remote:\n"
+				printf "    %s\n" "${remoteStatusInfo}"
+			fi
+
+			cd "${currentWorkingDirectory}" || exit
+		fi
+	done
+}
