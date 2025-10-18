@@ -43,10 +43,10 @@ echo "> Symlinking Neovim files into the config directory (${XDG_CONFIG_HOME}/nv
 mkdir -p "${XDG_CONFIG_HOME}/nvim"
 ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
 
-# Symlink WezTerm configuration files.
-echo "> Symlinking WezTerm files into the config directory (${XDG_CONFIG_HOME}/wezterm)."
-mkdir -p "${XDG_CONFIG_HOME}/wezterm"
-ln -s -f "$(pwd)/.config/wezterm/wezterm.lua" "${XDG_CONFIG_HOME}/wezterm/wezterm.lua"
+# Symlink Ghostty configuration files.
+echo "> Symlinking Ghostty files into the config directory (${XDG_CONFIG_HOME}/ghostty)."
+mkdir -p "${XDG_CONFIG_HOME}/ghostty"
+ln -s -f "$(pwd)/.config/ghostty/config" "${XDG_CONFIG_HOME}/ghostty/config"
 
 # Symlink Top configuration files.
 echo "> Symlinking top files into the config directory (${XDG_CONFIG_HOME}/nvim)."

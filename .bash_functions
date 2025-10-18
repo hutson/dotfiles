@@ -132,7 +132,7 @@ installBrewPackages() {
 
 		if [ "$(uname)" = "Darwin" ]; then
 			# Install cross-platform terminal emulator.
-			brew install wezterm
+			brew install ghostty
 
 			# Install the Nerd Font patched Hack monspace font for our development environment.
 			brew tap homebrew/cask-fonts
@@ -168,8 +168,10 @@ installBrewPackages() {
 			brew install obs
 
 		elif [ "$(uname -n)" = "startopia" ]; then
-			# Install cross-platform terminal emulator.
-			brew install wez/wezterm-linuxbrew/wezterm
+			# TODO: Replace with Homebrew package, or Flatpak package, when available.
+			wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.2/Ghostty-1.2.2-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
+			echo "f45a9a90dbf8a7d1d3bd8bfc79dd4041aa51a250877e993546199a0b6270c2a9 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
+			chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
 
 			# Install the Nerd Font patched Hack monspace font for our development environment.
 			brew install --cask font-hack-nerd-font

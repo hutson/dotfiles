@@ -1,0 +1,8 @@
+background-opacity = 0.8
+background-blur = true
+font-size = 10
+theme = Carbonfox
+window-padding-balance = true
+
+# Note: Does not currently work on Linux. Would preserve the state of the terminal window on exit.
+window-save-state = always

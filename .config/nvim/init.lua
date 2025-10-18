@@ -469,7 +469,13 @@ vim.g.airline_powerline_fonts = 1
 --]]
 
 -- Set Neovim's color scheme. We purposely silence any failure notification if the desired colorscheme can't be loaded by Neovim. If Neovim is unable to load the desired colorscheme, it will be quite apparent to the user. By silencing error messages we gain the ability to automate tasks, such as installing plugins for the first time, that would otherwise block if an error message was displayed because the desired colorscheme wasn't available.
+require('nightfox').setup({
+	options = {
+		transparent = true,
+	},
+})
 pcall(vim.cmd, "silent! colorscheme carbonfox")
+
 
 --[[
 	Normal Mode keybindings
