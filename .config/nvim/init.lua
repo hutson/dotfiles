@@ -116,8 +116,9 @@ vim.opt.splitright = true
 --]]
 
 -- Turn off backups for files that are being edited by Neovim.
-vim.opt.backup = false   -- Do not keep a backup of a file after overwriting the file.
-vim.opt.swapfile = false -- No temporary swap files.
+vim.opt.backup = false      -- Do not keep a backup of a file after overwriting the file.
+vim.opt.writebackup = false -- Do not create a backup of a file while the file is written to disk. This is to avoid triggering multiple file events that might be used by other applications to process the file. This may be a bad idea in some situations.
+vim.opt.swapfile = false    -- No temporary swap files.
 
 --[[
 	Tab and Indents
