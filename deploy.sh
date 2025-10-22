@@ -2,23 +2,17 @@
 
 set -euf -o pipefail
 
-#====================================================
-# Deploy Dotfiles
-#
-# This script will deploy all dotfiles as symlinks to the user's home directory.
-#====================================================
+# Get the project name from the current directory.
+project_name="$(basename "$(pwd)")"
+
+echo "==================== DEPLOYING ${project_name^^} ===================="
+echo "Starting dotfiles deployment..."
+echo
 
 # If the XDG configuration home directory is not already set within the current environment, then default it to the value below, which matches the XDG specification.
 if [ -z "${XDG_CONFIG_HOME}" ]; then
 	export XDG_CONFIG_HOME="${HOME}/.config"
 fi
-
-# If the XDG data home directory is not already set within the current environment, then default it to the value below, which matches the XDG specification.
-if [ -z "${XDG_DATA_HOME}" ]; then
-	export XDG_DATA_HOME="${HOME}/.linuxbrew/share"
-fi
-
-echo "Deploying dotfiles..."
 
 # Symlink files into the user's home directory.
 echo "> Symlinking files into the user's home directory (${HOME})."
@@ -53,4 +47,5 @@ echo "> Symlinking top files into the config directory (${XDG_CONFIG_HOME}/nvim)
 mkdir -p "${XDG_CONFIG_HOME}/procps"
 ln -s -f "$(pwd)/.config/procps/toprc" "${XDG_CONFIG_HOME}/procps/toprc"
 
-echo "Finished deploying your dotfiles. Please run 'source ~/.profile' to use your new setup."
+echo
+echo "==================== DEPLOYMENT COMPLETE =============="
