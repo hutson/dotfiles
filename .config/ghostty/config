@@ -1,8 +1,15 @@
 background-opacity = 0.8
 background-blur = true
 font-size = 10
+
+# Support copying and pasting using GUI-style keybindings for consistency
+# across platforms (already behaves this way on macOS and Windows).
+keybind = performable:ctrl+c=copy_to_clipboard
+keybind = performable:ctrl+v=paste_from_clipboard
+
 theme = Carbonfox
 window-padding-balance = true
 
-# Note: Does not currently work on Linux. Would preserve the state of the terminal window on exit.
+# Note: Does not currently work on Linux. Would preserve the state of the
+# terminal window on exit.
 window-save-state = always
