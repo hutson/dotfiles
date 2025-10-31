@@ -367,3 +367,45 @@ gits() {
 		fi
 	done
 }
+
+#! Backup application data that do not have their own export mechanism.
+# Backup application data, such as game files, etc., to the user provided backup directory. This is intended to provide a way to backup applications that don't automatically backup their own data to a backup directory, or provdie an export button to backup data, etc.
+backup() {
+	printf "Enter backup directory name: "
+	read -r backupDirName
+
+	if [ -z "${backupDirName}" ]; then
+		echo "ERROR: Backup directory name cannot be empty."
+		return 1
+	fi
+
+	local backupPath="${HOME}/${backupDirName}"
+	if [ ! -d "${backupPath}" ]; then
+		mkdir -p "${backupPath}"
+	fi
+
+	# Handle Flatpak applications.
+	# Someday maintaining backups of application data from Flatpak
+	# applications will be handled for us by Flatpak itself:
+	# - https://github.com/flatpak/flatpak/issues/1356
+	local flatpakApps=(
+		"io.github.endless_sky.endless_sky"
+	)
+	for appName in "${flatpakApps[@]}"; do
+		printf "\n> Processing %s\n" "${appName}"
+
+		local sourceDataDir="${HOME}/.var/app/${appName}"
+		if [ ! -d "${sourceDataDir}" ]; then
+			echo "WARNING: Data directory ${sourceDataDir} does not exist for ${appName}. Skipping."
+			continue
+		fi
+
+		local targetDir="${backupPath}/Flatpaks/${appName}"
+		mkdir -p "${targetDir}"
+		if rsync -a --delete --exclude="cache/" "${sourceDataDir}/" "${targetDir}/" 2>/dev/null; then
+			printf "  ✓ Successfully backed up %s\n" "${appName}"
+		else
+			printf "  ✗ Failed to backup %s\n" "${appName}"
+		fi
+	done
+}
