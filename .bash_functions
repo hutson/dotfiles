@@ -205,11 +205,7 @@ installNodePackages() {
 
 		fnm install 22
 
-		# Tool to update a markdown file, such as a `README.md` file, with a Table of Contents.
-		npm install -g doctoc
-
 		# Language server for the Bash language.
-
 		# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
 		#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
 		npm install -g bash-language-server
