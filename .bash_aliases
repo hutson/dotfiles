@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -u
+
 if [ "$(uname)" = "Darwin" ]; then
 	# Prompt the user once before removing any file.
 	alias rm='rm -i'

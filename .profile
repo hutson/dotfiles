@@ -14,16 +14,13 @@ export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
 
 # Add our local binary directories to our PATH. This will allow us to utilize locally installed binaries when available. Furthermore, because we prepend our local binary directory to our PATH our local binaries will be used in favor of globally-installed system binaries.
 # Adding `/opt/python/libexec/` to path so that `python` and `pip` point to Python 3, and pip 3, respectively, instead of Python 2.
-export PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${HOMEBREW_PREFIX}/opt/python/libexec/bin:${HOME}/Applications:${HOME}/.cargo/bin:${PATH}"
+export PATH="${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${HOMEBREW_PREFIX}/opt/python/libexec/bin:${HOME}/.cargo/bin:${PATH}"
 
 # Add our local info page directory to our MANPATH. This will allow the `man` utility to load manual pages from our local manual directory. Furthermore, because we prepend our local manual directory to our MANPATH, our local manual pages will be used in favor of globally installed manual pages.
 export MANPATH="${HOMEBREW_PREFIX}/share/man:${MANPATH:-}"
 
 # Add our local info page directory to our INFOPATH. This will allow the `info` utility to load manual pages from our local manual directory. Furthermore, because we prepend our local manual directory to our INFOPATH, our local manual pages will be used in favor of globally installed manual pages.
 export INFOPATH="${HOMEBREW_PREFIX}/share/info:${INFOPATH:-}"
-
-# Specify the directory where `nvm` should install various versions of node and npm packages.
-export NVM_DIR="${HOMEBREW_PREFIX}/var/nvm"
 
 # Inform `pkg-config` of additional pkgconfig metadata available from our brew installation.
 export PKG_CONFIG_PATH="${HOMEBREW_PREFIX}/lib/pkgconfig/:${HOMEBREW_PREFIX}/share/pkgconfig/:${PKG_CONFIG_PATH}"

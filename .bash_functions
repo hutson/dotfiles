@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -u
+
 #! Setup a local environment.
 # Setup a local environment that contains all the tools and libraries needed for development work, and play.
 setupEnvironment() {
@@ -10,18 +12,18 @@ setupEnvironment() {
 		rm -fr "${HOMEBREW_PREFIX}" &>/dev/null
 	fi
 
-	# Setup Brew.
 	setupHomeBrew
 	installBrewPackages
-	installNodePackages
 	brew cleanup -s
 
+	installNodePackages
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 }
 
 #! Update environment.
 # Update our development environment by installing the latest version of our desired tools.
 updateEnvironment() {
+
 	# Update Brew.
 	brew update
 
@@ -29,15 +31,9 @@ updateEnvironment() {
 	brew unlink util-linux # To work around `uuid.h no such file` error. See https://github.com/orgs/Homebrew/discussions/4899#discussioncomment-7564355
 	brew upgrade
 	brew link util-linux
-
-	# Cleanup Brew installation.
 	brew cleanup -s --prune=all
 
-	# Update general tools.
-	if [ "$(uname)" = "Darwin" ]; then
-		installNodePackages
-	fi
-
+	installNodePackages
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
 	if [ "$(uname -n)" = "startopia" ]; then
@@ -113,7 +109,7 @@ installBrewPackages() {
 
 			# Install a CLI tool for managing Node interpreter versions within the current shell environment.
 			brew install fnm
-			eval "$(fnm env --use-on-cd)"
+			eval "$(fnm env)"
 
 			# Install git, a distributed source code management tool.
 			brew install git
@@ -124,7 +120,7 @@ installBrewPackages() {
 			# Install command line text editor.
 			brew install neovim
 			brew install ripgrep                                                                                                                                                                                 # Used by `telescope` for fast in-file searching.
-			curl --silent --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/ca0ae0a8b1bd6380caba2d8be43a2a19baf7dbe2/plug.vim # Library needed to support our plugin manager of choice for Neovim.
+			curl --silent --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim # Library needed to support our plugin manager of choice for Neovim.
 
 			# Fancy cross-shell command line prompt.
 			brew install starship
@@ -133,10 +129,6 @@ installBrewPackages() {
 		if [ "$(uname)" = "Darwin" ]; then
 			# Install cross-platform terminal emulator.
 			brew install ghostty
-
-			# Install the Nerd Font patched Hack monspace font for our development environment.
-			brew tap homebrew/cask-fonts
-			brew install font-hack-nerd-font
 
 			# Latest GNU core utilities, such as `rm`, `ls`, etc.
 			brew install coreutils
@@ -169,13 +161,9 @@ installBrewPackages() {
 
 		elif [ "$(uname -n)" = "startopia" ]; then
 			# TODO: Replace with Homebrew package, or Flatpak package, when available.
-			wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.2/Ghostty-1.2.2-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
-			echo "f45a9a90dbf8a7d1d3bd8bfc79dd4041aa51a250877e993546199a0b6270c2a9 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
-			chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
-
-			# Install the Nerd Font patched Hack monspace font for our development environment.
-			brew install --cask font-hack-nerd-font
-			fc-cache -f "${HOMEBREW_PREFIX}/share/fonts/"
+			#wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
+			#echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
+			#chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
 
 			# Used to interact with the X11 system clipboard for Neovim.
 			brew install xclip
@@ -185,12 +173,11 @@ installBrewPackages() {
 
 			# Tool for managing offline video archives.
 			brew install yt-dlp
+
 		# For packages that should only be installed server-side and not on a desktop/local system.
 		else
 			# Install terminal multiplexer if it does not already exist on the target system.
-			if ! command -v tmux &>/dev/null; then
-				brew install tmux
-			fi
+			brew install tmux
 		fi
 	else
 		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
@@ -203,7 +190,7 @@ installNodePackages() {
 	if command -v fnm &>/dev/null; then
 		printf "\n> Installing Node packages.\n"
 
-		fnm install 22
+		fnm install 24
 
 		# Language server for the Bash language.
 		# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
