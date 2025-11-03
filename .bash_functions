@@ -36,13 +36,13 @@ updateEnvironment() {
 	installNodePackages
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
 
-	if [ "$(uname -n)" = "startopia" ]; then
-		# Delete the `flatpak` directory and re-create it via the `repair` command, because `brew cleanup` deletes the directories in the `repo/` folder, though not the `config` file in that directory. Therefore, the directory ends up in a corrupted state.
-		rm -rf ~/.local/share/flatpak/repo/
-		flatpak --user repair
+	#if [ "$(uname -n)" = "startopia" ]; then
+	# Delete the `flatpak` directory and re-create it via the `repair` command, because `brew cleanup` deletes the directories in the `repo/` folder, though not the `config` file in that directory. Therefore, the directory ends up in a corrupted state.
+	#	rm -rf ~/.local/share/flatpak/repo/
+	#	flatpak --user repair
 
-		flatpak update -y --noninteractive
-	fi
+	#	flatpak update -y --noninteractive
+	#fi
 }
 
 #! Setup HomeBrew.
