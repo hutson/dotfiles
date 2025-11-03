@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -u
-
 #! Setup a local environment.
 # Setup a local environment that contains all the tools and libraries needed for development work, and play.
 setupEnvironment() {

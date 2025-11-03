@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -u
-
 # BEGIN HISTORY
 
 # Don't push duplicate lines, or lines starting with a space, in the history. The second ignore condition allows you to execute commands with a leading space, thereby instructing Bash to not place them into history.
