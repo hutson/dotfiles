@@ -188,13 +188,6 @@ installNodePackages() {
 		#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
 		npm install -g bash-language-server
 
-		# Update PATH to reflect the current location of Node packages, which may have changed if `fnm` installed a new version of Node or Npm.
-		if command -v npm --version >/dev/null 2>&1; then
-			local PATH
-			PATH="$(npm -g bin):${PATH}"
-			export PATH
-		fi
-
 	else
 		echo "ERROR: 'fnm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'fnm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
 	fi
