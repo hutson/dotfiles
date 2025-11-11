@@ -60,137 +60,130 @@ setupHomeBrew() {
 #! Install packages via Brew.
 # Install packages via Brew's `brew` CLI tool.
 installBrewPackages() {
-	if command -v brew &>/dev/null; then
-		printf "\n> Installing Brew packages.\n"
-
-		if [ "$(uname)" = "Darwin" ] || [ "$(uname -n)" = "startopia" ]; then
-			# Install the latest Bash shell environment. This will give us access to the latest features in our primary work environment.
-			brew install bash
-
-			# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew installed packages. Version @2 is required for Bash > 2.
-			brew install bash-completion@2
-
-			# Install ncdu, a command line tool for displaying disk usage information.
-			brew install ncdu
-
-			# Output file contents with syntax highlighting and Git integration.
-			brew install bat
-
-			# Linter for shell scripts, including Bash.
-			brew install shellcheck
-
-			# Linter for YAML files.
-			brew install yamllint
-
-			# Install shell script formatter.
-			brew install shfmt
-
-			# Install tool for finding security vulnerabilities in container images, file systems, and Git repositories.
-			brew install trivy
-
-			# Install Go compiler and development stack.
-			brew install go
-			brew install gopls # Language server for the Go language.
-
-			# Language server for the Markdown language.
-			brew install marksman
-
-			# Language server for the Lua language.
-			brew install lua-language-server
-
-			# Install a CLI tool for managing Node interpreter versions within the current shell environment.
-			brew install fnm
-			eval "$(fnm env)"
-
-			# Install git, a distributed source code management tool.
-			brew install git
-
-			# Install the Large File Storage (LFS) git extension. The Large File Storage extension replaces large files that would normally be committed into the git repository, with a text pointer. Each revision of a file managed by the Large File Storage extension is stored server-side. Requires a remote git server with support for the Large File Storage extension.
-			brew install git-lfs
-
-			# Install command line text editor.
-			brew install neovim
-			brew install ripgrep                                                                                                                                                                                 # Used by `telescope` for fast in-file searching.
-			curl --silent --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim # Library needed to support our plugin manager of choice for Neovim.
-
-			# Fancy cross-shell command line prompt.
-			brew install starship
-		fi
-
-		if [ "$(uname)" = "Darwin" ]; then
-			# Install cross-platform terminal emulator.
-			brew install ghostty
-
-			# Latest GNU core utilities, such as `rm`, `ls`, etc.
-			brew install coreutils
-
-			# Docker/container support.
-			brew install colima
-			brew install docker
-
-			# Store Docker Hub credentials in the OSX Keychain for improved security.
-			brew install docker-credential-helper
-
-			# Install resource orchestration tool.
-			brew install terraform
-			brew install hashicorp/tap/terraform-ls # Language server.
-
-			# A commandline first note taking tool.
-			brew install nb
-
-			brew install wget
-
-			# Required to get a prompt for a security key pin when using GPG for SSH authentication on Mac devices.
-			brew install pinentry-mac
-			brew install gpg
-
-			brew install yubico-authenticator
-			brew install firefox@esr
-			brew install gpg-suite
-			brew install keepassxc
-			brew install obs
-
-		elif [ "$(uname -n)" = "startopia" ]; then
-			# TODO: Replace with Homebrew package, or Flatpak package, when available.
-			wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
-			echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
-			chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
-
-			# Used to interact with the X11 system clipboard for Neovim.
-			brew install xclip
-
-			# Static site generator and build tool.
-			brew install hugo
-
-			# Tool for managing offline video archives.
-			brew install yt-dlp
-
-		# For packages that should only be installed server-side and not on a desktop/local system.
-		else
-			# Install terminal multiplexer if it does not already exist on the target system.
-			brew install tmux
-		fi
-	else
+	if ! command -v brew &>/dev/null; then
 		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
+		return 1
+	fi
+
+	printf "\n> Installing Brew packages.\n"
+
+	# Install the latest Bash shell environment. This will give us access to the latest features in our primary work environment.
+	brew install bash
+
+	# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew installed packages. Version @2 is required for Bash > 2.
+	brew install bash-completion@2
+
+	# Install ncdu, a command line tool for displaying disk usage information.
+	brew install ncdu
+
+	# Output file contents with syntax highlighting and Git integration.
+	brew install bat
+
+	# Linter for shell scripts, including Bash.
+	brew install shellcheck
+
+	# Linter for YAML files.
+	brew install yamllint
+
+	# Install shell script formatter.
+	brew install shfmt
+
+	# Install tool for finding security vulnerabilities in container images, file systems, and Git repositories.
+	brew install trivy
+
+	# Install Go compiler and development stack.
+	brew install go
+	brew install gopls # Language server for the Go language.
+
+	# Language server for the Markdown language.
+	brew install marksman
+
+	# Language server for the Lua language.
+	brew install lua-language-server
+
+	# Install a CLI tool for managing Node interpreter versions within the current shell environment.
+	brew install fnm
+	eval "$(fnm env)"
+
+	# Install git, a distributed source code management tool.
+	brew install git
+
+	# Install the Large File Storage (LFS) git extension. The Large File Storage extension replaces large files that would normally be committed into the git repository, with a text pointer. Each revision of a file managed by the Large File Storage extension is stored server-side. Requires a remote git server with support for the Large File Storage extension.
+	brew install git-lfs
+
+	# Install command line text editor.
+	brew install neovim
+	brew install ripgrep                                                                                                                                                                                 # Used by `telescope` for fast in-file searching.
+	curl --silent --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim # Library needed to support our plugin manager of choice for Neovim.
+
+	# Fancy cross-shell command line prompt.
+	brew install starship
+
+	if [ "$(uname)" = "Darwin" ]; then
+		# Install cross-platform terminal emulator.
+		brew install ghostty
+
+		# Latest GNU core utilities, such as `rm`, `ls`, etc.
+		brew install coreutils
+
+		# Docker/container support.
+		brew install colima
+		brew install docker
+
+		# Store Docker Hub credentials in the OSX Keychain for improved security.
+		brew install docker-credential-helper
+
+		# Install resource orchestration tool.
+		brew install terraform
+		brew install hashicorp/tap/terraform-ls # Language server.
+
+		# A commandline first note taking tool.
+		brew install nb
+
+		brew install wget
+
+		# Required to get a prompt for a security key pin when using GPG for SSH authentication on Mac devices.
+		brew install pinentry-mac
+		brew install gpg
+
+		brew install yubico-authenticator
+		brew install firefox@esr
+		brew install gpg-suite
+		brew install keepassxc
+		brew install obs
+	else
+		# TODO: Replace with Homebrew package, or Flatpak package, when available.
+		wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
+		echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
+		chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
+
+		# Used to interact with the X11 system clipboard for Neovim.
+		brew install xclip
+
+		# Static site generator and build tool.
+		brew install hugo
+
+		# Tool for managing offline video archives.
+		brew install yt-dlp
 	fi
 }
 
 #! Install NodeJS packages.
 # Install NodeJS packages via `npm`.
 installNodePackages() {
-	if command -v fnm &>/dev/null; then
-		printf "\n> Installing Node packages.\n"
-
-		fnm install 24
-
-		# Language server for the Bash language.
-		# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
-		#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
-		npm install -g bash-language-server
-
-	else
+	if ! command -v fnm &>/dev/null; then
 		echo "ERROR: 'fnm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'fnm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
+		return 1
 	fi
+
+	printf "\n> Installing Node packages.\n"
+
+	fnm install 24
+
+	# Language server for the Bash language.
+	# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
+	#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
+	npm install -g bash-language-server
 }
 
 #! Compress a file or folder into one of many types of archive formats.
