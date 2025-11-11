@@ -21,26 +21,19 @@ setupEnvironment() {
 #! Update environment.
 # Update our development environment by installing the latest version of our desired tools.
 updateEnvironment() {
+	printf "\n> Updating Environment.\n"
 
-	# Update Brew.
+	# Update Homebrew and the list of available packages/updates.
 	brew update
 
-	# Upgrade all Brew-installed packages.
-	brew unlink util-linux # To work around `uuid.h no such file` error. See https://github.com/orgs/Homebrew/discussions/4899#discussioncomment-7564355
-	brew upgrade
-	brew link util-linux
-	brew cleanup -s --prune=all
+	# Upgrade all Brew-installed packages, including those that manage their own ugprades through auto-updates (--greedy).
+	brew upgrade --greedy
+
+	# Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage.
+	brew cleanup --scrub --prune=all
 
 	installNodePackages
 	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
-
-	#if [ "$(uname -n)" = "startopia" ]; then
-	# Delete the `flatpak` directory and re-create it via the `repair` command, because `brew cleanup` deletes the directories in the `repo/` folder, though not the `config` file in that directory. Therefore, the directory ends up in a corrupted state.
-	#	rm -rf ~/.local/share/flatpak/repo/
-	#	flatpak --user repair
-
-	#	flatpak update -y --noninteractive
-	#fi
 }
 
 #! Setup HomeBrew.

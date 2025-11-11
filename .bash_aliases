@@ -52,8 +52,13 @@ alias psmem='ps aux | sort --stable --parallel=2 -k4rh | head -n 5'
 # Show a tree view of all processes owned by the current user.
 alias processes='ps xf'
 
-# Update system packages and local packages through the use of a single command.
-alias update='updateSystem && updateEnvironment'
+# Create and launch a Debian-based development environment to house most day-to-day development work.
+# NOTE: `terminfo` for the Ghostty terminal emulator might not be available in the container image. In that case, the following error might appear, and some terminal features, like `clear` might not work:
+#					Error: terminfo entry not found for xterm-ghostty
+#				Therefore, we intentionally set `TERM` to `xterm-256color` to ensure most non-Ghostty terminal features work as expected. Additional details here - https://ghostty.org/docs/help/terminfo#ssh
+# TODO: Automatically update the Ubuntu version.
+# TODO: Migrate to Debian distrobution when it becomes available in toolbox: https://github.com/toolbx-images/images?tab=readme-ov-file#container-images-for-toolbx-and-distrobox
+alias home='TERM=xterm-256color toolbox enter --distro ubuntu --release 24.04'
 
 # Update system packages.
 alias updateSystem='sudo apt update && sudo apt full-upgrade && sudo apt autoremove'
