@@ -152,9 +152,9 @@ installBrewPackages() {
 
 		elif [ "$(uname -n)" = "startopia" ]; then
 			# TODO: Replace with Homebrew package, or Flatpak package, when available.
-			#wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
-			#echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
-			#chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
+			wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
+			echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
+			chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
 
 			# Used to interact with the X11 system clipboard for Neovim.
 			brew install xclip
