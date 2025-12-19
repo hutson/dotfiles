@@ -391,22 +391,12 @@ cmp.setup({
 	Enable and configure the AST-aware tree-sitter for syntax highlighting and folding.
 --]]
 
-require('nvim-treesitter.configs').setup {
-	-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
-	ensure_installed = { 'bash', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase', 'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua', 'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' },
+require('nvim-treesitter').setup {}
 
-	-- Install parsers asynchornously so as not to block the user from working with the current buffer. (Only applies to `ensure_installed`.)
-	sync_install = false,
-
-	highlight = {
-		-- Enable syntax highlighting using tree-sitter.
-		enable = true,
-
-		-- Setting this to `true` will run `syntax` and `tree-sitter` at the same time.
-		-- Using this option may slow down neovim while it's attempting to run two syntax highlighers and may cause duplicate highlights.
-		additional_vim_regex_highlighting = false,
-	},
-}
+-- A list of language parsers that should be installed and enabled to provide syntax highlighting.
+require('nvim-treesitter').install({ 'bash', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase',
+	'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua',
+	'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' })
 
 --[[
 	Setup vim-go Plugin
