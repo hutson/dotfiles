@@ -327,7 +327,18 @@ require('codecompanion').setup({
 		chat = {
 			adapter = {
 				name = "copilot",
-				model = "claude-sonnet-4",
+				model = "claude-sonnet-4.5",
+			},
+		},
+		inline = {
+			adapter = {
+				name = "copilot",
+				model = "claude-haiku-4.5",
+			},
+		},
+		cmd = {
+			adapter = {
+				name = "copilot",
 			},
 		},
 	},
@@ -335,7 +346,34 @@ require('codecompanion').setup({
 		chat = {
 			show_settings = true
 		}
-	}
+	},
+	--	rules = {
+	--		my_common_rules = {
+	--			description = "Collection of common LLM/AI instruction file.",
+	--			enabled = false,
+	--			files = {
+	--				{ path = "~/.config/rules/", files = "AGENT.md" },
+	--			},
+	--		},
+	--		my_go_rules = {
+	--			description = "Rules specific to Go programming language.",
+	--			enabled = false,
+	--			files = {
+	--				{ path = "~/.config/rules/", files = "GO.md" },
+	--			},
+	--		},
+	--		opts = {
+	--			chat = {
+	--				autoload = function()
+	--					if vim.bo.filetype == "go" then
+	--						return { "my_common_rules", "my_go_rules" }
+	--					else
+	--						return { "my_common_rules" }
+	--					end
+	--				end,
+	--			},
+	--		},
+	--	},
 })
 
 vim.keymap.set({ 'n', 'v' }, '<leader>i', '<ESC><cmd>CodeCompanionActions<CR>', {})
