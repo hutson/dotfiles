@@ -323,7 +323,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 --]]
 
 require('codecompanion').setup({
-	strategies = {
+	interactions = {
 		chat = {
 			adapter = {
 				name = "copilot",
@@ -347,33 +347,37 @@ require('codecompanion').setup({
 			show_settings = true
 		}
 	},
-	--	rules = {
-	--		my_common_rules = {
-	--			description = "Collection of common LLM/AI instruction file.",
-	--			enabled = false,
-	--			files = {
-	--				{ path = "~/.config/rules/", files = "AGENT.md" },
-	--			},
-	--		},
-	--		my_go_rules = {
-	--			description = "Rules specific to Go programming language.",
-	--			enabled = false,
-	--			files = {
-	--				{ path = "~/.config/rules/", files = "GO.md" },
-	--			},
-	--		},
-	--		opts = {
-	--			chat = {
-	--				autoload = function()
-	--					if vim.bo.filetype == "go" then
-	--						return { "my_common_rules", "my_go_rules" }
-	--					else
-	--						return { "my_common_rules" }
-	--					end
-	--				end,
-	--			},
-	--		},
-	--	},
+
+	-- Commands.
+	prompt_library = {
+		markdown = {
+			dirs = {
+				"~/.config/opencode/commands/",
+			},
+		},
+	},
+
+	-- Rules
+	rules = {
+		default = {
+			description = "Collection of common files for all projects",
+			files = {
+				"AGENTS.md",
+				{ path = "~/.config/opencode/AGENTS.md" },
+			},
+			is_preset = true,
+		},
+		opts = {
+			chat = {
+				autoload = "default",
+				enabled = true,
+			},
+		},
+	},
+
+	-- Skills - https://github.com/olimorris/codecompanion.nvim/discussions/2674
+
+	-- Agents - Similar to https://opencode.ai/docs/agents/
 })
 
 vim.keymap.set({ 'n', 'v' }, '<leader>i', '<ESC><cmd>CodeCompanionActions<CR>', {})

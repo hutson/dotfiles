@@ -47,5 +47,12 @@ echo "> Symlinking top files into the config directory (${XDG_CONFIG_HOME}/nvim)
 mkdir -p "${XDG_CONFIG_HOME}/procps"
 ln -s -f "$(pwd)/.config/procps/toprc" "${XDG_CONFIG_HOME}/procps/toprc"
 
+# Symlink GenAI rule files.
+echo "> Symlinking coding agent files into the config directory (${XDG_CONFIG_HOME}/opencode)."
+ln -s -f "$(pwd)/.config/opencode/AGENTS.md" "${XDG_CONFIG_HOME}/opencode/AGENTS.md"
+ln -s -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
+ln -s -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
+ln -s -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
+
 echo
 echo "==================== DEPLOYMENT COMPLETE =============="
