@@ -2,17 +2,18 @@
 
 - Make the smallest number of changes to complete the task.
 - Do not add short explanations or justifications as inline comments in generated code.
-- Review the current repository's `readme.md` files, if it exists, for an overview of the project.
+- Review the current repository's `readme.md` file, if it exists, for an overview of the project.
 
 ## Bash Scripting Rules
 
 - Always use the full argument name when using commands (e.g., use --help instead of -h).
 - Use double quotes around variable expansions to prevent word splitting and globbing.
 - Use $(...) for command substitution instead of backticks (`...`).
+- Use POSIX-compliant syntax to ensure portability across different Unix-like systems.
 
 ## Testing Rules
 
-- Prefer running single test cases or files instead of the entire test suite when possible.
+- Prefer running single test cases or files instead of the entire test suite.
 
 ## Code Style Rules
 
@@ -41,3 +42,12 @@
 ```go
 GOTOOLCHAIN=[VERSION] go test [PATH] --fail fast -race -cpu=1,24 -run [TEST]
 ```
+
+## Ansible Rules
+
+- Use `ansible.builtin.assert` for validation checks instead of `fail` with `when` conditions.
+- Prefer simplicity - avoid complex backup/rollback systems unless data cannot be recreated.
+- Make tasks idempotent - check state before running commands (e.g., check if a file exists before running a command that creates it).
+- When reviewing code, ask about removing unlikely edge case handling rather than preserving complexity.
+- Validate inputs early (preflight checks) but let Ansible modules fail naturally rather than duplicating their validation logic.
+- For non-critical data backups, or when creating/writing temporary files and directories, use OS temp directories and let the OS clean up automatically.
