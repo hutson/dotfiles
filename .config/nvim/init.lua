@@ -147,10 +147,6 @@ vim.opt.listchars = 'tab:>-,eol:$,trail:~,extends:>,precedes:<'
 	These options manage settings associated with folding portions of code into condensed forms, leaving only an outline of the code visible. Folding is a form of collapsing of function definitions, class definitions, sections, etc. When a portion of code is collapsed only a header associated with that section is left visible along with a line indicating statistics associated with the collapsed code; such as the number of collapsed lines, etc. The terms 'folded' and 'collapsed' within this file are used interchangeably with one another.
 --]]
 
--- Use tree-sitter to determine how source code or content should be folded.
-vim.opt.foldmethod = 'expr'
-vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
-
 -- Show 4 levels of nested content before automatically folding. 4 levels is usually good enough to find the section we are interested in before needing to expand that section, without being overwhelmed with all the content a file might contain.
 vim.opt.foldlevel = 4
 
@@ -181,29 +177,30 @@ vim.g.netrw_winsize = 75
 	Setup the vim-plug plugin so that it's aware of external plugins we're interested in incorporating into our Vim instance. vim-plug will manage those plugins by pulling in updates and placing them in the appropriate Vim directory.
 
 	Note: Plugins MUST be listed before any configuration steps involving these plugins can take place.
+
+	TODO: Review the built-in vim.pack in Neovim 0.13+ releases as the feature matures.
 --]]
 
 local Plug = vim.fn['plug#']
 vim.call('plug#begin')
 
-Plug('https://github.com/neovim/nvim-lspconfig.git') -- Language Server client for intelligent autocompletion.
+-- The nvim-lspconfig plugin is only needed for the server configuration files found under the lsp/ directory.
+Plug('https://github.com/neovim/nvim-lspconfig.git')
 
 -- Plugins for autocompletion.
-Plug('https://github.com/hrsh7th/nvim-cmp.git')
+-- TODO: Review the built-in vim.o.autocomplete in Neovim 0.13+ releases as the feature matures.
 Plug('https://github.com/hrsh7th/cmp-nvim-lsp.git')
 Plug('https://github.com/hrsh7th/cmp-path.git')
+Plug('https://github.com/hrsh7th/nvim-cmp.git')
 
 Plug('https://github.com/fatih/vim-go.git', { ['do'] = ':GoUpdateBinaries' }) -- Go tools, such as `goimports`.
 
-Plug('https://github.com/nvim-treesitter/nvim-treesitter.git', { ['do'] = ':TSUpdate' })
 Plug('https://github.com/editorconfig/editorconfig-vim.git')
-Plug('https://github.com/mbbill/undotree.git')
 Plug('https://github.com/vim-airline/vim-airline.git')
 Plug('https://github.com/tpope/vim-fugitive.git')
 Plug('https://github.com/EdenEast/nightfox.nvim')
 Plug('https://github.com/mhinz/vim-signify.git')
 Plug('https://github.com/ryanoasis/vim-devicons.git')
-
 
 -- Install and setup Telescope for fuzzy finding within neovim.
 Plug('https://github.com/nvim-tree/nvim-web-devicons.git')              -- Required to display icons in telescope dialog (vim-devicons won't work).
@@ -219,23 +216,21 @@ Plug('https://github.com/olimorris/codecompanion.nvim.git')
 -- Add plugins to Vim's `runtimepath`.
 vim.call('plug#end')
 
+vim.api.nvim_command('packadd nvim.undotree')
+
 --[[
 	Setup Language Server Plugin
 
 	Setup and configuration for language servers.
 --]]
 
-local lspconfig = require('lspconfig')
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
--- Inform the LSP servers which options our clients, such as LSP and nvim-cmp, support in the editor.
-local lsp_defaults = lspconfig.util.default_config
-lsp_defaults.capabilities = vim.tbl_deep_extend(
-	'force',
-	lsp_defaults.capabilities,
-	require('cmp_nvim_lsp').default_capabilities()
-)
+-- TODO: Review disabled LSP features - https://neovim.io/doc/user/lsp/#lsp-quickstart
+-- vim.lsp.codelens.enable()
 
 vim.lsp.config('gopls', {
+	capabilities = capabilities,
 	settings = {
 		gopls = {
 			analyses = {
@@ -258,8 +253,10 @@ vim.lsp.config('gopls', {
 		},
 	},
 })
+vim.lsp.enable('gopls')
 
 vim.lsp.config('lua_ls', {
+	capabilities = capabilities,
 	settings = {
 		Lua = {
 			diagnostics = {
@@ -273,11 +270,22 @@ vim.lsp.config('lua_ls', {
 		},
 	},
 })
+vim.lsp.enable('lua_ls')
 
-local servers = { 'bashls', 'marksman', 'terraformls', 'gopls', 'lua_ls' }
-for _, lsp in pairs(servers) do
-	vim.lsp.enable(lsp)
-end
+vim.lsp.config('terraformls', {
+	capabilities = capabilities,
+})
+vim.lsp.enable('terraformls')
+
+vim.lsp.config('marksman', {
+	capabilities = capabilities,
+})
+vim.lsp.enable('marksman')
+
+vim.lsp.config('bashls', {
+	capabilities = capabilities,
+})
+vim.lsp.enable('bashls')
 
 -- The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
 --
@@ -314,7 +322,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		end, opts)
 	end,
 })
-
 
 --[[
 	Setup codecompanion.
@@ -428,19 +435,6 @@ cmp.setup({
 })
 
 --[[
-	Setup tree-sitter Plugin
-
-	Enable and configure the AST-aware tree-sitter for syntax highlighting and folding.
---]]
-
-require('nvim-treesitter').setup {}
-
--- A list of language parsers that should be installed and enabled to provide syntax highlighting.
-require('nvim-treesitter').install({ 'bash', 'comment', 'cooklang', 'css', 'diff', 'dockerfile', 'git_rebase',
-	'gitattributes', 'gitcommit', 'gitignore', 'go', 'gomod', 'gosum', 'hcl', 'html', 'javascript', 'json', 'lua',
-	'markdown_inline', 'python', 'regex', 'terraform', 'toml', 'vim', 'yaml', 'zig' })
-
---[[
 	Setup vim-go Plugin
 
 	Setup for a vim-go environment to enable features such as formatting on save.
@@ -525,7 +519,7 @@ vim.keymap.set('n', '<leader>a', '<cmd>cclose<CR>', opts)
 vim.keymap.set('n', '<leader>m', 'mmHmt<cmd>%s/<C-V><CR>//ge<CR>\'tzt\'m', opts)
 
 -- Toggle the display of the left pane Undo history tree.
-vim.keymap.set('n', '<F2>', '<cmd>UndotreeToggle<CR>', opts)
+vim.keymap.set('n', '<F2>', '<cmd>Undotree<CR>', opts)
 
 -- Support switching between Vim splits using ALT and the arrow keys.
 vim.keymap.set('n', '<A-Up>', '<cmd>wincmd k<CR>', opts)
