@@ -88,9 +88,6 @@ installBrewPackages() {
 	# Install shell script formatter.
 	brew install shfmt
 
-	# Install tool for finding security vulnerabilities in container images, file systems, and Git repositories.
-	brew install trivy
-
 	# Install Go compiler and development stack.
 	brew install go
 	brew install gopls # Language server for the Go language.

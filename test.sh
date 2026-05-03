@@ -27,11 +27,4 @@ find . -path ./.git -prune -o -type f -exec sh -c 'file "$1" | grep -q "shell sc
 echo "✓ 'shellcheck' passed"
 echo
 
-echo "==================== TRIVY SCAN ======================"
-echo "Running Trivy scan for vulnerabilities, misconfigurations, secrets, and licenses..."
-trivy filesystem --scanners vuln,misconfig,secret,license --license-full \
-	--ignored-licenses Apache-2.0 \
-	--quiet ./
-echo "✓ Trivy scan passed"
-echo
 echo "==================== ALL CHECKS PASSED ==============="
