@@ -1,38 +1,68 @@
 ## General Rules
 
 - Make the smallest number of changes to complete the task.
-- Do not add short explanations or justifications as inline comments in generated code.
-- Review the current repository's `readme.md` file, if it exists, for an overview of the project.
-
-## Bash Scripting Rules
-
-- Always use the full argument name when using commands (e.g., use --help instead of -h).
-- Use double quotes around variable expansions to prevent word splitting and globbing.
-- Use $(...) for command substitution instead of backticks (`...`).
-- Use POSIX-compliant syntax to ensure portability across different Unix-like systems.
-
-## Testing Rules
-
-- Prefer running single test cases or files instead of the entire test suite.
+- Break down complex solutions into individual steps.
+- When there are 2 or more possible solutions to a problem, explain the trade-offs of each solution and ask the user which option they prefer.
+- When encountering ambiguity, or when instructions are in conflict with one another, ask the user to clarify.
+- If project scope or commands need to be executed to validate correctness of changes, read the project's `readme.md` file for testing intructions.
+- Never commit or push code using `git` or other source control tool.
 
 ## Code Style Rules
 
 - Follow the project's existing code style and conventions.
+- Use tabs for indentation unless a file is indented using spaces.
+- Use meaningful and readable function and variable names that describe the purpose and form a sentence:
+
+```bash
+if isAuthorized(username) {
+    // do something
+}
+```
+
+Not:
+
+```bash
+if authcheck(u) {
+    // do something
+}
+```
+
+## Bash Scripting Rules
+
+- Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h), though be mindful that many command on MacOS only support the short-hand version.
+- Always use double quotes around variable expansion to prevent word splitting and globbing; `"$speed"`
+
+- Always use curly brackets around variable expansion to avoid ambiguity; `"${speed}mph"` when the variable is `$speed`
+- Always use `$(...)` for command substitution instead of backticks (`...`).
+- Prefer POSIX-compliant syntax, such as `test` or single `[` brackets, to improve portability across different Unix-like operating systems.
+- Use defensive shell scripting best practices: such as `set -euf -o pipefail` at the start of bash scripts for safety, an avoid the use of `eval`.
+
+## Testing Rules
+
+- Never modify tests unrelated to the code that is added or modified.
+- Always ask to add or update tests for new or modified code.
+- Prefer running only those test cases that cover the funtionality that was added or modified.
+- Added or modified functionality includes all uncommitted changes in the local project, regardless of whether those changes were made in the current session.
+
+## Documentation Rules
+
+- Avoid introducing single line comments that explain what is happening or how it's happening.
+- Instead, prefer introducing multi-line comments that explain why code was written a particular way, but only if there were alternative approaches considered, or when the code is not self-explanatory/documenting.
 
 ## Security Rules
 
 - Avoid using hardcoded sensitive information such as passwords or API keys in the code.
-- Sanitize and validate all user inputs to prevent security vulnerabilities.
+- Sanitize and validate all user inputs.
+- When introducing new packages, or migrating a project to a new package manager, always prefer the use of lockfiles, or if lockfiles are not supported, prefer pinning a version to a specific commit hash or content hash.
 
 ## Dotfiles Rules
 
 - Follow XDG Base Directory specification: use `XDG_CONFIG_HOME` for configuration files, `XDG_DATA_HOME` for data files, and `XDG_CACHE_HOME` for cache files.
-- Use defensive shell scripting practices: always include `set -euf -o pipefail` at the start of bash scripts for safety.
 - Organize configuration into modular, single-purpose files rather than monolithic configuration files for easier maintenance and version control.
 
 ## Go Compiler Rules
 
-- Always prefer building and testing against the lastest toolchain.
+- Always prefer building and testing against the lastest Go toolchain.
 - Ensure `go.mod` is setup to prefer the oldest supported version of Go, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
 
 ## Go Testing Rules
