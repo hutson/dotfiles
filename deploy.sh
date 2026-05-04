@@ -2,6 +2,15 @@
 
 set -euf -o pipefail
 
+# Verify script is run from its own directory.
+script_dir="$(cd "$(dirname "${0}")" && pwd)"
+if [ "$(pwd)" != "$script_dir" ]; then
+	echo "ERROR: This script must be run from its own directory." >&2
+	echo "Expected: $script_dir" >&2
+	echo "Current:  $(pwd)" >&2
+	exit 1
+fi
+
 # Get the project name from the current directory.
 project_name="$(basename "$(pwd)")"
 
@@ -49,10 +58,12 @@ ln -s -f "$(pwd)/.config/procps/toprc" "${XDG_CONFIG_HOME}/procps/toprc"
 
 # Symlink GenAI rule files.
 echo "> Symlinking coding agent files into the config directory (${XDG_CONFIG_HOME}/opencode)."
+mkdir -p "${XDG_CONFIG_HOME}/opencode"
+ln -s -f "$(pwd)/.config/opencode/opencode.json" "${XDG_CONFIG_HOME}/opencode/opencode.json"
 ln -s -f "$(pwd)/.config/opencode/AGENTS.md" "${XDG_CONFIG_HOME}/opencode/AGENTS.md"
-ln -s -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
-ln -s -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
-ln -s -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
+ln -s -T -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
+ln -s -T -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
+ln -s -T -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
 
 echo
 echo "==================== DEPLOYMENT COMPLETE =============="
