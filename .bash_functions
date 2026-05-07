@@ -15,7 +15,7 @@ setupEnvironment() {
 	brew cleanup -s
 
 	installNodePackages
-	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
+	nvim --headless -c "lua vim.pack.update(nil, { force = true, target = 'lockfile' })" -c "qa!"
 }
 
 #! Update environment.
@@ -33,7 +33,19 @@ updateEnvironment() {
 	brew cleanup --scrub --prune=all
 
 	installNodePackages
-	nvim +PlugUpgrade +PlugInstall +PlugUpdate +PlugClean +TSUpdate +qa
+	nvim --headless -c "lua vim.pack.update(nil, { force = true, target = 'lockfile' })" -c "qa!"
+}
+
+#! Update lock state.
+# Update all lockfiles and other hard-voded versions used to install and managed third-party software referenced by this dotfile project.
+updateLockState() {
+	printf "\n> Updating lockfiles and hard-coded versions.\n"
+
+	nvim --headless -c "lua vim.pack.update(nil, { force = true })" -c "qa!"
+
+	# TODO: Include other tools and files.
+
+	# TODO: Confirm changes with user.
 }
 
 #! Setup HomeBrew.
@@ -110,8 +122,7 @@ installBrewPackages() {
 
 	# Install command line text editor.
 	brew install neovim
-	brew install ripgrep                                                                                                                                                                                 # Used by `telescope` for fast in-file searching.
-	curl --silent --location --output "${XDG_DATA_HOME}/nvim/site/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/baa66bcf349a6f6c125b0b2b63c112662b0669e1/plug.vim # Library needed to support our plugin manager of choice for Neovim.
+	brew install ripgrep
 
 	# Fancy cross-shell command line prompt.
 	brew install starship

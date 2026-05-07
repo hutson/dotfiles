@@ -45,6 +45,7 @@ ln -s -f "$(pwd)/.gnupg/gpg-agent.conf" "${HOME}/.gnupg/gpg-agent.conf"
 echo "> Symlinking Neovim files into the config directory (${XDG_CONFIG_HOME}/nvim)."
 mkdir -p "${XDG_CONFIG_HOME}/nvim"
 ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
+ln -s -f "$(pwd)/.config/nvim/nvim-pack-lock.json" "${XDG_CONFIG_HOME}/nvim/nvim-pack-lock.json"
 
 # Symlink Ghostty configuration files.
 echo "> Symlinking Ghostty files into the config directory (${XDG_CONFIG_HOME}/ghostty)."

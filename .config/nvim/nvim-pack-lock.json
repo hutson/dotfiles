@@ -1,0 +1,72 @@
+{
+  "plugins": {
+    "cmp-nvim-lsp": {
+      "rev": "cbc7b02bb99fae35cb42f514762b89b5126651ef",
+      "src": "https://github.com/hrsh7th/cmp-nvim-lsp.git"
+    },
+    "cmp-path": {
+      "rev": "c642487086dbd9a93160e1679a1327be111cbc25",
+      "src": "https://github.com/hrsh7th/cmp-path.git"
+    },
+    "codecompanion.nvim": {
+      "rev": "2e33fbdd1ace1e5019ffba8891c5a23711005707",
+      "src": "https://github.com/olimorris/codecompanion.nvim.git"
+    },
+    "editorconfig-vim": {
+      "rev": "c0227885a06b155d5aa5465e08b9800e8c939f70",
+      "src": "https://github.com/editorconfig/editorconfig-vim.git"
+    },
+    "nightfox.nvim": {
+      "rev": "26b61b1f856ec37cae3cb64f5690adb955f246a1",
+      "src": "https://github.com/EdenEast/nightfox.nvim.git"
+    },
+    "nvim-cmp": {
+      "rev": "a1d504892f2bc56c2e79b65c6faded2fd21f3eca",
+      "src": "https://github.com/hrsh7th/nvim-cmp.git"
+    },
+    "nvim-lspconfig": {
+      "rev": "31026a13eefb20681124706a79fc1df6bf11ab27",
+      "src": "https://github.com/neovim/nvim-lspconfig.git"
+    },
+    "nvim-web-devicons": {
+      "rev": "4fc505ac7bd7692824a142e96e5f529c133862f8",
+      "src": "https://github.com/nvim-tree/nvim-web-devicons.git"
+    },
+    "plenary.nvim": {
+      "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
+      "src": "https://github.com/nvim-lua/plenary.nvim.git"
+    },
+    "ripgrep": {
+      "rev": "4519153e5e461527f4bca45b042fff45c4ec6fb9",
+      "src": "https://github.com/BurntSushi/ripgrep.git"
+    },
+    "telescope-fzf-native.nvim": {
+      "rev": "b25b749b9db64d375d782094e2b9dce53ad53a40",
+      "src": "https://github.com/nvim-telescope/telescope-fzf-native.nvim.git"
+    },
+    "telescope.nvim": {
+      "rev": "f04ab730b8f9c6bf3f54a206d0dcddfd70c52d59",
+      "src": "https://github.com/nvim-telescope/telescope.nvim.git"
+    },
+    "vim-airline": {
+      "rev": "1586662296c9dc946083e17cb6a4ef0b3e7c0d68",
+      "src": "https://github.com/vim-airline/vim-airline.git"
+    },
+    "vim-devicons": {
+      "rev": "71f239af28b7214eebb60d4ea5bd040291fb7e33",
+      "src": "https://github.com/ryanoasis/vim-devicons.git"
+    },
+    "vim-fugitive": {
+      "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
+      "src": "https://github.com/tpope/vim-fugitive.git"
+    },
+    "vim-go": {
+      "rev": "f4b4ba17035aebcd222df90375c1cbb1dc4d8c5b",
+      "src": "https://github.com/fatih/vim-go.git"
+    },
+    "vim-signify": {
+      "rev": "3b5ae37eb2b77c3ae58d60dfdc3fc30258078663",
+      "src": "https://github.com/mhinz/vim-signify.git"
+    }
+  }
+}

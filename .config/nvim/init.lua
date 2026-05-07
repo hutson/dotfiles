@@ -172,50 +172,56 @@ vim.g.netrw_liststyle = 3
 vim.g.netrw_winsize = 75
 
 --[[
-	Setup vim-plug Plugin
+	Setup vim.pack Plugin Manager
 
-	Setup the vim-plug plugin so that it's aware of external plugins we're interested in incorporating into our Vim instance. vim-plug will manage those plugins by pulling in updates and placing them in the appropriate Vim directory.
+	Register PackChanged autocmd before any vim.pack.add() calls. This is required because when a lockfile exists, plugins are installed from the lockfile on the first vim.pack.add() call, and install events
+	will fire before autocmds registered after that call.
 
-	Note: Plugins MUST be listed before any configuration steps involving these plugins can take place.
-
-	TODO: Review the built-in vim.pack in Neovim 0.13+ releases as the feature matures.
+	The autocmd handles post-install/update build steps for plugins that need them.
 --]]
 
-local Plug = vim.fn['plug#']
-vim.call('plug#begin')
+vim.api.nvim_create_autocmd('PackChanged', {
+	group = vim.api.nvim_create_augroup('pack_plugin_hooks', { clear = true }),
+	callback = function(ev)
+		local name, kind = ev.data.spec.name, ev.data.kind
+		if name == 'vim-go' and (kind == 'install' or kind == 'update') then
+			vim.cmd.packadd('vim-go')
+			vim.cmd.GoUpdateBinaries()
+		end
+	end,
+})
 
--- The nvim-lspconfig plugin is only needed for the server configuration files found under the lsp/ directory.
-Plug('https://github.com/neovim/nvim-lspconfig.git')
+vim.pack.add({
+	-- LSP config plugin for server configuration files found under the lsp/ directory.
+	'https://github.com/neovim/nvim-lspconfig.git',
 
--- Plugins for autocompletion.
--- TODO: Review the built-in vim.o.autocomplete in Neovim 0.13+ releases as the feature matures.
-Plug('https://github.com/hrsh7th/cmp-nvim-lsp.git')
-Plug('https://github.com/hrsh7th/cmp-path.git')
-Plug('https://github.com/hrsh7th/nvim-cmp.git')
+	-- Autocompletion plugins.
+	'https://github.com/hrsh7th/cmp-nvim-lsp.git',
+	'https://github.com/hrsh7th/cmp-path.git',
+	'https://github.com/hrsh7th/nvim-cmp.git',
 
-Plug('https://github.com/fatih/vim-go.git', { ['do'] = ':GoUpdateBinaries' }) -- Go tools, such as `goimports`.
+	-- Go tools plugin (provides goimports, gotools, etc).
+	'https://github.com/fatih/vim-go.git',
 
-Plug('https://github.com/editorconfig/editorconfig-vim.git')
-Plug('https://github.com/vim-airline/vim-airline.git')
-Plug('https://github.com/tpope/vim-fugitive.git')
-Plug('https://github.com/EdenEast/nightfox.nvim')
-Plug('https://github.com/mhinz/vim-signify.git')
-Plug('https://github.com/ryanoasis/vim-devicons.git')
+	'https://github.com/editorconfig/editorconfig-vim.git',
+	'https://github.com/vim-airline/vim-airline.git',
+	'https://github.com/tpope/vim-fugitive.git',
+	'https://github.com/EdenEast/nightfox.nvim.git',
+	'https://github.com/mhinz/vim-signify.git',
+	'https://github.com/ryanoasis/vim-devicons.git',
 
--- Install and setup Telescope for fuzzy finding within neovim.
-Plug('https://github.com/nvim-tree/nvim-web-devicons.git')              -- Required to display icons in telescope dialog (vim-devicons won't work).
-Plug('https://github.com/BurntSushi/ripgrep.git')                       -- Required for grep within files.
-Plug('https://github.com/nvim-telescope/telescope-fzf-native.nvim.git') -- Required for fast sorting.
-Plug('https://github.com/nvim-lua/plenary.nvim.git')                    -- Lua function required.
-Plug('https://github.com/nvim-telescope/telescope.nvim.git')
+	-- Telescope plugins for fuzzy finding.
+	'https://github.com/nvim-tree/nvim-web-devicons.git',
+	'https://github.com/BurntSushi/ripgrep.git',
+	'https://github.com/nvim-telescope/telescope-fzf-native.nvim.git',
+	'https://github.com/nvim-lua/plenary.nvim.git',
+	'https://github.com/nvim-telescope/telescope.nvim.git',
 
--- Plugins for GenAI.
-Plug('https://github.com/github/copilot.vim')
-Plug('https://github.com/olimorris/codecompanion.nvim.git')
+	-- AI coding assistants.
+	'https://github.com/olimorris/codecompanion.nvim.git',
+})
 
--- Add plugins to Vim's `runtimepath`.
-vim.call('plug#end')
-
+-- Load the built-in undotree plugin (ships with Neovim)
 vim.api.nvim_command('packadd nvim.undotree')
 
 --[[
