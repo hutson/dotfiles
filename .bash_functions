@@ -94,6 +94,9 @@ installBrewPackages() {
 	# Linter for shell scripts, including Bash.
 	brew install shellcheck
 
+	# Linter for Containerfiles.
+	brew install hadolint
+
 	# Linter for YAML files.
 	brew install yamllint
 
@@ -144,9 +147,6 @@ installBrewPackages() {
 		# Install resource orchestration tool.
 		brew install terraform
 		brew install hashicorp/tap/terraform-ls # Language server.
-
-		# A commandline first note taking tool.
-		brew install nb
 
 		brew install wget
 
