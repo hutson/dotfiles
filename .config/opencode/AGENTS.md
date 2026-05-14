@@ -5,7 +5,7 @@
 - When there are 2 or more possible solutions to a problem, explain the trade-offs of each solution and ask the user which option they prefer.
 - When encountering ambiguity, or when instructions are in conflict with one another, ask the user to clarify.
 - If project scope or commands need to be executed to validate correctness of changes, read the project's `readme.md` file for testing intructions.
-- Never commit or push code using `git` or other source control tool.
+- Never commit changes, push code, or open pull requests.
 
 ## Code Style Rules
 
@@ -60,18 +60,19 @@ if authcheck(u) {
 - Follow XDG Base Directory specification: use `XDG_CONFIG_HOME` for configuration files, `XDG_DATA_HOME` for data files, and `XDG_CACHE_HOME` for cache files.
 - Organize configuration into modular, single-purpose files rather than monolithic configuration files for easier maintenance and version control.
 
-## Go Compiler Rules
+## Go Project Creation Rules
 
-- Always prefer building and testing against the lastest Go toolchain.
-- Ensure `go.mod` is setup to prefer the oldest supported version of Go, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
+- When creating a new Go project, `go.mod` should use the oldest supported version of Go, 1.25.0, for the `go` directive, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
 
 ## Go Testing Rules
 
-- Prefer calling the `go test` command using the following format to ensure we are building against the lastest toolchain version, failing quickly on the first failure to avoid wasting time on bad tests, testing for race conditions in the code, and are further testing that there are no code paths that require a particular number of processor cores to work correctly.
+- Prefer calling the `go test` command using the following format to ensure we are failing quickly on the first failure to avoid wasting time on bad tests, testing for race conditions in the code, and are further testing that there are no code paths that require a particular number of processor cores to work correctly.
 
 ```go
-GOTOOLCHAIN=[VERSION] go test [PATH] --fail fast -race -cpu=1,24 -run [TEST]
+go test -failfast -race -cpu=1,24 -cover -coverprofile=coverage.out
 ```
+
+- When updating only part of an existing project, and the test case for that part of the code is known, use `-run` during development to reduce the time it takes to get feedback, but exclude `-run` when ready to validate the work is done.
 
 ## Ansible Rules
 
