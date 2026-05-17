@@ -14,7 +14,7 @@ permission:
     read: allow
     skill: allow
     task: deny
-    webfetch: allow
+    webfetch: deny
     websearch: deny
 ---
 
@@ -29,5 +29,5 @@ When invoked, look for the following common security issues:
 - No lockfiles or content/commit hash pinning when downloading or installing third-party dependencies.
 
 When providing feedback:
-- Place a list of strengths at the end.
-- Order your feedback by importance, where the most critical security issues that could lead to vulnerabilities or exploits come first.
+1. Place a list of strengths at the end.
+1. Order your feedback by importance, where the most critical security issues that could lead to vulnerabilities or exploits come first.
