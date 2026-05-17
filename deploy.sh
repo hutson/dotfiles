@@ -60,7 +60,7 @@ ln -s -f "$(pwd)/.config/procps/toprc" "${XDG_CONFIG_HOME}/procps/toprc"
 # Symlink GenAI rule files.
 echo "> Symlinking coding agent files into the config directory (${XDG_CONFIG_HOME}/opencode)."
 mkdir -p "${XDG_CONFIG_HOME}/opencode"
-ln -s -f "$(pwd)/.config/opencode/opencode.json" "${XDG_CONFIG_HOME}/opencode/opencode.json"
+ln -s -f "$(pwd)/.config/opencode/opencode.jsonc" "${XDG_CONFIG_HOME}/opencode/opencode.jsonc"
 ln -s -f "$(pwd)/.config/opencode/AGENTS.md" "${XDG_CONFIG_HOME}/opencode/AGENTS.md"
 ln -s -T -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
 ln -s -T -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"

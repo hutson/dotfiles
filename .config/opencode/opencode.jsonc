@@ -1,0 +1,26 @@
+{
+	"$schema": "https://opencode.ai/config.json",
+	// Supported models available here - https://opencode.ai/go
+	"agent": {
+		// minimax-m2.7 is not multimodal, but is nearly identical in performance at cheaper cost
+		// reference - https://llm-stats.com/models/compare/qwen3.6-plus-vs-minimax-m2.7
+		"build": {
+			"model": "opencode-go/minimax-m2.7"
+		},
+		// kimi-l2.6 is multimodal, and strong at reasoning, compared to similar models and
+		// to our general purpose build model.
+		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-mimo-v2-pro
+		"plan": {
+			"model": "opencode-go/kimi-k2.6"
+		}
+	},
+	"autoupdate": "notify",
+	"default_agent": "plan",
+	"enabled_providers": ["opencode-go"],
+	// General purpose model.
+	// Should be replaced by models better tailored to the specific agent/instructions, which effect
+	// how much reasoning is required, whether the model needs to be multimodal, and the latency
+	// that can be tolerated from the model.
+	"model": "opencode-go/minimax-m2.7",
+	"share": "disabled"
+}
