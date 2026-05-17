@@ -12,15 +12,36 @@
 		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-mimo-v2-pro
 		"plan": {
 			"model": "opencode-go/kimi-k2.6"
+		},
+		"reviewer-go": {
+			// Model should be comparable to the model used by `plan` agent to ensure same level
+			// of reasoning, but should be a different model, or model provider, to simulate
+			// providing a review from a difference perspective.
+			"model": "opencode-go/mimo-v2.5-pro"
 		}
 	},
 	"autoupdate": "notify",
 	"default_agent": "plan",
+	// Disabling `opencode` is required to avoid `opencode` leaking session metadata to their free summary model:
+	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795342973
+	"disabled_providers": ["opencode"],
 	"enabled_providers": ["opencode-go"],
+	// TODO: Investigate whether formatters are automatically downloaded. Until then, disable formatters
+	// as we want to manage third-party packages ourselves - https://github.com/anomalyco/opencode/issues/22651
+	"formatter": false,
+	// Documentation mentions LSPs are automatically downloaded when needed. We do not want `opencode`
+	// managing third-party packages. Instead `opencode` should use LSP servers that are already
+	// pre-installed onto the system - https://opencode.ai/docs/lsp
+	// TODO: Look into this behavior to see if we can achieve the desired outcome.
+	"lsp": false,
 	// General purpose model.
 	// Should be replaced by models better tailored to the specific agent/instructions, which effect
 	// how much reasoning is required, whether the model needs to be multimodal, and the latency
 	// that can be tolerated from the model.
 	"model": "opencode-go/minimax-m2.7",
-	"share": "disabled"
+	"share": "disabled",
+	// Setting a small model used in the background by `opencode` to summarize session metadata, to
+	// avoid `opencode` sending session metadata to their own free summary model:
+	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
+	"small_model": "opencode-go/deepseek-v4-flash"
 }
