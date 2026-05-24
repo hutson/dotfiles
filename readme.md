@@ -41,5 +41,5 @@ On macOS, run `gpg --import <public key>` to import the GPG public key used for 
 To test your changes to ensure they meet the requirements of this project, run:
 
 ```bash
-bash test.sh
+bash .tools/test.sh
 ```
