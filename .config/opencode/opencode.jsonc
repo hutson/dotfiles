@@ -18,6 +18,12 @@
 			// of reasoning, but should be a different model, or model provider, to simulate
 			// providing a review from a difference perspective.
 			"model": "opencode-go/mimo-v2.5-pro"
+		},
+		"reviewer-test-design": {
+			// Model should be comparable to the model used by `plan` agent to ensure same level
+			// of reasoning, but should be a different model, or model provider, to simulate
+			// providing a review from a difference perspective.
+			"model": "opencode-go/mimo-v2.5-pro"
 		}
 	},
 	"autoupdate": "notify",
