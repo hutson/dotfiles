@@ -82,3 +82,16 @@ go test -failfast -race -cpu=1,24 -cover -coverprofile=coverage.out
 - When reviewing code, ask about removing unlikely edge case handling rather than preserving complexity.
 - Validate inputs early (preflight checks) but let Ansible modules fail naturally rather than duplicating their validation logic.
 - For non-critical data backups, or when creating/writing temporary files and directories, use OS temp directories and let the OS clean up automatically.
+
+## Logging Rules
+
+When implementing logging, or refactoring to update a project to follow logging best practices, adhere to these rules.
+
+- Log output to `stderr` by default.
+- Use `DEBUG` environment variable to determine when to enable or disable logging. The `DEBUG` environment variable must be set to enable logging. The value is the package name; e.g., `codeberg.org/hutson/semantic-tag/semantictag`.
+- The `DEBUG` environment variable may include multiple packages delimited using commas; `DEBUG=pkg1,pkg2`.
+- The `DEBUG` environment variable may enable all packages using `*`; `DEBUG=*`.
+- The `DEBUG` environment variable supports wildcard suffix; `DEBUG=codeberg.org/hutson/*` enables all packages under that path.
+- Use `LOG_LEVEL` environment variable to determine the minimum severity level, following RFC 5424; `emerg`, `alert`, `crit`, `err`, `warning`, `notice`, `info`, `debug`. Default is `warning` if not set.
+
+Logging from a command line tool may look like: `DEBUG=codeberg.org/hutson/semantic-tag/semantictag LOG_LEVEL=debug cli-tool`
