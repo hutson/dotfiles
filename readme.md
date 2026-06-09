@@ -18,7 +18,7 @@ Navigate into the `${HOME}/.dotfiles` directory. Once there, run the deployment 
 
 ```bash
 cd ~/.dotfiles
-bash deploy.sh
+bash install.sh
 ```
 
 If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux) website and install all the required packages for your Linux distribution. A few of the tools installed by this `dotfiles` project require libraries and system-level packages. For Debian-based systems, please ensure you install (`sudo apt install [package] --no-install-recommends`) the following packages in addition to the packages required by Homebrew.
