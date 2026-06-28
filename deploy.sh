@@ -2,11 +2,8 @@
 
 set -euf -o pipefail
 
-# This file exists to install a minimum shell environment within a Dev Container environment.
-# The user environment should only contain those aliases, tools, and configuration, needed to
-# simplify the user's experience. No tools should be installed that might conflict with the
-# tooling pre-installed by the Dev Container environment responsible for building and testing
-# the given project.
+# This file exists to install a full development environment that includes
+# all aliases, tools, and configuration, that the user may need while working.
 
 # Verify script is run from its own directory.
 script_dir="$(cd "$(dirname "${0}")" && pwd)"
@@ -49,6 +46,17 @@ mkdir -p "${HOME}/.gnupg"
 ln -s -f "$(pwd)/.gnupg/gpg.conf" "${HOME}/.gnupg/gpg.conf"
 ln -s -f "$(pwd)/.gnupg/gpg-agent.conf" "${HOME}/.gnupg/gpg-agent.conf"
 
+# Symlink Neovim configuration files.
+echo "> Symlinking Neovim files into the config directory (${XDG_CONFIG_HOME}/nvim)."
+mkdir -p "${XDG_CONFIG_HOME}/nvim"
+ln -s -f "$(pwd)/.config/nvim/init.lua" "${XDG_CONFIG_HOME}/nvim/init.lua"
+ln -s -f "$(pwd)/.config/nvim/nvim-pack-lock.json" "${XDG_CONFIG_HOME}/nvim/nvim-pack-lock.json"
+
+# Symlink Ghostty configuration files.
+echo "> Symlinking Ghostty files into the config directory (${XDG_CONFIG_HOME}/ghostty)."
+mkdir -p "${XDG_CONFIG_HOME}/ghostty"
+ln -s -f "$(pwd)/.config/ghostty/config" "${XDG_CONFIG_HOME}/ghostty/config"
+
 # Symlink GenAI rule files.
 echo "> Symlinking coding agent files into the config directory (${XDG_CONFIG_HOME}/opencode)."
 mkdir -p "${XDG_CONFIG_HOME}/opencode"
@@ -57,29 +65,6 @@ ln -s -f "$(pwd)/.config/opencode/AGENTS.md" "${XDG_CONFIG_HOME}/opencode/AGENTS
 ln -s -T -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
 ln -s -T -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
 ln -s -T -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
-
-mkdir -p "${HOME}/.local/bin"
-
-# Download each release to a temporary file and verify its SHA-256 checksum
-# before extraction to prevent executing tampered or corrupted archives.
-opencode_archive="$(mktemp)"
-expected_opencode_sha256="06a79c5bb7f8d01716b2440712cf67facd36db59188809aeb232374b206bd429"
-curl -sSL "https://github.com/anomalyco/opencode/releases/download/v1.16.2/opencode-linux-x64.tar.gz" -o "${opencode_archive}"
-echo "${expected_opencode_sha256}  ${opencode_archive}" | sha256sum --check --strict
-tar -xzf "${opencode_archive}" -C "${HOME}/.local/bin" opencode
-rm "${opencode_archive}"
-
-starship_archive="$(mktemp)"
-expected_starship_sha256="4488c11ca632327d1f1f16fb2f102c0646094c35479cd5435991385da43c61ac"
-curl -sSL "https://github.com/starship/starship/releases/download/v1.25.1/starship-x86_64-unknown-linux-gnu.tar.gz" -o "${starship_archive}"
-echo "${expected_starship_sha256}  ${starship_archive}" | sha256sum --check --strict
-tar -xzf "${starship_archive}" -C "${HOME}/.local/bin" starship
-rm "${starship_archive}"
-
-# TODO: Authenticate the opencode CLI with the opencode-go API so AI-assisted
-# features work without the user manually running `opencode login`. The user
-# must perform authentication interactively after deployment; this script
-# cannot securely embed credentials.
 
 echo
 echo "==================== DEPLOYMENT COMPLETE =============="
