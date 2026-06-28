@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#! Setup a local environment.
-# Setup a local environment that contains all the tools and libraries needed for development work, and play.
+#! Set up a local environment.
+# Set up a local environment containing all tools and libraries needed for development and personal use.
 setupEnvironment() {
 	printf "\n> Removing %s directory.\n" "${HOMEBREW_PREFIX}"
 
-	# Clear out our local system directory.
+	# Clear out the local system directory.
 	if [ -d "${HOMEBREW_PREFIX}" ]; then
 		rm -fr "${HOMEBREW_PREFIX}" &>/dev/null
 	fi
@@ -19,17 +19,17 @@ setupEnvironment() {
 }
 
 #! Update environment.
-# Update our development environment by installing the latest version of our desired tools.
+# Update the development environment by installing the latest version of all managed tools.
 updateEnvironment() {
 	printf "\n> Updating Environment.\n"
 
 	# Update Homebrew and the list of available packages/updates.
 	brew update
 
-	# Upgrade all Brew-installed packages, including those that manage their own ugprades through auto-updates (--greedy).
+	# Upgrade all Brew-installed packages, including those that manage their own upgrades through auto-updates (--greedy).
 	brew upgrade --greedy
 
-	# Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage.
+	# Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage, which is a bigger constraint in the containerized environments where we use Homebrew.
 	brew cleanup --scrub --prune=all
 
 	installNodePackages
@@ -37,40 +37,40 @@ updateEnvironment() {
 }
 
 #! Update lock state.
-# Update all lockfiles and other hard-voded versions used to install and managed third-party software referenced by this dotfile project.
+# Update all lockfiles and other hard-coded versions used to install and manage third-party software referenced by this dotfile project.
 updateLockState() {
 	printf "\n> Updating lockfiles and hard-coded versions.\n"
 
 	nvim --headless -c "lua vim.pack.update(nil, { force = true })" -c "qa!"
 
-	# TODO: Include other tools and files.
+	# TODO: Extend to include lockfiles for fnm (Node.js version), Brew (Brewfile.lock), and pinned AppImage hashes.
 
-	# TODO: Confirm changes with user.
+	# TODO: Display a diff of changed lockfiles and prompt the user to confirm before committing.
 }
 
-#! Setup HomeBrew.
-# Install HomeBrew locally so that we can download, build, and install tools from source.
+#! Set up Homebrew.
+# Install Homebrew locally to enable downloading, building, and installing tools from source.
 setupHomeBrew() {
-	printf "\n> Installing HomeBrew.\n"
+	printf "\n> Installing Homebrew.\n"
 
-	# Create a local binary directory before any setup steps require its existence. It must exist for the tar extraction process to extract the contents of Brew into the `.local/` directory.
+	# Create the Homebrew prefix directory; required before tar extraction.
 	mkdir -p "${HOMEBREW_PREFIX}/Homebrew"
 
-	# Download an archive version of the #master branch of Brew to the local system for future extraction. We download an archive version of Brew, rather than cloning the #master branch, because we must assume that the local system does not have the `git` tool available (A tool that will be installed later using Brew).
+	# Download a tarball of the `master` branch rather than cloning, because
+	# git is not yet available (installed later via Brew).
 	curl -L https://github.com/Homebrew/brew/archive/master.tar.gz -o "/tmp/homebrew.tar.gz"
 
-	# Extract archive file into local system directory.
 	tar -xf "/tmp/homebrew.tar.gz" -C "${HOMEBREW_PREFIX}/Homebrew/" --strip-components=1
 
-	# Symlink the dedicated brew binary into our Homebrew binary directory.
+	# Symlink the dedicated brew binary into the Homebrew binary directory.
 	mkdir -p "${HOMEBREW_PREFIX}/bin/"
 	ln -s "${HOMEBREW_PREFIX}/Homebrew/bin/brew" "${HOMEBREW_PREFIX}/bin/"
 
 	rm -f "/tmp/homebrew.tar.gz"
 }
 
-#! Install packages via Brew.
-# Install packages via Brew's `brew` CLI tool.
+#! Install packages via Homebrew.
+# Install all packages needed for the development environment using Homebrew's package manager.
 installBrewPackages() {
 	if ! command -v brew &>/dev/null; then
 		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
@@ -79,13 +79,13 @@ installBrewPackages() {
 
 	printf "\n> Installing Brew packages.\n"
 
-	# Install the latest Bash shell environment. This will give us access to the latest features in our primary work environment.
+	# Install the latest Bash shell for access to modern features.
 	brew install bash
 
-	# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew installed packages. Version @2 is required for Bash > 2.
+	# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew-installed packages. Version @2 is required for Bash > 2.
 	brew install bash-completion@2
 
-	# Install ncdu, a command line tool for displaying disk usage information.
+	# Install ncdu, a command-line tool for displaying disk usage information.
 	brew install ncdu
 
 	# Output file contents with syntax highlighting and Git integration.
@@ -105,29 +105,29 @@ installBrewPackages() {
 
 	# Install Go compiler and development stack.
 	brew install go
-	brew install gopls # Language server for the Go language.
+	brew install gopls # Language server for Go.
 
-	# Language server for the Markdown language.
+	# Language server for Markdown.
 	brew install marksman
 
-	# Language server for the Lua language.
+	# Language server for Lua.
 	brew install lua-language-server
 
 	# Install a CLI tool for managing Node interpreter versions within the current shell environment.
 	brew install fnm
 	eval "$(fnm env)"
 
-	# Install git, a distributed source code management tool.
+	# Install Git version control.
 	brew install git
 
-	# Install the Large File Storage (LFS) git extension. The Large File Storage extension replaces large files that would normally be committed into the git repository, with a text pointer. Each revision of a file managed by the Large File Storage extension is stored server-side. Requires a remote git server with support for the Large File Storage extension.
+	# Install Git LFS for managing large binary files via text pointers. Requires a remote Git server with LFS support.
 	brew install git-lfs
 
-	# Install command line text editor.
+	# Install command-line text editor.
 	brew install neovim
 	brew install ripgrep
 
-	# Fancy cross-shell command line prompt.
+	# Fancy cross-shell command-line prompt.
 	brew install starship
 
 	if [ "$(uname)" = "Darwin" ]; then
@@ -141,16 +141,16 @@ installBrewPackages() {
 		brew install colima
 		brew install docker
 
-		# Store Docker Hub credentials in the OSX Keychain for improved security.
+		# Store Docker Hub credentials in the macOS Keychain for improved security.
 		brew install docker-credential-helper
 
 		# Install resource orchestration tool.
 		brew install terraform
-		brew install hashicorp/tap/terraform-ls # Language server.
+		brew install hashicorp/tap/terraform-ls # Language server for Terraform.
 
 		brew install wget
 
-		# Required to get a prompt for a security key pin when using GPG for SSH authentication on Mac devices.
+		# Required to get a prompt for a security key PIN when using GPG for SSH authentication on Mac devices.
 		brew install pinentry-mac
 		brew install gpg
 
@@ -176,8 +176,8 @@ installBrewPackages() {
 	fi
 }
 
-#! Install NodeJS packages.
-# Install NodeJS packages via `npm`.
+#! Install Node.js packages.
+# Install Node.js packages via `npm`.
 installNodePackages() {
 	if ! command -v fnm &>/dev/null; then
 		echo "ERROR: 'fnm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'fnm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
@@ -186,16 +186,16 @@ installNodePackages() {
 
 	printf "\n> Installing Node packages.\n"
 
-	fnm install 24
+	fnm install 24 # Latest LTS at time of writing.
 
 	# Language server for the Bash language.
 	# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
-	#				download and compile the NodeJS package, which takes a very very long time and considerable system resources.
+	#       download and compile the Node.js package, which takes considerable time and system resources.
 	npm install -g bash-language-server
 }
 
-#! Compress a file or folder into one of many types of archive formats.
-# Compress a file or folder into one of many types of archive formats. Compression is based on the archive type specified.
+#! Compress a file or folder into an archive.
+# Supports multiple archive formats determined by the archive type argument.
 # This function is based on http://bijayrungta.com/extract-and-compress-files-from-command-line-in-linux
 #
 # \param $1 Path to the file or folder to be archived.
@@ -245,8 +245,8 @@ compress() {
 	fi
 }
 
-#! Extract multiple types of archive files.
-# Extract multiple types of archive files. Extraction is based on the archive type, and whether they are compressed, and if so, the type of compression used.
+#! Extract an archive file.
+# Automatically detects the archive format from the file extension and applies the appropriate extraction method.
 # This function is based on https://github.com/xvoland/Extract.
 #
 # \param $1 Path to the archive file.
@@ -302,7 +302,7 @@ convertZip() {
 }
 
 #! Display repository status of all Git repositories.
-# Recursively scan the current working directory for Git repositories and display their current branch, uncommitted changes, and remote tracking status. The intent is to provide a quick overview of the status of code repositories to ensure I do not forget to commit and push changes.
+# Recursively scan the current working directory for Git repositories and display their current branch, uncommitted changes, and remote tracking status. The intent is to provide a quick overview of the status of code repositories to avoid forgetting to commit and push changes.
 gits() {
 	local currentWorkingDirectory
 	currentWorkingDirectory="$(pwd)"
@@ -336,8 +336,8 @@ gits() {
 	done
 }
 
-#! Backup application data that do not have their own export mechanism.
-# Backup application data, such as game files, etc., to the user provided backup directory. This is intended to provide a way to backup applications that don't automatically backup their own data to a backup directory, or provdie an export button to backup data, etc.
+#! Back up application data that lacks an export mechanism.
+# Back up application data (e.g., game saves) to a user-specified directory. Targets applications that lack a built-in export or backup mechanism.
 backup() {
 	printf "Enter backup directory name: "
 	read -r backupDirName
