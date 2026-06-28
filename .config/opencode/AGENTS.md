@@ -1,15 +1,24 @@
+## Priority
+
+When rules conflict, apply them in this order:
+
+1. Security (never expose secrets, validate inputs)
+2. Correctness (tests pass, code works as intended)
+3. Simplicity (smallest change, fewest moving parts)
+4. Convention (match existing patterns and style)
+
 ## General Rules
 
 - Make the smallest number of changes to complete the task.
 - Break down complex solutions into individual steps.
-- When there are 2 or more possible solutions to a problem, explain the trade-offs of each solution and ask the user which option they prefer.
+- When improving code, make the best choice directly. Only present alternatives when the trade-offs involve subjective preferences the user should decide (e.g., performance vs. readability, library A vs. library B).
 - When encountering ambiguity, or when instructions are in conflict with one another, ask the user to clarify.
 - Read the project's `readme.md` file for testing and validation instructions, and if those instruction might be related to files you have modified, run those instructions in a loop, making changes to files until instructions pass.
 - Never consider, comment, or carry out the action of, committing changes, pushing code, or opening pull requests. Those will only ever be done by the user as the user's discretion.
+- Never stage changes in a version controlled project or folder.
 
 ## Code Style Rules
 
-- Follow the project's existing code style and conventions.
 - Use tabs for indentation unless a file is indented using spaces.
 - Use meaningful and readable function and variable names that describe the purpose and form a sentence:
 
@@ -29,19 +38,18 @@ if authcheck(u) {
 
 ## Bash Scripting Rules
 
-- Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h), though be mindful that many command on MacOS only support the short-hand version.
+- Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h), though be mindful that many commands on macOS only support the short-hand version.
 - Always use double quotes around variable expansion to prevent word splitting and globbing; `"$speed"`
 - Always use curly brackets around variable expansion to avoid ambiguity; `"${speed}mph"` when the variable is `$speed`
-- Always use `$(...)` for command substitution instead of backticks (`...`).
+- Always use `$(...)` for command substitution instead of backticks (`` `...` ``).
 - Prefer POSIX-compliant syntax, such as `test` or single `[` brackets, to improve portability across different Unix-like operating systems.
-- Use defensive shell scripting best practices: such as `set -euf -o pipefail` at the start of bash scripts for safety, an avoid the use of `eval`.
+- Use defensive shell scripting best practices: such as `set -euf -o pipefail` at the start of bash scripts for safety, and avoid the use of `eval`.
 
 ## Testing Rules
 
 - Never modify tests unrelated to the code that is added or modified.
-- Always ask to add or update tests for new or modified code.
-- Prefer running only those test cases that cover the funtionality that was added or modified.
-- Added or modified functionality includes all uncommitted changes in the local project, regardless of whether those changes were made in the current session.
+- Always ask before adding or updating tests.
+- Run only the tests that cover the modified functionality; ask the user when the scope is unclear.
 
 ## Documentation Rules
 
@@ -64,7 +72,7 @@ brew upgrade --greedy # Upgrade all Brew-installed packages, including those tha
 brew cleanup --scrub --prune=all # Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage, which is a bigger constraint in the containerized environments where we use Homebrew.
 ```
 
-- Use multi-line comments when inline comments appear to long to fit onto a single line on the user's screen, or when documenting a multi-line code block.
+- Use multi-line comments when inline comments appear too long to fit onto a single line on the user's screen, or when documenting a multi-line code block.
 
 ```bash
 # Remove old/outdated downloads and formulae, along with purging the cache, to 
@@ -76,7 +84,6 @@ brew cleanup --scrub --prune=all
 
 ## Security Rules
 
-- Avoid using hardcoded sensitive information such as passwords or API keys in the code.
 - Sanitize and validate all user inputs.
 - When introducing new packages, or migrating a project to a new package manager, always prefer the use of lockfiles, or if lockfiles are not supported, prefer pinning a version to a specific commit hash or content hash.
 
@@ -85,19 +92,11 @@ brew cleanup --scrub --prune=all
 - Follow XDG Base Directory specification: use `XDG_CONFIG_HOME` for configuration files, `XDG_DATA_HOME` for data files, and `XDG_CACHE_HOME` for cache files.
 - Organize configuration into modular, single-purpose files rather than monolithic configuration files for easier maintenance and version control.
 
-## Go Project Creation Rules
+## Go Rules
 
 - When creating a new Go project, `go.mod` should use the oldest supported version of Go, 1.25.0, for the `go` directive, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
-
-## Go Testing Rules
-
-- Prefer calling the `go test` command using the following format to ensure we are failing quickly on the first failure to avoid wasting time on bad tests, testing for race conditions in the code, and are further testing that there are no code paths that require a particular number of processor cores to work correctly.
-
-```go
-go test -failfast -race -cpu=1,24 -cover -coverprofile=coverage.out
-```
-
-- When updating only part of an existing project, and the test case for that part of the code is known, use `-run` during development to reduce the time it takes to get feedback, but exclude `-run` when ready to validate the work is done.
+- Run tests with: `go test -failfast -race -cpu=1,24 -cover -coverprofile=coverage.out`
+- Use `-run` during development for targeted feedback, but exclude `-run` for final validation.
 
 ## Ansible Rules
 
