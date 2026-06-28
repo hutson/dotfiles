@@ -2,37 +2,43 @@
 	"$schema": "https://opencode.ai/config.json",
 	// Supported models available here - https://opencode.ai/go
 	"agent": {
-		// minimax-m3 is nearly identical in performance to our plan model but at a cheaper cost
+		// minimax-m3 is single mode, and nearly identical in performance to our plan model but at a cheaper cost
 		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-mimo-v2.5-pro-vs-minimax-m3
 		"build": {
 			"model": "opencode-go/minimax-m3"
 		},
-		// qwen3.7-max is multimodal and strong at reasoning, compared to similar models and
+		// kimi-k2.7-code is multimodal and strong at reasoning, compared to similar models and
 		// to our cheaper general-purpose build model.
-		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-qwen3.7-max
+		// reference - https://llm-stats.com/models/compare/qwen3.7-max-vs-kimi-k2.7-code
 		"plan": {
-			"model": "opencode-go/qwen3.7-max"
+			"model": "opencode-go/kimi-k2.7-code"
 		},
 		"reviewer-documentation": {
 			// Model should be comparable to the model used by the `plan` agent to ensure the same level
 			// of reasoning, but should be a different model, or model provider, to simulate
 			// providing a review from a different perspective.
-			"model": "opencode-go/kimi-k2.6"
+			"model": "opencode-go/glm-5.2"
 		},
 		"reviewer-go": {
 			// Model should be comparable to the model used by the `plan` agent to ensure the same level
 			// of reasoning, but should be a different model, or model provider, to simulate
 			// providing a review from a different perspective.
-			"model": "opencode-go/kimi-k2.6"
+			"model": "opencode-go/glm-5.2"
+		},
+		"reviewer-security": {
+			// Model should be comparable to the model used by the `plan` agent to ensure the same level
+			// of reasoning, but should be a different model, or model provider, to simulate
+			// providing a review from a different perspective.
+			"model": "opencode-go/glm-5.2"
 		},
 		"reviewer-test-design": {
 			// Model should be comparable to the model used by the `plan` agent to ensure the same level
 			// of reasoning, but should be a different model, or model provider, to simulate
 			// providing a review from a different perspective.
-			"model": "opencode-go/kimi-k2.6"
+			"model": "opencode-go/glm-5.2"
 		}
 	},
-	"autoupdate": "notify",
+	"autoupdate": false,
 	"default_agent": "plan",
 	// Disabling `opencode` is required to avoid `opencode` leaking session metadata to their free summary model:
 	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795342973
@@ -56,5 +62,5 @@
 	// avoid `opencode` sending session metadata to their own free summary model:
 	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
 	// - https://llm-stats.com/models/compare/deepseek-v4-flash-max-vs-mimo-v2.5
-	"small_model": "opencode-go/deepseek-v4-flash"
+	"small_model": "opencode-go/mimo-v2.5"
 }
