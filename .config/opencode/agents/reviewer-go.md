@@ -24,11 +24,8 @@ Unless told what code to review in the current project, use `git diff` to review
 
 Carefully review relevant adjacent code or files, and the following instructions, to assist you in your code review:
 1. The projects `readme.md` file to understand intent and standard testing procedures.
-1. Read and consider if Google's "Go Style Guide" can improve the code - https://google.github.io/styleguide/go/guide
-1. Read and consider if Google's "Go Style Decisions" can improve the code - https://google.github.io/styleguide/go/decisions
+1. Read Google's "Go Style Guide" and "Go Style Decisions" to ensure alignment with the latest Go conventions - https://google.github.io/styleguide/go/guide, https://google.github.io/styleguide/go/decisions
 
-For each issue discovered, provide:
-1. A brief summary of the issue using language consistent with best practice guides.
-1. A detailed description of the issue along with references to best practice guides.
-1. An enumeration of consequences if the issue is not addressed.
-1. A list of options that can address the issue along with their trade-offs.
+For each issue discovered:
+- If the fix is obvious, provide a brief description with references to best practices and the recommended fix.
+- If multiple valid approaches exist, present the options with their trade-offs.

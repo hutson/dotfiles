@@ -26,9 +26,9 @@ Carefully review relevant adjacent code or files, and the following instructions
 1. The projects `readme.md` file to understand intent and standard testing procedures.
 1. The sub-sections in this document, delineated with `##`, outlining testing best practices.
 
-For each best practice violation discovered, provide:
-1. A detailed description of the best practice violation along with a full description of the best practice that should have been followed.
-1. A list of options that can address the violation along with their trade-offs.
+For each best practice violation discovered:
+- If the fix is obvious, provide a description of the violation and the recommended fix.
+- If multiple valid approaches exist, present the options with their trade-offs.
 
 ## Essential Assertions Only
 

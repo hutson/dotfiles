@@ -2,28 +2,34 @@
 	"$schema": "https://opencode.ai/config.json",
 	// Supported models available here - https://opencode.ai/go
 	"agent": {
-		// minimax-m2.7 is not multimodal, but is nearly identical in performance at cheaper cost
-		// reference - https://llm-stats.com/models/compare/qwen3.6-plus-vs-minimax-m2.7
+		// minimax-m3 is nearly identical in performance to our plan model but at a cheaper cost
+		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-mimo-v2.5-pro-vs-minimax-m3
 		"build": {
-			"model": "opencode-go/minimax-m2.7"
+			"model": "opencode-go/minimax-m3"
 		},
-		// kimi-l2.6 is multimodal, and strong at reasoning, compared to similar models and
-		// to our general purpose build model.
-		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-mimo-v2-pro
+		// qwen3.7-max is multimodal and strong at reasoning, compared to similar models and
+		// to our cheaper general-purpose build model.
+		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-qwen3.7-max
 		"plan": {
+			"model": "opencode-go/qwen3.7-max"
+		},
+		"reviewer-documentation": {
+			// Model should be comparable to the model used by the `plan` agent to ensure the same level
+			// of reasoning, but should be a different model, or model provider, to simulate
+			// providing a review from a different perspective.
 			"model": "opencode-go/kimi-k2.6"
 		},
 		"reviewer-go": {
-			// Model should be comparable to the model used by `plan` agent to ensure same level
+			// Model should be comparable to the model used by the `plan` agent to ensure the same level
 			// of reasoning, but should be a different model, or model provider, to simulate
-			// providing a review from a difference perspective.
-			"model": "opencode-go/mimo-v2.5-pro"
+			// providing a review from a different perspective.
+			"model": "opencode-go/kimi-k2.6"
 		},
 		"reviewer-test-design": {
-			// Model should be comparable to the model used by `plan` agent to ensure same level
+			// Model should be comparable to the model used by the `plan` agent to ensure the same level
 			// of reasoning, but should be a different model, or model provider, to simulate
-			// providing a review from a difference perspective.
-			"model": "opencode-go/mimo-v2.5-pro"
+			// providing a review from a different perspective.
+			"model": "opencode-go/kimi-k2.6"
 		}
 	},
 	"autoupdate": "notify",
@@ -41,13 +47,14 @@
 	// TODO: Look into this behavior to see if we can achieve the desired outcome.
 	"lsp": false,
 	// General purpose model.
-	// Should be replaced by models better tailored to the specific agent/instructions, which effect
+	// Should be replaced by models better tailored to the specific agent/instructions, which affect
 	// how much reasoning is required, whether the model needs to be multimodal, and the latency
 	// that can be tolerated from the model.
-	"model": "opencode-go/minimax-m2.7",
+	"model": "opencode-go/minimax-m3",
 	"share": "disabled",
 	// Setting a small model used in the background by `opencode` to summarize session metadata, to
 	// avoid `opencode` sending session metadata to their own free summary model:
 	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
+	// - https://llm-stats.com/models/compare/deepseek-v4-flash-max-vs-mimo-v2.5
 	"small_model": "opencode-go/deepseek-v4-flash"
 }
