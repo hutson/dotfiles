@@ -4,7 +4,7 @@ description: Review pending changes and suggest improvements.
 subtask: false
 ---
 
-Review all pending changes within the current workspace with the help of the following agents:
+Review all pending and staged changes in this working directory with the help of the following agents:
 
 - @reviewer-security if the changes included any changes to code, or to LLM-related Markdown files, including agents and `AGENTS.md`.
 - @reviewer-go if the changes include any Go language files.
