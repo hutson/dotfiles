@@ -68,10 +68,12 @@ if [ -z "${XDG_STATE_HOME:-}" ]; then
 fi
 
 # Start our GPG agent so that it can begin responding to requests for a private key (SSH or signing requests), but only from the local system.
-if [ -z "${SSH_CLIENT}" ] && [ -z "${SSH_TTY}" ]; then
+if [ -z "${SSH_CLIENT}" ] && [ -z "${SSH_TTY}" ] && command -v gpgconf >/dev/null 2>&1; then
 	SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
 	export SSH_AUTH_SOCK
 	gpgconf --launch gpg-agent
+else
+	echo "gpgconf is not available in the current environment, which will prevent SSH operations and crytographic operations from Git"
 fi
 
 # Must be at end of file to allow the environment (variables) to be configured.
