@@ -1,0 +1,36 @@
+FROM debian:trixie@sha256:d07d1b51c39f51188e60be9b64e6bf769fa94e187f092bc32b91305cfa34ba5a
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+RUN groupadd -g ${USER_GID} vscode \
+    && useradd -l -u ${USER_UID} -g ${USER_GID} -d /home/vscode -s /bin/bash -m vscode
+
+# ---
+
+RUN dpkg --add-architecture arm64 \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    # NOTE: The following Debian packages are required to run the dotfiles deployment scripts.
+    ca-certificates=20250419 \
+    curl=8.14.1-2+deb13u3 \
+    git=1:2.47.3-0+deb13u1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sSL "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64" \
+    -o /usr/local/bin/hadolint \
+    && echo "56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010  /usr/local/bin/hadolint" | sha256sum --check --strict \
+    && chmod +x /usr/local/bin/hadolint
+
+# ---
+
+# NOTE: The container's default user must remain root for Dev Container
+# orchestrator setup and lifecycle hooks. The remoteUser in
+# devcontainer.json drops to vscode for interactive development.
+# hadolint ignore=DL3002
+USER root
+
+WORKDIR /workspace
+
+CMD ["bash"]
