@@ -16,6 +16,7 @@ When rules conflict, apply them in this order:
 - Read the project's `readme.md` file for testing and validation instructions, and if those instruction might be related to files you have modified, run those instructions in a loop, making changes to files until instructions pass.
 - Never consider, comment, or carry out the action of, committing changes, pushing code, or opening pull requests. Those will only ever be done by the user as the user's discretion.
 - Never stage changes in a version controlled project or folder.
+- Use sub-agents to complete tasks whenever possible, taking care to ensure the requirements for a task align with the description of an available sub-agent.
 
 ## Code Style Rules
 
