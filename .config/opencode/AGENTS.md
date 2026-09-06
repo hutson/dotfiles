@@ -13,10 +13,12 @@ When rules conflict, apply them in this order:
 - Break down complex solutions into individual steps.
 - When improving code, make the best choice directly. Only present alternatives when the trade-offs involve subjective preferences the user should decide (e.g., performance vs. readability, library A vs. library B).
 - When encountering ambiguity, or when instructions are in conflict with one another, ask the user to clarify.
+- Use lowercase when creating readme files: `readme.md`
 - Read the project's `readme.md` file for testing and validation instructions, and if those instruction might be related to files you have modified, run those instructions in a loop, making changes to files until instructions pass.
 - Never consider, comment, or carry out the action of, committing changes, pushing code, or opening pull requests. Those will only ever be done by the user as the user's discretion.
 - Never stage changes in a version controlled project or folder.
 - Use sub-agents to complete tasks whenever possible, taking care to ensure the requirements for a task align with the description of an available sub-agent.
+- When reviewing code, ask about removing unlikely edge case handling rather than preserving complexity.
 
 ## Code Style Rules
 
@@ -39,18 +41,32 @@ if authcheck(u) {
 
 ## Bash Scripting Rules
 
+- Prefer POSIX-compliant code that can run against different shell environemnts (Dash, Bash, ZSH, etc.), unless instructed otherwise.
+- Prefer POSIX-compliant syntax, such as `test` or single `[` brackets, to improve portability across different Unix-like operating systems.
 - Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h), though be mindful that many commands on macOS only support the short-hand version.
 - Always use double quotes around variable expansion to prevent word splitting and globbing; `"$speed"`
 - Always use curly brackets around variable expansion to avoid ambiguity; `"${speed}mph"` when the variable is `$speed`
 - Always use `$(...)` for command substitution instead of backticks (`` `...` ``).
-- Prefer POSIX-compliant syntax, such as `test` or single `[` brackets, to improve portability across different Unix-like operating systems.
-- Use defensive shell scripting best practices: such as `set -euf -o pipefail` at the start of bash scripts for safety, and avoid the use of `eval`.
+- Use defensive shell scripting best practices: such as `set -o errexit -o nounset -o noglob -o pipefail` at the start of bash scripts for safety.
+- Avoid the use of `eval`.
+- Prefer the long form (`-o errexit`, `-o nounset`, `-o noglob`, `-o pipefail`) over the short form (`-euf -o pipefail`) for `set` options in bash scripts, consistent with using the full argument name for command flags.
+- Annotate the `set` line with a comment that explains the conditions that lead to a non-zero exit, so readers do not have to recall what each option does. For the canonical `set -o errexit -o nounset -o noglob -o pipefail` invocation, the comment should cover:
+  - `-o errexit`: a command (or, with `-o pipefail`, any stage of a pipeline) exits non-zero
+  - `-o nounset`: an unset variable is expanded
+  - `-o noglob`: filename expansion is disabled; the script does not rely on globbing, so leaving it off would only invite accidental matches against literal filenames containing glob metacharacters
+  - `-o pipefail`: a pipeline's exit status is the status of the rightmost command that exited non-zero (rather than the final command)
+- After calling `set -o errexit -o nounset -o noglob -o pipefail`, capture the script start time as a readonly variable and set `PS4` to reference it. The start time is cached once in `_trace_start_time_us` to avoid fragile partial-expansion tricks inside the `PS4` string. This requires bash 5.0+ because it uses `EPOCHREALTIME` and pure-bash integer arithmetic, eliminating the need for external `date` and `bc` calls during tracing:
+  ```bash
+  readonly _trace_start_time_us=${EPOCHREALTIME//./}
+  PS4='[DEBUGLEVEL:${SHLVL} SUBSHELL:${BASH_SUBSHELL} LINE:${LINENO} DIFF:$(us=$(( ${EPOCHREALTIME//./} - _trace_start_time_us )); ms=$(( us / 1000 )); printf "%d.%03d" $((ms / 1000)) $((ms % 1000)) )s SOURCE:${BASH_SOURCE}] '
+  ```
 
 ## Testing Rules
 
 - Never modify tests unrelated to the code that is added or modified.
 - Always ask before adding or updating tests.
 - Run only the tests that cover the modified functionality; ask the user when the scope is unclear.
+- Invoke Bash scripts using `bash -x` to enable debug logging.
 
 ## Documentation Rules
 
@@ -67,10 +83,17 @@ rectangleArea := width * height // Calculate rectangle area.
 brew upgrade --greedy # Upgrade all Brew-installed packages, including those that manage their own upgrades through auto-updates (--greedy).
 ```
 
-- Or prefer comments that compare the current implementation against alternatives, demonstrating why this approach is best for the situation or user.
+- Prefer comments that compare the current implementation against alternatives, demonstrating why this approach is best for the situation or user.
 
 ```bash
 brew cleanup --scrub --prune=all # Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage, which is a bigger constraint in the containerized environments where we use Homebrew.
+```
+
+- Prefer placing a very long trailing comment on its own line, above the code or content the comment is referencing.
+
+```bash
+# Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage, which is a bigger constraint in the containerized environments where we use Homebrew.
+brew cleanup --scrub --prune=all
 ```
 
 - Use multi-line comments when inline comments appear too long to fit onto a single line on the user's screen, or when documenting a multi-line code block.
@@ -81,6 +104,18 @@ brew cleanup --scrub --prune=all # Remove old/outdated downloads and formulae, a
 # this optimizes for reducing disk space usage, which is a bigger constraint in
 # the containerized environments where we use Homebrew.
 brew cleanup --scrub --prune=all
+```
+
+- Do not use em dashes in your writing.
+
+```
+this — or that - thing
+```
+
+- Prefer surround that text using paranthesis.
+
+```
+this (or that) thing
 ```
 
 ## Security Rules
@@ -95,31 +130,34 @@ brew cleanup --scrub --prune=all
 
 ## Go Rules
 
-- When creating a new Go project, `go.mod` should use the oldest supported version of Go, 1.25.0, for the `go` directive, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
+- When creating a new Go project, `go.mod` should use the oldest supported version of Go, 1.26.0, for the `go` directive, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
 - Run tests with: `go test -failfast -race -cpu=1,24 -cover -coverprofile=coverage.out`
 - Use `-run` during development for targeted feedback, but exclude `-run` for final validation.
 
 ## Ansible Rules
 
 - Use `ansible.builtin.assert` for validation checks instead of `fail` with `when` conditions.
-- Prefer simplicity - avoid complex backup/rollback systems unless data cannot be recreated.
-- Make tasks idempotent - check state before running commands (e.g., check if a file exists before running a command that creates it).
-- When reviewing code, ask about removing unlikely edge case handling rather than preserving complexity.
+- Prefer simplicity by avoiding complex backup/rollback systems, unless data cannot be recreated.
+- Make tasks idempotent by checking state before running commands (e.g., check if a file exists before running a command that creates it).
 - Validate inputs early (preflight checks) but let Ansible modules fail naturally rather than duplicating their validation logic.
 - For non-critical data backups, or when creating/writing temporary files and directories, use OS temp directories and let the OS clean up automatically.
 
-## Logging Rules
+## General Logging Rules
 
-When implementing logging, or refactoring to update a project to follow logging best practices, adhere to these rules.
+For general purpose programming languages; when implementing logging, or refactoring to update a project to follow logging best practices, adhere to these rules.
 
-- Log output to `stderr` by default.
+- Send log output to `stderr` by default.
 - Use `DEBUG` environment variable to determine when to enable or disable logging. The `DEBUG` environment variable must be set to enable logging. The value is the package name; e.g., `codeberg.org/hutson/semantic-tag/semantictag`.
 - The `DEBUG` environment variable may include multiple packages delimited using commas; `DEBUG=pkg1,pkg2`.
 - The `DEBUG` environment variable may enable all packages using `*`; `DEBUG=*`.
 - The `DEBUG` environment variable supports wildcard suffix; `DEBUG=codeberg.org/hutson/*` enables all packages under that path.
 - Use `LOG_LEVEL` environment variable to determine the minimum severity level, following RFC 5424; `emerg`, `alert`, `crit`, `err`, `warning`, `notice`, `info`, `debug`. Default is `warning` if not set.
 
-Logging from a command line tool may look like: `DEBUG=codeberg.org/hutson/semantic-tag/semantictag LOG_LEVEL=debug cli-tool`
+Logging from a command line tool may look like:
+
+```bash
+DEBUG=codeberg.org/hutson/semantic-tag/semantictag LOG_LEVEL=debug cli-tool`
+```
 
 ## Dev Container Rules
 
