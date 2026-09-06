@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# BEGIN HISTORY
-
 # Don't push duplicate lines, or lines starting with a space, in the history. The second ignore condition allows you to execute commands with a leading space, thereby instructing Bash to not place them into history.
 HISTCONTROL=ignoreboth
 
@@ -21,8 +19,6 @@ shopt -s histappend
 # Append command to the history file after every display of the command prompt, instead of after terminating the session (the current shell).
 # We no longer reload the contents of the history file into the history list (which is kept in memory). By reloading the history file (history -r) after appending commands to the file, we could have loaded history saved by other sessions currently running. However, that can cause commands from multiple sessions to intermix, making it difficult to re-produce your actions within the current session by following the command history in a linear fashion.
 PROMPT_COMMAND='history -a'
-
-# END HISTORY
 
 # Correct minor spelling errors in a `cd` command; such as transposed, missing, or extra, characters without the need for retyping.
 shopt -s cdspell
@@ -49,11 +45,6 @@ if type brew &>/dev/null; then
 			fi
 		done
 	fi
-fi
-
-# Execute `fnm` to configure our local environment to allow installation of Node versions.
-if command -v fnm >/dev/null 2>&1; then
-	eval "$(fnm env)"
 fi
 
 # Execute `starship` to configure our fancy cross-shell command line prompt.

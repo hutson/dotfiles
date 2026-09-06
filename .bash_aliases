@@ -13,22 +13,13 @@ alias mv='mv -iv'
 alias cp='cp -iv'
 alias ln='ln -i'
 
-# Enable color support for those GNU tools that support colorized output.
-if command -v dircolors &>/dev/null; then
-	# Check if user has a dircolors database (a file that maps file types, and file permissions, to colors). If the user has such a file, then instruct dircolors to use that file to map Bash color commands to the desired colors.
-	if [ -f "${HOME}/.dircolors" ]; then
-		eval "$(dircolors --bourne-shell "${HOME}/.dircolors")"
-	else
-		eval "$(dircolors --bourne-shell)"
-	fi
-
-	alias ip='ip --color=auto'
-	alias ls='ls --color=auto'
-	alias dir='dir --color=auto'
-	alias grep='grep --color=auto'
-	alias fgrep='fgrep --color=auto'
-	alias egrep='egrep --color=auto'
-fi
+# Enable color output on common commands.
+alias ip='ip --color=auto'
+alias ls='ls --color=auto'
+alias dir='dir --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
 
 # List content, including hidden files and folders, of a directory in long format.
 alias ll='ls -A -F -b -h -l -v --time-style=long-iso'
@@ -53,12 +44,9 @@ alias psmem='ps aux | sort --stable --parallel=2 -k4rh | head -n 5'
 alias processes='ps xf'
 
 # Create and launch a Debian-based development environment to house most day-to-day development work.
-# NOTE: `terminfo` for the Ghostty terminal emulator might not be available in the container image. In that case, the following error might appear, and some terminal features, like `clear` might not work:
-#					Error: terminfo entry not found for xterm-ghostty
-#				Therefore, we intentionally set `TERM` to `xterm-256color` to ensure most non-Ghostty terminal features work as expected. Additional details here - https://ghostty.org/docs/help/terminfo#ssh
-# TODO: Automatically update the Ubuntu version.
-# TODO: Migrate to Debian distrobution when it becomes available in toolbox: https://github.com/toolbx-images/images?tab=readme-ov-file#container-images-for-toolbx-and-distrobox
-alias home='TERM=xterm-256color toolbox enter --distro ubuntu --release 24.04'
+# TODO: Switch from Ubuntu to Debian when it is natively supported in Toolbox.
+# TODO: Switch to Ubuntu 26.04 once sudo works as expected in this environment (https://github.com/containers/toolbox/issues/1807)
+alias home='toolbox enter --distro ubuntu --release 24.04'
 
 # Update system packages.
 alias updateSystem='sudo apt update && sudo apt full-upgrade && sudo apt autoremove'
@@ -76,4 +64,4 @@ alias convertDirectoryZips='export -f convertZip && find . -type f -name "*.zip"
 alias backupMyDVD='dvdbackup --mirror --input /dev/dvd --output ~/Videos/ --progress --verbose'
 
 # Shortcut to query LLM via OpenCode in the current directory.
-alias q='opencode run'
+alias ?='opencode run'

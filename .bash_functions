@@ -1,39 +1,59 @@
 #!/usr/bin/env bash
 
-#! Set up a local environment.
-# Set up a local environment containing all tools and libraries needed for development and personal use.
-setupEnvironment() {
-	printf "\n> Removing %s directory.\n" "${HOMEBREW_PREFIX}"
-
-	# Clear out the local system directory.
-	if [ -d "${HOMEBREW_PREFIX}" ]; then
-		rm -fr "${HOMEBREW_PREFIX}" &>/dev/null
-	fi
-
-	setupHomeBrew
-	installBrewPackages
-	brew cleanup -s
-
-	installNodePackages
-	nvim --headless -c "lua vim.pack.update(nil, { force = true, target = 'lockfile' })" -c "qa!"
-}
-
 #! Update environment.
 # Update the development environment by installing the latest version of all managed tools.
 updateEnvironment() {
 	printf "\n> Updating Environment.\n"
 
-	# Update Homebrew and the list of available packages/updates.
-	brew update
+	brew bundle --file "${XDG_CONFIG_HOME}/Brewfile"
 
-	# Upgrade all Brew-installed packages, including those that manage their own upgrades through auto-updates (--greedy).
-	brew upgrade --greedy
-
-	# Remove old/outdated downloads and formulae, along with purging the cache, to free up disk space. The cache could improve performance in future upgrades, but this optimizes for reducing disk space usage, which is a bigger constraint in the containerized environments where we use Homebrew.
-	brew cleanup --scrub --prune=all
-
-	installNodePackages
 	nvim --headless -c "lua vim.pack.update(nil, { force = true, target = 'lockfile' })" -c "qa!"
+}
+
+#! Set up a local environment.
+# Set up a local environment containing all tools and libraries needed for development and personal use.
+setupEnvironment() {
+	printf "\n> Setting Up Environment.\n"
+
+	# Clear out the local system directory.
+	if [ -d "${HOMEBREW_PREFIX}" ]; then
+		printf "\n>> Removing %s directory.\n" "${HOMEBREW_PREFIX}"
+		rm -rf "${HOMEBREW_PREFIX}" &>/dev/null
+	fi
+
+	setupHomeBrew
+
+	updateEnvironment
+	
+	# TODO: Replace with Homebrew package, or Flatpak package, when available.
+	wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
+	echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
+	chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
+}
+
+#! Set up Homebrew.
+# Install Homebrew locally to enable downloading, building, and installing tools from source.
+setupHomeBrew() {
+	printf "\n> Installing Homebrew.\n"
+
+	# TODO: Install Homebrew dependencies if inside a toolbox environment.
+	# sudo apt-get update
+	# sudo apt-get install build-essential procps curl file git --no-install-recommends
+	#
+	# Create the Homebrew prefix directory; required before tar extraction.
+	mkdir -p "${HOMEBREW_PREFIX}/Homebrew"
+
+	# Download a tarball of the `master` branch rather than cloning, because
+	# git is not yet available (installed later via Brew).
+	curl -L https://github.com/Homebrew/brew/archive/main.tar.gz -o "/tmp/homebrew.tar.gz"
+
+	tar -xf "/tmp/homebrew.tar.gz" -C "${HOMEBREW_PREFIX}/Homebrew/" --strip-components=1
+
+	# Symlink the dedicated brew binary into the Homebrew binary directory.
+	mkdir -p "${HOMEBREW_PREFIX}/bin/"
+	ln -s "${HOMEBREW_PREFIX}/Homebrew/bin/brew" "${HOMEBREW_PREFIX}/bin/"
+
+	rm -f "/tmp/homebrew.tar.gz"
 }
 
 #! Update lock state.
@@ -46,152 +66,6 @@ updateLockState() {
 	# TODO: Extend to include lockfiles for fnm (Node.js version), Brew (Brewfile.lock), and pinned AppImage hashes.
 
 	# TODO: Display a diff of changed lockfiles and prompt the user to confirm before committing.
-}
-
-#! Set up Homebrew.
-# Install Homebrew locally to enable downloading, building, and installing tools from source.
-setupHomeBrew() {
-	printf "\n> Installing Homebrew.\n"
-
-	# Create the Homebrew prefix directory; required before tar extraction.
-	mkdir -p "${HOMEBREW_PREFIX}/Homebrew"
-
-	# Download a tarball of the `master` branch rather than cloning, because
-	# git is not yet available (installed later via Brew).
-	curl -L https://github.com/Homebrew/brew/archive/master.tar.gz -o "/tmp/homebrew.tar.gz"
-
-	tar -xf "/tmp/homebrew.tar.gz" -C "${HOMEBREW_PREFIX}/Homebrew/" --strip-components=1
-
-	# Symlink the dedicated brew binary into the Homebrew binary directory.
-	mkdir -p "${HOMEBREW_PREFIX}/bin/"
-	ln -s "${HOMEBREW_PREFIX}/Homebrew/bin/brew" "${HOMEBREW_PREFIX}/bin/"
-
-	rm -f "/tmp/homebrew.tar.gz"
-}
-
-#! Install packages via Homebrew.
-# Install all packages needed for the development environment using Homebrew's package manager.
-installBrewPackages() {
-	if ! command -v brew &>/dev/null; then
-		echo "ERROR: 'brew' is required for building and installing tools from source, but it's not available in your PATH. Please install 'brew' and ensure it's in your PATH. Then re-run 'installBrewPackages'."
-		return 1
-	fi
-
-	printf "\n> Installing Brew packages.\n"
-
-	# Install the latest Bash shell for access to modern features.
-	brew install bash
-
-	# Install bash-completion. This allows us to leverage bash completion scripts installed by our brew-installed packages. Version @2 is required for Bash > 2.
-	brew install bash-completion@2
-
-	# Install ncdu, a command-line tool for displaying disk usage information.
-	brew install ncdu
-
-	# Output file contents with syntax highlighting and Git integration.
-	brew install bat
-
-	# Linter for shell scripts, including Bash.
-	brew install shellcheck
-
-	# Linter for Containerfiles.
-	brew install hadolint
-
-	# Linter for YAML files.
-	brew install yamllint
-
-	# Install shell script formatter.
-	brew install shfmt
-
-	# Install Go compiler and development stack.
-	brew install go
-	brew install gopls # Language server for Go.
-
-	# Language server for Markdown.
-	brew install marksman
-
-	# Language server for Lua.
-	brew install lua-language-server
-
-	# Install a CLI tool for managing Node interpreter versions within the current shell environment.
-	brew install fnm
-	eval "$(fnm env)"
-
-	# Install Git version control.
-	brew install git
-
-	# Install Git LFS for managing large binary files via text pointers. Requires a remote Git server with LFS support.
-	brew install git-lfs
-
-	# Install command-line text editor.
-	brew install neovim
-	brew install ripgrep
-
-	# Fancy cross-shell command-line prompt.
-	brew install starship
-
-	if [ "$(uname)" = "Darwin" ]; then
-		# Install cross-platform terminal emulator.
-		brew install ghostty
-
-		# Latest GNU core utilities, such as `rm`, `ls`, etc.
-		brew install coreutils
-
-		# Docker/container support.
-		brew install colima
-		brew install docker
-
-		# Store Docker Hub credentials in the macOS Keychain for improved security.
-		brew install docker-credential-helper
-
-		# Install resource orchestration tool.
-		brew install terraform
-		brew install hashicorp/tap/terraform-ls # Language server for Terraform.
-
-		brew install wget
-
-		# Required to get a prompt for a security key PIN when using GPG for SSH authentication on Mac devices.
-		brew install pinentry-mac
-		brew install gpg
-
-		brew install yubico-authenticator
-		brew install firefox@esr
-		brew install gpg-suite
-		brew install keepassxc
-		brew install obs
-	else
-		# TODO: Replace with Homebrew package, or Flatpak package, when available.
-		wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.2.3/Ghostty-1.2.3-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
-		echo "cf239a0a9383aa9a148da2f6c6444993f871618cf4309d4db15d7be992d16725 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
-		chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
-
-		# Used to interact with the X11 system clipboard for Neovim.
-		brew install xclip
-
-		# Static site generator and build tool.
-		brew install hugo
-
-		# Tool for managing offline video archives.
-		brew install yt-dlp
-	fi
-}
-
-#! Install Node.js packages.
-# Install Node.js packages via `npm`.
-installNodePackages() {
-	if ! command -v fnm &>/dev/null; then
-		echo "ERROR: 'fnm' is required for installing NodeJS packages, but it's not available in your PATH. Please install 'fnm' and ensure it's in your PATH. Then re-run 'installNodePackages'."
-		return 1
-	fi
-
-	printf "\n> Installing Node packages.\n"
-
-	fnm install 24 # Latest LTS at time of writing.
-
-	# Language server for the Bash language.
-	# TODO: Switch this back to the Homebrew package `bash-language-server` as soon as we address the burden of needing to
-	#       download and compile the Node.js package, which takes considerable time and system resources.
-	npm install -g bash-language-server
 }
 
 #! Compress a file or folder into an archive.
