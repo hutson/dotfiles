@@ -208,17 +208,12 @@ vim.pack.add({
 	'https://github.com/tpope/vim-fugitive.git',
 	'https://github.com/EdenEast/nightfox.nvim.git',
 	'https://github.com/mhinz/vim-signify.git',
-	'https://github.com/ryanoasis/vim-devicons.git',
 
 	-- Telescope plugins for fuzzy finding.
-	'https://github.com/nvim-tree/nvim-web-devicons.git',
 	'https://github.com/BurntSushi/ripgrep.git',
 	'https://github.com/nvim-telescope/telescope-fzf-native.nvim.git',
 	'https://github.com/nvim-lua/plenary.nvim.git',
 	'https://github.com/nvim-telescope/telescope.nvim.git',
-
-	-- AI coding assistants.
-	'https://github.com/olimorris/codecompanion.nvim.git',
 })
 
 -- Load the built-in undotree plugin (ships with Neovim)
@@ -328,77 +323,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
 		end, opts)
 	end,
 })
-
---[[
-	Setup codecompanion.
-
-	Enable and configure the CodeCompanion plugin to provide AI-assisted code completion and suggestions.
---]]
-
-require('codecompanion').setup({
-	interactions = {
-		chat = {
-			adapter = {
-				name = "copilot",
-				model = "claude-sonnet-4.5",
-			},
-		},
-		inline = {
-			adapter = {
-				name = "copilot",
-				model = "claude-haiku-4.5",
-			},
-		},
-		cmd = {
-			adapter = {
-				name = "copilot",
-			},
-		},
-	},
-	display = {
-		chat = {
-			show_settings = true
-		}
-	},
-
-	-- Commands.
-	prompt_library = {
-		markdown = {
-			dirs = {
-				"~/.config/opencode/commands/",
-			},
-		},
-	},
-
-	-- Rules
-	rules = {
-		default = {
-			description = "Collection of common files for all projects",
-			files = {
-				"AGENTS.md",
-				{ path = "~/.config/opencode/AGENTS.md" },
-			},
-			is_preset = true,
-		},
-		opts = {
-			chat = {
-				autoload = "default",
-				enabled = true,
-			},
-		},
-	},
-
-	-- Skills - https://github.com/olimorris/codecompanion.nvim/discussions/2674
-
-	-- Agents - Similar to https://opencode.ai/docs/agents/
-})
-
-vim.keymap.set({ 'n', 'v' }, '<leader>i', '<ESC><cmd>CodeCompanionActions<CR>', {})
-vim.keymap.set({ 'n', 'v' }, '<leader>c', '<ESC><cmd>CodeCompanionChat<CR>', {})
-vim.keymap.set('v', 'ga', '<ESC><cmd>CodeCompanionChat Add!<CR>', {})
-
--- Expand 'cc' into 'CodeCompanion' in the command line
-vim.cmd([[cab cc CodeCompanion]])
 
 --[[
 	Setup nvim-cmp Plugin
