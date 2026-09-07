@@ -1,5 +1,4 @@
 {
-	"name": "dotfiles",
 	"build": {
 		"dockerfile": "Containerfile",
 		"context": "..",
