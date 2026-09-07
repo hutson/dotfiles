@@ -11,6 +11,13 @@ echo "==================== TESTING ${project_name^^} ====================="
 echo "Starting comprehensive code quality checks..."
 echo
 
+echo "==================== HADOLINT ======================="
+echo "Running hadolint to lint Containerfile..."
+hadolint \
+	.devcontainer/Containerfile
+echo "✓ 'hadolint' passed"
+echo
+
 echo "==================== SHELL FORMAT CHECK ==============="
 echo "Checking if shell files are properly formatted..."
 unformatted_files=$(find . -path ./.git -prune -o -type f -exec sh -c 'file "$1" | grep -q "shell script" && shfmt -d "$1"' _ {} \; 2>&1 | grep -v "No such file or directory" || true)
