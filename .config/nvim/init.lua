@@ -293,15 +293,21 @@ vim.lsp.enable('bashls')
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
 
--- Use LspAttach autocommand to only map the following keys after the language server attaches to the current buffer
+-- Use LspAttach autocommand to register per-buffer setup (format-on-save and keymaps) only after the language server attaches to the current buffer
 vim.api.nvim_create_autocmd('LspAttach', {
-	group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+	group = vim.api.nvim_create_augroup('UserLspConfig', { clear = true }),
 	callback = function(ev)
-		vim.api.nvim_create_autocmd('BufWritePre', {
-			callback = function()
-				vim.lsp.buf.format()
-			end
-		})
+		-- Language servers such as marksman (Markdown) do not implement textDocument/formatting, and calling format without a
+		-- capable server raises an error that triggers the hit-enter prompt on every save.
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		if client and client:supports_method('textDocument/formatting') then
+			vim.api.nvim_create_autocmd('BufWritePre', {
+				buffer = ev.buf,
+				callback = function()
+					vim.lsp.buf.format({ bufnr = ev.buf })
+				end,
+			})
+		end
 
 		local opts = { buffer = ev.buf }
 		vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
