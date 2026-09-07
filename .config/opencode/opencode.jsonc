@@ -2,40 +2,73 @@
 	"$schema": "https://opencode.ai/config.json",
 	// Supported models available here - https://opencode.ai/go
 	"agent": {
-		// minimax-m3 is single mode, and nearly identical in performance to our plan model but at a cheaper cost
-		// reference - https://llm-stats.com/models/compare/kimi-k2.6-vs-mimo-v2.5-pro-vs-minimax-m3
+		// k2.7-code - https://models.dev/models/moonshotai/kimi-k2.7-code/
+		// Comparison - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-kimi-k3
+		// - 20%/30% weaker at benchmarks compared to k3, but 4.2x cheaper.
+		// - 20%/30% weaker at benchmarks compared to minimax-m3, at 2.7x the costs. - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-minimax-m3
+		// - Kimi K2.7-cod was trained specifically for code-writing tasks - https://medium.com/data-science-in-your-pocket/minimax-m3-vs-kimi-k2-7-code-d147bf4664d7
+		//
+		// NOTE: Supports image and video input, though not useful in code writing scenarios.
 		"build": {
-			"model": "opencode-go/minimax-m3"
-		},
-		// kimi-k2.7-code is multimodal and strong at reasoning, compared to similar models and
-		// to our cheaper general-purpose build model.
-		// reference - https://llm-stats.com/models/compare/qwen3.7-max-vs-kimi-k2.7-code
-		"plan": {
 			"model": "opencode-go/kimi-k2.7-code"
 		},
+		// glm-5.3 - https://models.dev/models/zhipuai/glm-5.3/
+		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-kimi-k2.7-code
+		// - Strong at reasoning compared to k2.7-code while being 2.8x cheaper than the similar k3 model.
+		// - glm-5.3 has better reasoning in plan mode - https://blog.kilo.ai/p/glm-52-vs-kimi-k27-code-which-model
+		//
+		// NOTE: Only supports text. No images, video, audio.
+		"plan": {
+			"model": "opencode-go/glm-5.3"
+		},
+		// mimo-v2.5 - https://models.dev/models/xiaomi/mimo-v2.5/
+		// Comparison - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
+		// - ~10% weaker at benchmarks compared to k2.7-code, but 6.8x cheaper.
+		// - 1.9x more expensive than deepseek, but comes with multimodal support for arbitrary use cases.
+		// - Multimodal; text, image, video, audio support.
+		// - Large context window for arbitrary use cases; 1,000,000 tokens
+		"general": {
+			"model": "opencode-go/mimo-v2.5"
+		},
+		// deepseek-v4-flash - https://models.dev/models/deepseek/deepseek-v4-flash/
+		// Comparison - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
+		// - 20%/30% better across benchmarks than mimo-v2.5 while being 1.9x cheaper.
+		// - ~19x cheaper than our `plan` model, to support work where text summary and filter is needed, not reasoning.
+		//
+		// NOTE: Only supports text. No images, video, audio.
+		"explore": {
+			"model": "opencode-go/deepseek-v4-flash"
+		},
+		"scout": {
+			"model": "opencode-go/deepseek-v4-flash"
+		},
+		"compaction": {
+			"model": "opencode-go/deepseek-v4-flash"
+		},
+		"title": {
+			"model": "opencode-go/deepseek-v4-flash"
+		},
+		"summary": {
+			"model": "opencode-go/deepseek-v4-flash"
+		},
+		// minimax-m3 - https://models.dev/models/minimax/MiniMax-M3/
+		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-minimax-m3
+		// - 20%/30% weaker at benchmarks compared to glm-5.3, but 4.1x cheaper.
+		// - Performs better than k2.7-code, including reasoning, while being 2.7x cheaper - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-minimax-m3
+		//
+		// NOTE: Each reviewer should use a different model and provider than the `plan` agent to provide
+		// a review from a different perspective.
 		"reviewer-documentation": {
-			// Model should be comparable to the model used by the `plan` agent to ensure the same level
-			// of reasoning, but should be a different model, or model provider, to simulate
-			// providing a review from a different perspective.
-			"model": "opencode-go/glm-5.2"
+			"model": "opencode-go/minimax-m3"
 		},
 		"reviewer-go": {
-			// Model should be comparable to the model used by the `plan` agent to ensure the same level
-			// of reasoning, but should be a different model, or model provider, to simulate
-			// providing a review from a different perspective.
-			"model": "opencode-go/glm-5.2"
+			"model": "opencode-go/minimax-m3"
 		},
 		"reviewer-security": {
-			// Model should be comparable to the model used by the `plan` agent to ensure the same level
-			// of reasoning, but should be a different model, or model provider, to simulate
-			// providing a review from a different perspective.
-			"model": "opencode-go/glm-5.2"
+			"model": "opencode-go/minimax-m3"
 		},
 		"reviewer-test-design": {
-			// Model should be comparable to the model used by the `plan` agent to ensure the same level
-			// of reasoning, but should be a different model, or model provider, to simulate
-			// providing a review from a different perspective.
-			"model": "opencode-go/glm-5.2"
+			"model": "opencode-go/minimax-m3"
 		}
 	},
 	"autoupdate": false,
@@ -56,11 +89,11 @@
 	// Should be replaced by models better tailored to the specific agent/instructions, which affect
 	// how much reasoning is required, whether the model needs to be multimodal, and the latency
 	// that can be tolerated from the model.
-	"model": "opencode-go/minimax-m3",
+	"model": "opencode-go/mimo-v2.5",
 	"share": "disabled",
 	// Setting a small model used in the background by `opencode` to summarize session metadata, to
 	// avoid `opencode` sending session metadata to their own free summary model:
 	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
-	// - https://llm-stats.com/models/compare/deepseek-v4-flash-max-vs-mimo-v2.5
-	"small_model": "opencode-go/mimo-v2.5"
+	// - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
+	"small_model": "opencode-go/deepseek-v4-flash"
 }
