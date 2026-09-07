@@ -58,6 +58,7 @@ ln -s -f "$(pwd)/.config/opencode/opencode.jsonc" "${XDG_CONFIG_HOME}/opencode/o
 ln -s -f "$(pwd)/.config/opencode/AGENTS.md" "${XDG_CONFIG_HOME}/opencode/AGENTS.md"
 ln -s -T -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
 ln -s -T -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
+ln -s -T -f "$(pwd)/.config/opencode/scripts" "${XDG_CONFIG_HOME}/opencode/scripts"
 ln -s -T -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
 
 echo
