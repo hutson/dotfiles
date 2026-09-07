@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-set -euf -o pipefail
+set -o errexit -o nounset -o noglob -o pipefail
+readonly _trace_start_time_us=${EPOCHREALTIME//./}
+PS4='[DEBUGLEVEL:${SHLVL} SUBSHELL:${BASH_SUBSHELL} LINE:${LINENO} DIFF:$(us=$(( ${EPOCHREALTIME//./} - _trace_start_time_us )); ms=$(( us / 1000 )); printf "%d.%03d" $((ms / 1000)) $((ms % 1000)) )s SOURCE:${BASH_SOURCE}] '
 
 # This file exists to install a full development environment that includes
 # all aliases, tools, and configuration, that the user may need while working.

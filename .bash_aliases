@@ -64,4 +64,4 @@ alias convertDirectoryZips='export -f convertZip && find . -type f -name "*.zip"
 alias backupMyDVD='dvdbackup --mirror --input /dev/dvd --output ~/Videos/ --progress --verbose'
 
 # Shortcut to query LLM via OpenCode in the current directory.
-alias ?='opencode run'
+alias agent='opencode run'
