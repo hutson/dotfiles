@@ -10,6 +10,12 @@ brew "ncdu"
 # Output file contents with syntax highlighting and Git integration.
 brew "bat"
 
+# Fancy cross-shell command-line prompt.
+brew "starship"
+
+# Interactive command line harness for working with LLMs.
+brew "opencode"
+
 # Install Git version control.
 brew "git"
 brew "git-lfs" if OS.mac? # Install Git LFS for managing large binary files via text pointers. Requires a remote Git server with LFS support.
@@ -17,6 +23,10 @@ brew "git-lfs" if OS.mac? # Install Git LFS for managing large binary files via 
 # Install command-line text editor.
 brew "neovim"
 brew "ripgrep"
+
+# Programming Language Runtimes
+brew "go" # Install Go compiler and development stack.
+brew "python" # Install Python interpreter and development stack.
 
 # Language Servers
 brew "marksman" # Language server for Markdown.
@@ -32,14 +42,8 @@ brew "shfmt" # Install shell script formatter.
 brew "hadolint" # Linter for Containerfiles.
 brew "yamllint" # Linter for YAML files.
 
-# Fancy cross-shell command-line prompt.
-brew "starship"
-
 # Static site generator and build tool.
 brew "hugo" if OS.linux?
-
-# Interactive command line harness for working with LLMs.
-brew "opencode"
 
 # Tool for managing offline video archives.
 brew "yt-dlp" if OS.linux?
@@ -54,9 +58,6 @@ brew "coreutils" if OS.mac?
 brew "colima" if OS.mac?
 brew "docker" if OS.mac?
 brew "docker-credential-helper" if OS.mac? # Store Docker Hub credentials in the macOS Keychain for improved security.
-
-# Install Go compiler and development stack.
-brew "go" if OS.mac?
 
 # Install convinence tool for downloading Internet resources including Ghostty AppImage.
 brew "wget" if OS.mac?
