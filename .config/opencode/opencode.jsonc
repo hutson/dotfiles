@@ -1,16 +1,18 @@
 {
 	"$schema": "https://opencode.ai/config.json",
 	// Supported models available here - https://opencode.ai/go
+	// Usage limits - https://opencode.ai/docs/go/#usage-limits
 	"agent": {
-		// k2.7-code - https://models.dev/models/moonshotai/kimi-k2.7-code/
-		// Comparison - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-kimi-k3
-		// - 20%/30% weaker at benchmarks compared to k3, but 4.2x cheaper.
-		// - 20%/30% weaker at benchmarks compared to minimax-m3, at 2.7x the costs. - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-minimax-m3
-		// - Kimi K2.7-cod was trained specifically for code-writing tasks - https://medium.com/data-science-in-your-pocket/minimax-m3-vs-kimi-k2-7-code-d147bf4664d7
-		//
-		// NOTE: Supports image and video input, though not useful in code writing scenarios.
+		// qwen3.8-flash - https://models.dev/models/alibaba/qwen3.8-flash/
+		// Comparison - https://llm-stats.com/models/compare/qwen3.7-plus-vs-qwen3.8-flash
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.5-vs-qwen3.8-flash
+		// Comparison - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-qwen3.8-flash
+		// - ~30% stronger on benchmarks compared to our cheap mimo-v2.5, at only 0.9x the cost.
+		// - ~20% stronger on benchmarks compared to kimi-k2.7-code, wile being 6.2x cheaper.
+		// - Multimodal; text, image, video support, but looses audio compared to mimo-v2.5.
+		// - Large context window for arbitrary use cases; 1,000,000 tokens
 		"build": {
-			"model": "opencode-go/kimi-k2.7-code"
+			"model": "opencode-go/qwen3.8-flash"
 		},
 		// glm-5.3 - https://models.dev/models/zhipuai/glm-5.3/
 		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-kimi-k2.7-code
@@ -21,35 +23,38 @@
 		"plan": {
 			"model": "opencode-go/glm-5.3"
 		},
+		// qwen3.8-flash - https://models.dev/models/alibaba/qwen3.8-flash/
+		// Comparison - https://llm-stats.com/models/compare/qwen3.7-plus-vs-qwen3.8-flash
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.5-vs-qwen3.8-flash
+		// Comparison - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-qwen3.8-flash
+		// - ~30% stronger on benchmarks compared to our cheap mimo-v2.5, at only 0.9x the cost.
+		// - ~20% stronger on benchmarks compared to kimi-k2.7-code, wile being 6.2x cheaper.
+		// - Multimodal; text, image, video support, but looses audio compared to mimo-v2.5.
+		// - Large context window for arbitrary use cases; 1,000,000 tokens
+		"general": {
+			"model": "opencode-go/qwen3.8-flash"
+		},
 		// mimo-v2.5 - https://models.dev/models/xiaomi/mimo-v2.5/
 		// Comparison - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
 		// - ~10% weaker at benchmarks compared to k2.7-code, but 6.8x cheaper.
-		// - 1.9x more expensive than deepseek, but comes with multimodal support for arbitrary use cases.
+		// - 1.9x more expensive than deepseek, but comes with multimodal support for arbitrary use cases (opencode lists it as substantially cheaper for some reason).
+		// - Latest Deepseek Flash is not hosted outside of China - https://github.com/anomalyco/opencode/issues/39845
 		// - Multimodal; text, image, video, audio support.
 		// - Large context window for arbitrary use cases; 1,000,000 tokens
-		"general": {
+		"explore": {
 			"model": "opencode-go/mimo-v2.5"
 		},
-		// deepseek-v4-flash - https://models.dev/models/deepseek/deepseek-v4-flash/
-		// Comparison - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
-		// - 20%/30% better across benchmarks than mimo-v2.5 while being 1.9x cheaper.
-		// - ~19x cheaper than our `plan` model, to support work where text summary and filter is needed, not reasoning.
-		//
-		// NOTE: Only supports text. No images, video, audio.
-		"explore": {
-			"model": "opencode-go/deepseek-v4-flash"
-		},
 		"scout": {
-			"model": "opencode-go/deepseek-v4-flash"
+			"model": "opencode-go/mimo-v2.5"
 		},
 		"compaction": {
-			"model": "opencode-go/deepseek-v4-flash"
+			"model": "opencode-go/mimo-v2.5"
 		},
 		"title": {
-			"model": "opencode-go/deepseek-v4-flash"
+			"model": "opencode-go/mimo-v2.5"
 		},
 		"summary": {
-			"model": "opencode-go/deepseek-v4-flash"
+			"model": "opencode-go/mimo-v2.5"
 		},
 		// minimax-m3 - https://models.dev/models/minimax/MiniMax-M3/
 		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-minimax-m3
@@ -69,6 +74,10 @@
 		},
 		"reviewer-test-design": {
 			"model": "opencode-go/minimax-m3"
+		},
+		//
+		"study": {
+			"model": "opencode-go/glm-5.3"
 		}
 	},
 	"autoupdate": false,
@@ -95,5 +104,5 @@
 	// avoid `opencode` sending session metadata to their own free summary model:
 	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
 	// - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
-	"small_model": "opencode-go/deepseek-v4-flash"
+	"small_model": "opencode-go/mimo-v2.5"
 }
