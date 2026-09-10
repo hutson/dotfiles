@@ -83,13 +83,6 @@
 [mergetool "fugitive"]
 	cmd = nvim -f -c "Gvdiffsplit!" "$MERGED"
 
-[filter "lfs"]
-	# Enable large-file support using the large-file support (LFS) plugin for git.
-	required = true
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-
 [remote "origin"]
 	# Fetch any references that begin with `merge-requests` or `pull`, as these references pertain to merge/pull requests filed against the upstream, `origin`, repository on a GitLab/GitHub website. By fetching references, we can easily pull down, and checkout, merge/pull requests submitted by contributors and test those merge requests locally.
 	fetch = +refs/merge-requests/*/head:refs/remotes/origin/merge-requests/*

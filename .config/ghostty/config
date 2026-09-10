@@ -3,7 +3,7 @@ background-blur = true
 font-size = 10
 
 # Support copying and pasting using GUI-style keybindings for consistency
-# across platforms (already behaves this way on macOS and Windows).
+# with desktop application conventions.
 keybind = performable:ctrl+c=copy_to_clipboard
 keybind = performable:ctrl+v=paste_from_clipboard
 

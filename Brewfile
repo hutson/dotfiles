@@ -18,7 +18,6 @@ brew "opencode"
 
 # Install Git version control.
 brew "git"
-brew "git-lfs" if OS.mac? # Install Git LFS for managing large binary files via text pointers. Requires a remote Git server with LFS support.
 
 # Install command-line text editor.
 brew "neovim"
@@ -34,7 +33,6 @@ brew "lua-language-server" # Language server for Lua.
 brew "bash-language-server" # Language server for Bash.
 brew "gopls" # Language server for Go.
 brew "ansible-language-server" # Language server for Ansible.
-brew "terraform-ls" if OS.mac? # Language server for Terraform.
 
 # Linters and Formatters
 brew "shellcheck" # Linter for shell scripts, including Bash.
@@ -43,35 +41,7 @@ brew "hadolint" # Linter for Containerfiles.
 brew "yamllint" # Linter for YAML files.
 
 # Static site generator and build tool.
-brew "hugo" if OS.linux?
+brew "hugo"
 
 # Tool for managing offline video archives.
-brew "yt-dlp" if OS.linux?
-
-# Install cross-platform terminal emulator.
-brew "ghostty" if OS.mac?
-
-# Latest GNU core utilities, such as `rm`, `ls`, etc.
-brew "coreutils" if OS.mac?
-
-# Docker/container support.
-brew "colima" if OS.mac?
-brew "docker" if OS.mac?
-brew "docker-credential-helper" if OS.mac? # Store Docker Hub credentials in the macOS Keychain for improved security.
-
-# Install convinence tool for downloading Internet resources including Ghostty AppImage.
-brew "wget" if OS.mac?
-
-# Install resource orchestration tool.
-brew "terraform" if OS.mac?
-
-# Required to get a prompt for a security key PIN when using GPG for SSH authentication on Mac devices.
-cask "pinentry-mac", greedy: true if OS.mac?
-cask "gpg", greedy: true if OS.mac?
-
-# Other desktop application on MacOS.
-cask "yubico-authenticator", greedy: true if OS.mac?
-cask "firefox@esr", greedy: true if OS.mac?
-cask "gpg-suite", greedy: true if OS.mac?
-cask "keepassxc", greedy: true if OS.mac?
-cask "obs", greedy: true if OS.mac?
+brew "yt-dlp"

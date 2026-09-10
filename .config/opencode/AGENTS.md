@@ -43,7 +43,7 @@ if authcheck(u) {
 
 - Prefer POSIX-compliant code that can run against different shell environemnts (Dash, Bash, ZSH, etc.), unless instructed otherwise.
 - Prefer POSIX-compliant syntax, such as `test` or single `[` brackets, to improve portability across different Unix-like operating systems.
-- Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h), though be mindful that many commands on macOS only support the short-hand version.
+- Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h).
 - Always use double quotes around variable expansion to prevent word splitting and globbing; `"$speed"`
 - Always use curly brackets around variable expansion to avoid ambiguity; `"${speed}mph"` when the variable is `$speed`
 - Always use `$(...)` for command substitution instead of backticks (`` `...` ``).

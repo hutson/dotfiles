@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
-if [ "$(uname)" = "Darwin" ]; then
-	# Prompt the user once before removing any file.
-	alias rm='rm -i'
-else
-	# Do not allow deletion of content at the root level, /, and prompt the user once before removing more than three files or when removing files and directories recursively.
-	alias rm='rm -I -v --preserve-root'
-fi
+# Do not allow deletion of content at the root level, /, and prompt the user once before removing more than three files or when removing files and directories recursively.
+alias rm='rm -I -v --preserve-root'
 
 # Enable common command confirmations with additional verbosity.
 alias mv='mv -iv'

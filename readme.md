@@ -26,15 +26,13 @@ If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-
 - `python3-distutils` - Needed for `nb`. (`distutils` is deprecated and will be removed from Python in version 3.12 - https://docs.python.org/3/whatsnew/3.10.html#distutils-deprecated)
 - `g++-multilib` - Needed for `neovim`.
 
-If using macOS, navigate to the [Homebrew](https://docs.brew.sh/Installation) website and install all the required packages for your Linux distribution. Then run `git` on the Terminal once, and follow the instructions to install Apple's Developer Tools. This will ensure `git` is available for use by Homebrew, when we use Homebrew to install both command line tools and applications.
-
 Once deployed the `${HOME}/.profile` script will need to be sourced, just once, to expose the scripts contained within the dotfiles repository. To source the profile script run the following command:
 
 ```bash
 source ~/.profile
 ```
 
-On macOS, run `gpg --import <public key>` to import the GPG public key used for signing operations, such as signing Git commits.
+Run `gpg --import <public key>` to import the GPG public key used for signing operations, such as signing Git commits.
 
 ## Development
 
