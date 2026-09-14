@@ -60,3 +60,12 @@ alias backupMyDVD='dvdbackup --mirror --input /dev/dvd --output ~/Videos/ --prog
 
 # Shortcut to query LLM via OpenCode in the current directory.
 alias agent='opencode run'
+
+# Provision Dev Container workspace from `.devcontainer/` configuration file in the current working directory.
+# The `--secret` flag mounts the Devsy-managed OpenCode API key into the workspace as an in-memory file, which
+# `install.sh` references from a workspace-only OpenCode config, keeping the plaintext key off
+# the container filesystem.
+alias workspaceUp='devsy workspace build . --verbose && devsy workspace up . --verbose --secret OPENCODE_KEY,type=mount,target=opencode.key'
+
+# Shutdown and delete the Dev Container workspace for the current working directory.
+alias workspaceDown='devsy workspace stop . --verbose && devsy workspace delete . --verbose'

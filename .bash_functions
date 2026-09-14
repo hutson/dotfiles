@@ -5,9 +5,19 @@
 updateEnvironment() {
 	printf "\n> Updating Environment.\n"
 
+	# TODO: If toolbox environment exists, launch into it, run `apt update && apt upgrade` followed by remaining function calls and then exit toolbox.
+
 	brew bundle --file "${XDG_CONFIG_HOME}/Brewfile"
 
 	nvim --headless -c "lua vim.pack.update(nil, { force = true, target = 'lockfile' })" -c "qa!"
+
+	# Website - https://devsy.sh/docs/developing-in-workspaces/credentials
+	# Code - https://github.com/devsy-org/devsy/blob/6c58378e8562f781538560b5aa8e17f5c36c002b/pkg/config/context.go#L9
+	devsy context set default -o TELEMETRY=false
+	devsy context set default -o SSH_AGENT_FORWARDING=false
+	devsy context set default -o SSH_INJECT_GIT_CREDENTIALS=false
+	devsy context set default -o GIT_SSH_SIGNATURE_FORWARDING=false
+	devsy context set default -o SSH_INJECT_DOCKER_CREDENTIALS=false
 }
 
 #! Set up a local environment.

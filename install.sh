@@ -11,15 +11,37 @@ PS4='[DEBUGLEVEL:${SHLVL} SUBSHELL:${BASH_SUBSHELL} LINE:${LINENO} DIFF:$(us=$((
 # the given project.
 
 cat <<-'EOF' >"${XDG_CONFIG_HOME}/Brewfile"
-	brew "opencode"
+	brew "anomalyco/tap/opencode", trusted: true
 	brew "starship"
 EOF
 
+# The Devsy in-memory secret mount only exists inside a Devsy workspace, where the
+# 'workspaceUp' alias provisions it via `--secret OPENCODE_KEY,type=mount,target=opencode.key`.
+# OpenCode substitutes `{file:...}` references only in config files, never in auth.json, so the
+# key is referenced from a workspace-only config file that merges over the dotfiles-managed
+# `opencode.jsonc`. The key is never written to disk in plaintext, keeping it out of workspace
+# snapshots.
+mkdir -p "${XDG_CONFIG_HOME}/opencode"
+cat <<-'EOF' >"${XDG_CONFIG_HOME}/opencode/opencode.json"
+	{
+	  "provider": {
+	    "opencode-go": {
+	      "options": {
+	        "apiKey": "{file:/run/secrets/opencode.key}"
+	      }
+	    }
+	  }
+	}
+EOF
+
 bash deploy.sh
+
 # '~/.bash_functions' is a symlink deployed into the home directory by 'deploy.sh', so its
 # location is not resolvable from the repository; the source file is still covered by
 # '.tools/test.sh' on its own.
 # shellcheck source=/dev/null
 source ~/.bash_functions
+
 setupHomeBrew
+
 brew bundle

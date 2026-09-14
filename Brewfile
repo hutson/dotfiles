@@ -14,7 +14,7 @@ brew "bat"
 brew "starship"
 
 # Interactive command line harness for working with LLMs.
-brew "opencode"
+brew "anomalyco/tap/opencode", trusted: true
 
 # Install Git version control.
 brew "git"
@@ -26,6 +26,9 @@ brew "ripgrep"
 # Programming Language Runtimes
 brew "go" # Install Go compiler and development stack.
 brew "python" # Install Python interpreter and development stack.
+
+# Bottled builds crash on startup: relocation into our non-default prefix corrupts node's embedded V8 snapshot, so build from source.
+brew "node", args: ["--build-from-source"] # JavaScript runtime required by some language servers.
 
 # Language Servers
 brew "marksman" # Language server for Markdown.
@@ -45,3 +48,6 @@ brew "hugo"
 
 # Tool for managing offline video archives.
 brew "yt-dlp"
+
+# Install CLI to manage Dev Container compliant environments.
+brew "devsy-org/homebrew-tap/devsy", trusted: true
