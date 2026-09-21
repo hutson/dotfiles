@@ -11,6 +11,8 @@ updateEnvironment() {
 
 	nvim --headless -c "lua vim.pack.update(nil, { force = true, target = 'lockfile' })" -c "qa!"
 
+	# DEVSY Configuration
+	# We configure Devsy every time we update our environment to ensure our Devsy context is configured with our desired settings, many of which are security related.
 	# Website - https://devsy.sh/docs/developing-in-workspaces/credentials
 	# Code - https://github.com/devsy-org/devsy/blob/6c58378e8562f781538560b5aa8e17f5c36c002b/pkg/config/context.go#L9
 	devsy context set default -o TELEMETRY=false
@@ -18,6 +20,9 @@ updateEnvironment() {
 	devsy context set default -o SSH_INJECT_GIT_CREDENTIALS=false
 	devsy context set default -o GIT_SSH_SIGNATURE_FORWARDING=false
 	devsy context set default -o SSH_INJECT_DOCKER_CREDENTIALS=false
+	touch ~/.ssh/devsy-config
+	chmod 600 ~/.ssh/devsy-config
+	devsy context set default -o SSH_CONFIG_INCLUDE_PATH=~/.ssh/devsy-config
 }
 
 #! Set up a local environment.
