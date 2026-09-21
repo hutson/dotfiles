@@ -27,9 +27,6 @@ brew "ripgrep"
 brew "go" # Install Go compiler and development stack.
 brew "python" # Install Python interpreter and development stack.
 
-# Bottled builds crash on startup: relocation into our non-default prefix corrupts node's embedded V8 snapshot, so build from source.
-brew "node", args: ["--build-from-source"] # JavaScript runtime required by some language servers.
-
 # Language Servers
 brew "marksman" # Language server for Markdown.
 brew "lua-language-server" # Language server for Lua.
@@ -42,9 +39,13 @@ brew "shellcheck" # Linter for shell scripts, including Bash.
 brew "shfmt" # Install shell script formatter.
 brew "hadolint" # Linter for Containerfiles.
 brew "yamllint" # Linter for YAML files.
+brew "ansible-lint" # Linter for Ansible files.
 
 # Static site generator and build tool.
 brew "hugo"
+
+# Configuration manage tool for infrastructure
+brew "ansible"
 
 # Tool for managing offline video archives.
 brew "yt-dlp"
