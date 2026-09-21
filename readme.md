@@ -21,10 +21,7 @@ cd ~/.dotfiles
 bash deploy.sh
 ```
 
-If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux) website and install all the required packages for your Linux distribution. A few of the tools installed by this `dotfiles` project require libraries and system-level packages. For Debian-based systems, please ensure you install (`sudo apt install [package] --no-install-recommends`) the following packages in addition to the packages required by Homebrew.
-
-- `python3-distutils` - Needed for `nb`. (`distutils` is deprecated and will be removed from Python in version 3.12 - https://docs.python.org/3/whatsnew/3.10.html#distutils-deprecated)
-- `g++-multilib` - Needed for `neovim`.
+If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux) website and install all the required packages for your Linux distribution.
 
 Once deployed the `${HOME}/.profile` script will need to be sourced, just once, to expose the scripts contained within the dotfiles repository. To source the profile script run the following command:
 
