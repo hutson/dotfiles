@@ -1,0 +1,36 @@
+name: main
+
+on:
+  push:
+  pull_request:
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -o errexit -o nounset -o noglob -o pipefail {0}
+
+jobs:
+  test:
+    runs-on: codeberg-tiny-lazy
+    steps:
+      - name: Install container engine
+        run: |
+          apt update
+          apt install -y --no-install-recommends podman
+
+      - name: Checkout
+        uses: https://code.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Devsy
+        run: |
+          curl -sSL "https://github.com/devsy-org/devsy/releases/download/v1.19.0/devsy-linux-amd64" \
+            -o /usr/local/bin/devsy \
+            && echo "2f43f28ab5b399b379091aeb09628ec6b70dc82212a64d30de8e2a4a18a49ef5  /usr/local/bin/devsy" | sha256sum --check --strict \
+            && chmod +x /usr/local/bin/devsy
+
+      - name: Configure Devsy
+        run: |
+          devsy provider add podman
+          devsy context set default -o TELEMETRY=false
+
+      - name: Test
+        run: devsy ci . -- bash .tools/test.sh
