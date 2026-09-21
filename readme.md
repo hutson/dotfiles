@@ -33,8 +33,14 @@ Run `gpg --import <public key>` to import the GPG public key used for signing op
 
 ## Development
 
-To test your changes to ensure they meet the requirements of this project, run:
+To test your changes, run the test script from inside the Dev Container, which provides all required linting tools:
 
 ```bash
 bash .tools/test.sh
+```
+
+Alternatively, run the tests from the host without entering the Dev Container by delegating to Devsy, which builds the project's devcontainer, runs the command inside it, and tears it down afterwards:
+
+```bash
+devsy ci . -- bash .tools/test.sh
 ```
