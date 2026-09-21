@@ -42,6 +42,7 @@ echo "> Symlinking GnuPG files into GnuPG directory (${HOME}/.gnupg)."
 mkdir -p "${HOME}/.gnupg"
 ln -s -f "$(pwd)/.gnupg/gpg.conf" "${HOME}/.gnupg/gpg.conf"
 ln -s -f "$(pwd)/.gnupg/gpg-agent.conf" "${HOME}/.gnupg/gpg-agent.conf"
+ln -s -f "$(pwd)/.gnupg/scdaemon.conf" "${HOME}/.gnupg/scdaemon.conf"
 
 echo "> Symlinking Neovim files into the config directory (${XDG_CONFIG_HOME}/nvim)."
 mkdir -p "${XDG_CONFIG_HOME}/nvim"
