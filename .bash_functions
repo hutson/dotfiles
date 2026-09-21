@@ -5,7 +5,13 @@
 updateEnvironment() {
 	printf "\n> Updating Environment.\n"
 
-	# TODO: If toolbox environment exists, launch into it, run `apt update && apt upgrade` followed by remaining function calls and then exit toolbox.
+	if [ -f /run/.toolboxenv ] && command -v apt >/dev/null 2>&1; then
+		printf "\n>> Upgrading system packages via apt.\n"
+		sudo apt update
+		sudo apt upgrade --yes
+	elif [ -f /run/.toolboxenv ]; then
+		echo "OS not supported in updateEnvironment()" >&2
+	fi
 
 	brew bundle --file "${XDG_CONFIG_HOME}/Brewfile"
 
@@ -51,10 +57,16 @@ setupEnvironment() {
 setupHomeBrew() {
 	printf "\n> Installing Homebrew.\n"
 
-	# TODO: Install Homebrew dependencies if inside a toolbox environment.
-	# sudo apt-get update
-	# sudo apt-get install build-essential procps curl file git --no-install-recommends
-	#
+	# Install Homebrew build dependencies inside Debian-based Toolbox containers;
+	# Fedora Kinoite hosts are rpm-ostree immutable and are intentionally skipped.
+	if [ -f /run/.toolboxenv ] && command -v apt >/dev/null 2>&1; then
+		printf "\n>> Installing Homebrew system dependencies via apt.\n"
+		sudo apt update
+		sudo apt install --yes --no-install-recommends build-essential procps curl file git
+	elif [ -f /run/.toolboxenv ]; then
+		echo "OS not supported in setupHomeBrew()" >&2
+	fi
+
 	# Create the Homebrew prefix directory; required before tar extraction.
 	mkdir -p "${HOMEBREW_PREFIX}/Homebrew"
 
