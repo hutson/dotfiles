@@ -23,7 +23,7 @@ bash deploy.sh
 
 If on Linux, navigate to the [Homebrew for Linux](https://docs.brew.sh/Homebrew-on-Linux) website and install all the required packages for your Linux distribution.
 
-Once deployed the `${HOME}/.profile` script will need to be sourced, just once, to expose the scripts contained within the dotfiles repository. To source the profile script run the following command:
+Once deployed, the `${HOME}/.profile` script will need to be sourced, just once, to expose the scripts contained within the dotfiles repository. To source the profile script run the following command:
 
 ```bash
 source ~/.profile
@@ -33,13 +33,13 @@ Run `gpg --import <public key>` to import the GPG public key used for signing op
 
 ## Development
 
-To test your changes, run the test script from inside the Dev Container, which provides all required linting tools:
+To test your changes inside Dev Container:
 
 ```bash
 bash .tools/test.sh
 ```
 
-Alternatively, run the tests from the host without entering the Dev Container by delegating to Devsy, which builds the project's devcontainer, runs the command inside it, and tears it down afterwards:
+Or using Devsy:
 
 ```bash
 devsy ci . -- bash .tools/test.sh
