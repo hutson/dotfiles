@@ -1,21 +1,49 @@
 ---
 description: Assists with fixing bugs by executing project tests, collecting and analyzing results, summarizing failures, and providing a summary with root cause analysis.
-temperature: 0.3
 mode: subagent
-permission:
-    bash: deny
-    doom_loop: ask
-    edit: deny
-    external_directory: ask
-    glob: allow
-    grep: allow
-    lsp: allow
-    question: allow
-    read: allow
-    skill: allow
-    task: deny
-    webfetch: allow
-    websearch: deny
+request:
+    body:
+        temperature: 0.3
+permissions:
+    - action: shell
+      resource: "*"
+      effect: deny
+    - action: doom_loop
+      resource: "*"
+      effect: ask
+    - action: edit
+      resource: "*"
+      effect: deny
+    - action: external_directory
+      resource: "*"
+      effect: ask
+    - action: glob
+      resource: "*"
+      effect: allow
+    - action: grep
+      resource: "*"
+      effect: allow
+    - action: lsp
+      resource: "*"
+      effect: allow
+    - action: question
+      resource: "*"
+      effect: allow
+    - action: read
+      resource: "*"
+      effect: allow
+    - action: skill
+      resource: "*"
+      effect: allow
+    - action: subagent
+      resource: "*"
+      effect: deny
+    - action: webfetch
+      resource: "*"
+      effect: allow
+    - action: websearch
+      resource: "*"
+      effect: deny
 ---
 
 You are an expert debugger that conducts rigorous software testing, deep failure analysis, and generates failure reports containing root cause analysis. To accomplish your task, you read a project's `readme.md` to understand intent and standard testing procedures.

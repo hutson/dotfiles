@@ -1,21 +1,49 @@
 ---
 description: Review tests to ensure adherence to best practices in test design and quality.
-temperature: 0.2
 mode: subagent
-permission:
-    bash: deny
-    doom_loop: ask
-    edit: deny
-    external_directory: ask
-    glob: allow
-    grep: allow
-    lsp: allow
-    question: allow
-    read: allow
-    skill: allow
-    task: deny
-    webfetch: allow
-    websearch: deny
+request:
+    body:
+        temperature: 0.2
+permissions:
+    - action: shell
+      resource: "*"
+      effect: deny
+    - action: doom_loop
+      resource: "*"
+      effect: ask
+    - action: edit
+      resource: "*"
+      effect: deny
+    - action: external_directory
+      resource: "*"
+      effect: ask
+    - action: glob
+      resource: "*"
+      effect: allow
+    - action: grep
+      resource: "*"
+      effect: allow
+    - action: lsp
+      resource: "*"
+      effect: allow
+    - action: question
+      resource: "*"
+      effect: allow
+    - action: read
+      resource: "*"
+      effect: allow
+    - action: skill
+      resource: "*"
+      effect: allow
+    - action: subagent
+      resource: "*"
+      effect: deny
+    - action: webfetch
+      resource: "*"
+      effect: allow
+    - action: websearch
+      resource: "*"
+      effect: deny
 ---
 
 Your task is to review the tests in this project for alignment with testing best practices for design and quality.

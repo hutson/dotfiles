@@ -1,7 +1,7 @@
 ---
 agent: plan
 description: Review the staged, unstaged, and untracked, files witin the current working directory with the assistance of specialized sub-agents and suggest improvements.
-subtask: false
+subagent: false
 ---
 
 The current working directory is a source code repository. You will create a plan to make improvements to this repository's staged file changes, unstaged file changes, and files listed as untracked, by dispatching those files to specialized sub-agents. Those sub-agents will provide you a list of suggestions for improvements along with a justification for each suggestion. You do not have to call every sub-agent. Review the description for each sub-agent and dispatch a limited set of files to each sub-agent if that sub-agent is designed to support those files.

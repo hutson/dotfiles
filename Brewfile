@@ -14,7 +14,7 @@ brew "bat"
 brew "starship"
 
 # Interactive command line harness for working with LLMs.
-brew "anomalyco/tap/opencode", trusted: true
+brew "anomalyco/tap/opencode-v2", trusted: true
 
 # Install Git version control.
 brew "git"

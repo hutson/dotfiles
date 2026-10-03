@@ -1,43 +1,96 @@
 ---
 description: Runs an active-recall study session; asks randomly selected questions (3 Easy, 2 Medium, 1 Hard per six) from the study material in ~/Documents/Resume/interviews/skills/, opens code exercises in your EDITOR, runs your code to verify it, and grades answers against the reference material.
-temperature: 0.2
 mode: primary
-permission:
-    bash:
-        "*": ask
-        # Leading `*` (not `~/`) because opencode expands `~/` permission patterns to the absolute
-        # home path at config load, while bash rules match the raw command text where `~` stays literal.
-        "*/.config/opencode/scripts/study-select.sh *": allow
-        "*/.config/opencode/scripts/study-editor.sh *": allow
-        "cd *": allow
-        "mktemp *": allow
-        "timeout *": allow
-        "go run *": allow
-        "go vet *": allow
-        "go test *": allow
-        "go mod init *": allow
-        "python3 *": allow
-        "python *": allow
-        "command -v *": allow
-    doom_loop: ask
-    edit:
-        "*": deny
-        # Leading `**/` (not `/tmp/`) because edit permission patterns match the path that
-        # `path.relative(worktree, file)` produces, so a file in /tmp appears as `../../../tmp/...`
-        # relative to the workspace. `/tmp/**` would only match a worktree that itself lives in /tmp.
-        "**/tmp/study-*/**": allow
-    external_directory:
-        "/tmp/**": allow
-    glob: allow
-    grep: allow
-    lsp: deny
-    question: allow
-    read: allow
-    skill: deny
-    task: deny
-    todowrite: allow
-    webfetch: deny
-    websearch: deny
+request:
+    body:
+        temperature: 0.2
+permissions:
+    - action: shell
+      resource: "*"
+      effect: ask
+    # Leading `*` (not `~/`) because opencode expands `~/` permission patterns to the absolute
+    # home path at config load, while shell rules match the raw command text where `~` stays literal.
+    - action: shell
+      resource: "*/.config/opencode/scripts/study-select.sh *"
+      effect: allow
+    - action: shell
+      resource: "*/.config/opencode/scripts/study-editor.sh *"
+      effect: allow
+    - action: shell
+      resource: "cd *"
+      effect: allow
+    - action: shell
+      resource: "mktemp *"
+      effect: allow
+    - action: shell
+      resource: "timeout *"
+      effect: allow
+    - action: shell
+      resource: "go run *"
+      effect: allow
+    - action: shell
+      resource: "go vet *"
+      effect: allow
+    - action: shell
+      resource: "go test *"
+      effect: allow
+    - action: shell
+      resource: "go mod init *"
+      effect: allow
+    - action: shell
+      resource: "python3 *"
+      effect: allow
+    - action: shell
+      resource: "python *"
+      effect: allow
+    - action: shell
+      resource: "command -v *"
+      effect: allow
+    - action: doom_loop
+      resource: "*"
+      effect: ask
+    - action: edit
+      resource: "*"
+      effect: deny
+    # Leading `**/` (not `/tmp/`) because edit permission patterns match the path that
+    # `path.relative(worktree, file)` produces, so a file in /tmp appears as `../../../tmp/...`
+    # relative to the workspace. `/tmp/**` would only match a worktree that itself lives in /tmp.
+    - action: edit
+      resource: "**/tmp/study-*/**"
+      effect: allow
+    - action: external_directory
+      resource: "/tmp/**"
+      effect: allow
+    - action: glob
+      resource: "*"
+      effect: allow
+    - action: grep
+      resource: "*"
+      effect: allow
+    - action: lsp
+      resource: "*"
+      effect: deny
+    - action: question
+      resource: "*"
+      effect: allow
+    - action: read
+      resource: "*"
+      effect: allow
+    - action: skill
+      resource: "*"
+      effect: deny
+    - action: subagent
+      resource: "*"
+      effect: deny
+    - action: todowrite
+      resource: "*"
+      effect: allow
+    - action: webfetch
+      resource: "*"
+      effect: deny
+    - action: websearch
+      resource: "*"
+      effect: deny
 ---
 
 You are a study coach for software engineering topics. Your job is to run an active-recall session: you ask questions from the study material in `skills/`, you drop the user into their own editor for coding exercises, you run the resulting code to verify it, and you grade every answer against the reference answer and any `**Verify:**` instructions.

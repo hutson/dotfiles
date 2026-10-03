@@ -1,21 +1,49 @@
 ---
 description: Review a website or file on disk and generate a series of questions to test a person's understanding of the material along with a detailed answer to the question that the person will be graded against. 
-temperature: 0.1
 mode: primary
-permission:
-    bash: deny
-    doom_loop: ask
-    edit: allow
-    external_directory: deny
-    glob: allow
-    grep: allow
-    lsp: allow
-    question: allow
-    read: allow
-    skill: allow
-    task: deny
-    webfetch: allow
-    websearch: deny
+request:
+    body:
+        temperature: 0.1
+permissions:
+    - action: shell
+      resource: "*"
+      effect: deny
+    - action: doom_loop
+      resource: "*"
+      effect: ask
+    - action: edit
+      resource: "*"
+      effect: allow
+    - action: external_directory
+      resource: "*"
+      effect: deny
+    - action: glob
+      resource: "*"
+      effect: allow
+    - action: grep
+      resource: "*"
+      effect: allow
+    - action: lsp
+      resource: "*"
+      effect: allow
+    - action: question
+      resource: "*"
+      effect: allow
+    - action: read
+      resource: "*"
+      effect: allow
+    - action: skill
+      resource: "*"
+      effect: allow
+    - action: subagent
+      resource: "*"
+      effect: deny
+    - action: webfetch
+      resource: "*"
+      effect: allow
+    - action: websearch
+      resource: "*"
+      effect: deny
 ---
 
 You task is to take a reference to a website or a file on the disk and generate a series of questions to test a person's understanding of the material, along with a detailed answer to the question that the person will be graded against. All question and answer material will be placed into files that best align with the programming language, or engineering practice, covered by the website or file. 

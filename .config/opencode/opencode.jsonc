@@ -2,7 +2,7 @@
 	"$schema": "https://opencode.ai/config.json",
 	// Supported models available here - https://opencode.ai/go
 	// Usage limits - https://opencode.ai/docs/go/#usage-limits
-	"agent": {
+	"agents": {
 		//
 		// GOAL: A strong reasoning model that specializes in coding with multi-modal support for acessing any required knowledge.
 		//
@@ -26,16 +26,18 @@
 		// - Considered good at coding and tool calling - https://llm-stats.com/leaderboards/best-ai-for-tool-calling
 		// - Not as good as DeepSeek, but DeepSeek is not available inside the US/EU region.
 		//
+		// The `#variant` suffix on model references replaces the V1 top-level `reasoningEffort` field,
+		// selecting a reasoning-effort variant published by the provider for that model.
 		"build": {
-			"model": "opencode-go/qwen3.8-flash",
-			"reasoningEffort": "medium"
+			"model": "opencode-go/qwen3.8-flash#medium"
 		},
 		//
 		// GOAL: A strong model that is balanced, not favoring any particular specialty.
 		//
+		// Per OpenCode: `Handles research and multi-step work with broad tool access, but cannot launch more subagents.`
+		//
 		"general": {
-			"model": "opencode-go/qwen3.8-flash",
-			"reasoningEffort": "medium"
+			"model": "opencode-go/qwen3.8-flash#medium"
 		},
 		//
 		// GOAL: A fast and cheap model that is still capable of basic reasoning.
@@ -49,9 +51,6 @@
 		// - ~10% weaker at benchmarks compared to DeepSeek-v4.1 but is 1.9x cheaper
 		//
 		"explore": {
-			"model": "opencode-go/mimo-v2.6-flash"
-		},
-		"scout": {
 			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		"compaction": {
@@ -71,48 +70,32 @@
 			"model": "opencode-go/mimo-v2.6-pro"
 		},
 		"reviewer-go": {
-			"model": "opencode-go/glm-5.3-flash",
-			"reasoningEffort": "high"
+			"model": "opencode-go/glm-5.3-flash#high"
 		},
 		"reviewer-security": {
-			"model": "opencode-go/glm-5.3-flash",
-			"reasoningEffort": "max"
+			"model": "opencode-go/glm-5.3-flash#max"
 		},
 		"reviewer-test-design": {
-			"model": "opencode-go/glm-5.3-flash",
-			"reasoningEffort": "high"
+			"model": "opencode-go/glm-5.3-flash#high"
 		},
 		//
 		// GOAL: A strong reasoning model that specializes in coding and writing.
 		//
 		"study": {
-			"model": "opencode-go/glm-5.3-flash",
-			"reasoningEffort": "high"
+			"model": "opencode-go/glm-5.3-flash#high"
 		}
 	},
-	"autoupdate": false,
 	"default_agent": "plan",
-	// Disabling `opencode` is required to avoid `opencode` leaking session metadata to their free summary model:
-	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795342973
-	"disabled_providers": ["opencode"],
-	"enabled_providers": ["opencode-go"],
-	// TODO: Investigate whether formatters are automatically downloaded. Until then, disable formatters
-	// as we want to manage third-party packages ourselves - https://github.com/anomalyco/opencode/issues/22651
-	"formatter": false,
-	// Documentation mentions LSPs are automatically downloaded when needed. We do not want `opencode`
-	// managing third-party packages. Instead `opencode` should use LSP servers that are already
-	// pre-installed onto the system - https://opencode.ai/docs/lsp
-	// TODO: Look into this behavior to see if we can achieve the desired outcome.
-	"lsp": false,
-	// General purpose model.
-	// Should be replaced by models better tailored to the specific agent/instructions, which affect
-	// how much reasoning is required, whether the model needs to be multimodal, and the latency
-	// that can be tolerated from the model.
+	"experimental": {
+		"policies": [
+			{ "action": "provider.use", "resource": "*", "effect": "deny" },
+			{ "action": "provider.use", "resource": "opencode-go", "effect": "allow" },
+			// Disabling `opencode` is required to avoid `opencode` leaking session metadata to their free summary model:
+			// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795342973
+			{ "action": "provider.use", "resource": "opencode", "effect": "deny" }
+		]
+	},
+	"formatter": true,
 	"model": "opencode-go/mimo-v2.6-flash",
-	"share": "disabled",
-	// Setting a small model used in the background by `opencode` to summarize session metadata, to
-	// avoid `opencode` sending session metadata to their own free summary model:
-	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
-	// - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
-	"small_model": "opencode-go/mimo-v2.6-flash"
+	"update": "disable"
 }
