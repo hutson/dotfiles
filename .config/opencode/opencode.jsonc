@@ -3,81 +3,84 @@
 	// Supported models available here - https://opencode.ai/go
 	// Usage limits - https://opencode.ai/docs/go/#usage-limits
 	"agent": {
-		// qwen3.8-flash - https://models.dev/models/alibaba/qwen3.8-flash/
-		// Comparison - https://llm-stats.com/models/compare/qwen3.7-plus-vs-qwen3.8-flash
-		// Comparison - https://llm-stats.com/models/compare/mimo-v2.5-vs-qwen3.8-flash
-		// Comparison - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-qwen3.8-flash
-		// - ~30% stronger on benchmarks compared to our cheap mimo-v2.5, at only 0.9x the cost.
-		// - ~20% stronger on benchmarks compared to kimi-k2.7-code, wile being 6.2x cheaper.
-		// - Multimodal; text, image, video support, but looses audio compared to mimo-v2.5.
-		// - Large context window for arbitrary use cases; 1,000,000 tokens
-		"build": {
-			"model": "opencode-go/qwen3.8-flash"
-		},
-		// glm-5.3 - https://models.dev/models/zhipuai/glm-5.3/
-		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-kimi-k2.7-code
-		// - Strong at reasoning compared to k2.7-code while being 2.8x cheaper than the similar k3 model.
-		// - glm-5.3 has better reasoning in plan mode - https://blog.kilo.ai/p/glm-52-vs-kimi-k27-code-which-model
 		//
-		// NOTE: Only supports text. No images, video, audio.
+		// GOAL: A strong reasoning model that specializes in coding with multi-modal support for acessing any required knowledge.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-pro/
+		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-mimo-v2.6-pro
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - Slightly less good at reasoning/coding compared to GLM-5.3 but at 3.5x cheaper per token.
+		// - Multi-model: text, images, video, audio
+		//
 		"plan": {
-			"model": "opencode-go/glm-5.3"
+			"model": "opencode-go/mimo-v2.6-pro"
 		},
-		// qwen3.8-flash - https://models.dev/models/alibaba/qwen3.8-flash/
-		// Comparison - https://llm-stats.com/models/compare/qwen3.7-plus-vs-qwen3.8-flash
-		// Comparison - https://llm-stats.com/models/compare/mimo-v2.5-vs-qwen3.8-flash
-		// Comparison - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-qwen3.8-flash
-		// - ~30% stronger on benchmarks compared to our cheap mimo-v2.5, at only 0.9x the cost.
-		// - ~20% stronger on benchmarks compared to kimi-k2.7-code, wile being 6.2x cheaper.
-		// - Multimodal; text, image, video support, but looses audio compared to mimo-v2.5.
-		// - Large context window for arbitrary use cases; 1,000,000 tokens
+		//
+		// GOAL: General model specialized in coding with ability to cheaply take a plan, execute it, and leverage tools to validate work.
+		//
+		// Model - https://models.dev/models/deepseek/deepseek-v4.1-flash/
+		// Comparison - https://llm-stats.com/models/compare/deepseek-v4.1-flash-vs-qwen3.8-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-coding
+		//
+		// - Considered good at coding and tool calling - https://llm-stats.com/leaderboards/best-ai-for-tool-calling
+		//
+		"build": {
+			"model": "opencode-go/deepseek-v4.1-flash"
+		},
+		//
+		// GOAL: A strong model that is balanced, not favoring any particular specialty.
+		//
 		"general": {
-			"model": "opencode-go/qwen3.8-flash"
+			"model": "opencode-go/deepseek-v4.1-flash"
 		},
+		//
+		// GOAL: A fast and cheap model that is still capable of basic reasoning.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/deepseek-v4.1-flash-vs-mimo-v2.6-flash
+		//
 		// mimo-v2.5 - https://models.dev/models/xiaomi/mimo-v2.5/
 		// Comparison - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
-		// - ~10% weaker at benchmarks compared to k2.7-code, but 6.8x cheaper.
-		// - 1.9x more expensive than deepseek, but comes with multimodal support for arbitrary use cases (opencode lists it as substantially cheaper for some reason).
-		// - Latest Deepseek Flash is not hosted outside of China - https://github.com/anomalyco/opencode/issues/39845
-		// - Multimodal; text, image, video, audio support.
-		// - Large context window for arbitrary use cases; 1,000,000 tokens
+		//
+		// - ~10% weaker at benchmarks compared to DeepSeek-v4.1 but is 1.9x cheaper
+		//
 		"explore": {
-			"model": "opencode-go/mimo-v2.5"
+			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		"scout": {
-			"model": "opencode-go/mimo-v2.5"
+			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		"compaction": {
-			"model": "opencode-go/mimo-v2.5"
+			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		"title": {
-			"model": "opencode-go/mimo-v2.5"
+			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		"summary": {
-			"model": "opencode-go/mimo-v2.5"
+			"model": "opencode-go/mimo-v2.6-flash"
 		},
-		// minimax-m3 - https://models.dev/models/minimax/MiniMax-M3/
-		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-minimax-m3
-		// - 20%/30% weaker at benchmarks compared to glm-5.3, but 4.1x cheaper.
-		// - Performs better than k2.7-code, including reasoning, while being 2.7x cheaper - https://llm-stats.com/models/compare/kimi-k2.7-code-vs-minimax-m3
 		//
-		// NOTE: Each reviewer should use a different model and provider than the `plan` agent to provide
-		// a review from a different perspective.
+		// GOAL: Each reviewer should use a different model and provider than the plan or build agent to provide a review from a different perspective.
+		//
 		"reviewer-documentation": {
-			"model": "opencode-go/minimax-m3"
+			// https://llm-stats.com/leaderboards/best-ai-for-writing
+			"model": "opencode-go/mimo-v2.6-pro"
 		},
 		"reviewer-go": {
-			"model": "opencode-go/minimax-m3"
+			"model": "opencode-go/glm-5.3-flash"
 		},
 		"reviewer-security": {
-			"model": "opencode-go/minimax-m3"
+			"model": "opencode-go/glm-5.3-flash"
 		},
 		"reviewer-test-design": {
-			"model": "opencode-go/minimax-m3"
+			"model": "opencode-go/glm-5.3-flash"
 		},
 		//
+		// GOAL: A strong reasoning model that specializes in coding and writing.
+		//
 		"study": {
-			"model": "opencode-go/glm-5.3"
+			"model": "opencode-go/glm-5.3-flash"
 		}
 	},
 	"autoupdate": false,
@@ -98,11 +101,11 @@
 	// Should be replaced by models better tailored to the specific agent/instructions, which affect
 	// how much reasoning is required, whether the model needs to be multimodal, and the latency
 	// that can be tolerated from the model.
-	"model": "opencode-go/mimo-v2.5",
+	"model": "opencode-go/mimo-v2.6-flash",
 	"share": "disabled",
 	// Setting a small model used in the background by `opencode` to summarize session metadata, to
 	// avoid `opencode` sending session metadata to their own free summary model:
 	// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795295704
 	// - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
-	"small_model": "opencode-go/mimo-v2.5"
+	"small_model": "opencode-go/mimo-v2.6-flash"
 }
