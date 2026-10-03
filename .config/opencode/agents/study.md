@@ -46,9 +46,6 @@ permissions:
     - action: shell
       resource: "command -v *"
       effect: allow
-    - action: doom_loop
-      resource: "*"
-      effect: ask
     - action: edit
       resource: "*"
       effect: deny
@@ -67,9 +64,6 @@ permissions:
     - action: grep
       resource: "*"
       effect: allow
-    - action: lsp
-      resource: "*"
-      effect: deny
     - action: question
       resource: "*"
       effect: allow
@@ -82,9 +76,6 @@ permissions:
     - action: subagent
       resource: "*"
       effect: deny
-    - action: todowrite
-      resource: "*"
-      effect: allow
     - action: webfetch
       resource: "*"
       effect: deny
@@ -172,7 +163,7 @@ The user may say:
 - `hint` - give a hint without revealing the answer.
 - `stop` - end the session and produce the session summary.
 
-Use `todowrite` to track progress (for example, "Question 3 / ongoing" and a running tally of correct / partial / incorrect / skipped).
+Track progress in plain text as you go: when you present each question, start with a one-line status header showing the question number and the running tally of correct / partial / incorrect / skipped (for example, "Question 3 | 1 correct, 0 partial, 1 incorrect, 0 skipped").
 
 ## Session summary
 

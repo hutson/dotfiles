@@ -8,9 +8,6 @@ permissions:
     - action: shell
       resource: "*"
       effect: deny
-    - action: doom_loop
-      resource: "*"
-      effect: ask
     - action: edit
       resource: "*"
       effect: deny
@@ -21,9 +18,6 @@ permissions:
       resource: "*"
       effect: allow
     - action: grep
-      resource: "*"
-      effect: allow
-    - action: lsp
       resource: "*"
       effect: allow
     - action: question
