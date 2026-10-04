@@ -41,6 +41,9 @@ brew "hadolint" # Linter for Containerfiles.
 brew "yamllint" # Linter for YAML files.
 brew "ansible-lint" # Linter for Ansible files.
 
+brew "forgejo-cli" # Command line tool for Forgejo instances.
+brew "gh" # Command line tool for GitHub instances.
+
 # Static site generator and build tool.
 brew "hugo"
 
