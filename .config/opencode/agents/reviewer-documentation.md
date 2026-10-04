@@ -62,7 +62,8 @@ For each comment block and inline code comment that is part of the review, consi
 1. For single line code comments, does the comment explain details that cannot be understood if the code was self-documenting?
 1. For large code blocks, do the comments compare the current implementation to alternatives that were considered and discarded?
 1. Does the comment follow comment convention for the file's programming language?
+1. Is the comment block documenting a language feature that is self-explanatory or a feature an intermediate developer would know. For example, do not document `set -o errexit -o nounset -o noglob -o pipefail`, as the options are fully spelled out, and the behavior well understood by a regular Bash developer.
 
 For each issue discovered:
-- If the fix is obvious, provide a description of the issue and the recommended fix.
-- If multiple valid approaches exist, present the options with their trade-offs.
+1. If the fix is obvious, provide a description of the issue and the recommended fix.
+1. If multiple valid approaches exist, present the options with their trade-offs.
