@@ -31,15 +31,22 @@ source ~/.profile
 
 Run `gpg --import <public key>` to import the GPG public key used for signing operations, such as signing Git commits.
 
+## Design Decisions
+
+- One entry point to invoke all tests and quality checks.
+- Shell scripts should minimize their dependence on Bash features to remain portable across different shell environments and Linux distributions.
+
 ## Development
 
-To test your changes inside Dev Container:
+Validate changes with this project's single test entry point, `.tools/test.sh`. It runs the static analysis and dynamic tests a change needs, entirely offline and is non-destructive and repeatable. No other commands are necessary to validate a change.
+
+Run it from the repository root, inside the Dev Container:
 
 ```bash
 bash .tools/test.sh
 ```
 
-Or using Devsy:
+If you are not inside a Dev Container, run it inside one via Devsy:
 
 ```bash
 devsy ci . -- bash .tools/test.sh

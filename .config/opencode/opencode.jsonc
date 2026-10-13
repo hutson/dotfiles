@@ -4,6 +4,30 @@
 	// Usage limits - https://opencode.ai/docs/go/#usage-limits
 	"agents": {
 		//
+		// Engineering loop agents.
+		//
+		"architect": {
+			"model": "opencode-go/mimo-v2.6-pro"
+		},
+		"developer": {
+			"model": "opencode-go/qwen3.8-flash#medium"
+		},
+		"documentation": {
+			"model": "opencode-go/mimo-v2.6-pro"
+		},
+		"quality-assurance": {
+			"model": "opencode-go/glm-5.3-flash#low"
+		},
+		"security": {
+			"model": "opencode-go/glm-5.3-flash#max"
+		},
+		"supervisor": {
+			"model": "opencode-go/mimo-v2.6-pro"
+		},
+		"test-design": {
+			"model": "opencode-go/glm-5.3-flash#high"
+		},
+		//
 		// GOAL: A strong reasoning model that specializes in coding with multi-modal support for acessing any required knowledge.
 		//
 		// Model - https://models.dev/models/xiaomi/mimo-v2.6-pro/
@@ -26,8 +50,6 @@
 		// - Considered good at coding and tool calling - https://llm-stats.com/leaderboards/best-ai-for-tool-calling
 		// - Not as good as DeepSeek, but DeepSeek is not available inside the US/EU region.
 		//
-		// The `#variant` suffix on model references replaces the V1 top-level `reasoningEffort` field,
-		// selecting a reasoning-effort variant published by the provider for that model.
 		"build": {
 			"model": "opencode-go/qwen3.8-flash#medium"
 		},
@@ -63,22 +85,6 @@
 			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		//
-		// GOAL: Each reviewer should use a different model and provider than the plan or build agent to provide a review from a different perspective.
-		//
-		"reviewer-documentation": {
-			// https://llm-stats.com/leaderboards/best-ai-for-writing
-			"model": "opencode-go/mimo-v2.6-pro"
-		},
-		"reviewer-go": {
-			"model": "opencode-go/glm-5.3-flash#high"
-		},
-		"reviewer-security": {
-			"model": "opencode-go/glm-5.3-flash#max"
-		},
-		"reviewer-test-design": {
-			"model": "opencode-go/glm-5.3-flash#high"
-		},
-		//
 		// GOAL: A strong reasoning model that specializes in coding and writing.
 		//
 		"study": {
@@ -92,7 +98,13 @@
 			{ "action": "provider.use", "resource": "opencode-go", "effect": "allow" },
 			// Disabling `opencode` is required to avoid `opencode` leaking session metadata to their free summary model:
 			// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795342973
-			{ "action": "provider.use", "resource": "opencode", "effect": "deny" }
+			{ "action": "provider.use", "resource": "opencode", "effect": "deny" },
+			// Permission policies intended to provide a "defense-in-depth" approach to preventing agents from commiting code changes. Permission policies hard-deny after rules and saved approvals run, and global policies override project configuration, so a project configuration cannot re-allow these commands. Furthermore, these policies complement the same permission checks in the custom permission boundary plugin, in case the plugin fails to load.
+			{ "action": "permission", "resource": "shell:git commit *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git push *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git add *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git rm *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git mv *", "effect": "deny" }
 		]
 	},
 	"formatter": true,

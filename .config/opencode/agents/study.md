@@ -5,6 +5,15 @@ request:
     body:
         temperature: 0.2
 permissions:
+    # Deny by default. The base policy grants every agent `allow` for `*`, and the last
+    # matching rule wins, so this rule overrides that default; the rules that follow reopen
+    # only the capabilities this role needs.
+    - action: "*"
+      resource: "*"
+      effect: deny
+    # Study runs the exercise toolchain, so anything unlisted must prompt rather than run
+    # silently: the selection and editor helpers, `mktemp` scratch directories, `cd`,
+    # `timeout`, the Go and Python runners, and `command -v` probes are the whole surface.
     - action: shell
       resource: "*"
       effect: ask
@@ -46,15 +55,25 @@ permissions:
     - action: shell
       resource: "command -v *"
       effect: allow
+    # The question pool on disk is read-only source of truth (the body's security boundaries);
+    # only the session scratch directory allowed below is writable.
     - action: edit
       resource: "*"
       effect: deny
     # Leading `**/` (not `/tmp/`) because edit permission patterns match the path that
     # `path.relative(worktree, file)` produces, so a file in /tmp appears as `../../../tmp/...`
     # relative to the workspace. `/tmp/**` would only match a worktree that itself lives in /tmp.
+    # Accepted trade: this also matches a workspace-local `tmp/study-*` directory; no fixed
+    # `../` prefix avoids it because the `..` count depends on the workspace's depth.
     - action: edit
       resource: "**/tmp/study-*/**"
       effect: allow
+    # Restated because the catch-all above would otherwise deny them: out-of-workspace reads
+    # (the question pool lives under ~/Documents) stay human-approved rather than blocked.
+    - action: external_directory
+      resource: "*"
+      effect: ask
+    # Pre-approved because the per-session scratch directory lives there by design.
     - action: external_directory
       resource: "/tmp/**"
       effect: allow
@@ -70,9 +89,22 @@ permissions:
     - action: read
       resource: "*"
       effect: allow
+    # The base policy's `.env` guards are restated here because the catch-all above overrides
+    # them; last match wins, so a guard must follow the catch-all to survive.
+    - action: read
+      resource: "*.env"
+      effect: ask
+    - action: read
+      resource: "*.env.*"
+      effect: ask
+    - action: read
+      resource: "*.env.example"
+      effect: allow
     - action: skill
       resource: "*"
       effect: deny
+    # An active-recall session grades the user's own memory, so it delegates nothing to
+    # subagents and pulls nothing from the web: answers come from the reference material only.
     - action: subagent
       resource: "*"
       effect: deny

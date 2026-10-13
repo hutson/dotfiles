@@ -25,7 +25,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # NOTE: The container's default user must remain root for Dev Container
 # orchestrator setup and lifecycle hooks. The remoteUser in
 # devcontainer.json drops to vscode for interactive development.
-# hadolint ignore=DL3002
+# DL3066 wants a numeric user id because a name may not resolve on the host,
+# but `root` is uid 0 in every Linux image, so the concern does not apply;
+# naming it reads better than `0` and the exclusion changes no behavior.
+# hadolint ignore=DL3002,DL3066
 USER root
 
 RUN curl -sSL "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64" \

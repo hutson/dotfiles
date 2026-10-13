@@ -15,10 +15,10 @@ When rules conflict, apply them in this order:
 - When encountering ambiguity, or when instructions are in conflict with one another, ask the user to clarify.
 - Use lowercase when creating readme files: `readme.md`
 - Read the project's `readme.md` file for testing and validation instructions, and if those instruction might be related to files you have modified, run those instructions in a loop, making changes to files until instructions pass.
-- Never consider, comment, or carry out the action of, committing changes, pushing code, or opening pull requests. Those will only ever be done by the user as the user's discretion.
-- Never stage changes in a version controlled project or folder.
-- Use sub-agents to complete tasks whenever possible, taking care to ensure the requirements for a task align with the description of an available sub-agent.
-- When reviewing code, ask about removing unlikely edge case handling rather than preserving complexity.
+- Never consider, comment, or carry out the action of, staging changes, committing changes, pushing code, or opening pull requests. Those will only ever be done by the user as the user's discretion.
+- Delegate code exploration that spans multiple files or covers an unfamiliar area of the codebase to the `explore` sub-agent; it returns a summary, which keeps your context small. Handle single reads, greps, and targeted lookups yourself, since dispatching a sub-agent costs a round trip. Never delegate grading, review, or verification of your own work to a sub-agent: a sub-agent's opinion is neither a deterministic check nor a fresh grader's verdict.
+- Prefer tool settings in configuration files over command-line flags.
+- Identify the languages, tools, and frameworks the work touches, and load the matching skill (for example `go`, `bash`, `ansible`, `devcontainer`, `docs`) before acting. Read only the reference section relevant to your role. If no skill exists for a stack in use, follow general best practices and note that a skill should be created for it.
 
 ## Code Style Rules
 
@@ -39,34 +39,22 @@ if authcheck(u) {
 }
 ```
 
-## Bash Scripting Rules
-
-- Prefer POSIX-compliant code that can run against different shell environemnts (Dash, Bash, ZSH, etc.), unless instructed otherwise.
-- Prefer POSIX-compliant syntax, such as `test` or single `[` brackets, to improve portability across different Unix-like operating systems.
-- Prefer the full argument name when passing flags to commands (e.g., use --help instead of -h).
-- Always use double quotes around variable expansion to prevent word splitting and globbing; `"$speed"`
-- Always use curly brackets around variable expansion to avoid ambiguity; `"${speed}mph"` when the variable is `$speed`
-- Always use `$(...)` for command substitution instead of backticks (`` `...` ``).
-- Use defensive shell scripting best practices: such as `set -o errexit -o nounset -o noglob -o pipefail` at the start of bash scripts for safety.
-- Avoid the use of `eval`.
-- Prefer the long form (`-o errexit`, `-o nounset`, `-o noglob`, `-o pipefail`) over the short form (`-euf -o pipefail`) for `set` options in bash scripts, consistent with using the full argument name for command flags.
-- Annotate the `set` line with a comment that explains the conditions that lead to a non-zero exit, so readers do not have to recall what each option does. For the canonical `set -o errexit -o nounset -o noglob -o pipefail` invocation, the comment should cover:
-  - `-o errexit`: a command (or, with `-o pipefail`, any stage of a pipeline) exits non-zero
-  - `-o nounset`: an unset variable is expanded
-  - `-o noglob`: filename expansion is disabled; the script does not rely on globbing, so leaving it off would only invite accidental matches against literal filenames containing glob metacharacters
-  - `-o pipefail`: a pipeline's exit status is the status of the rightmost command that exited non-zero (rather than the final command)
-- After calling `set -o errexit -o nounset -o noglob -o pipefail`, capture the script start time as a readonly variable and set `PS4` to reference it. The start time is cached once in `_trace_start_time_us` to avoid fragile partial-expansion tricks inside the `PS4` string. This requires bash 5.0+ because it uses `EPOCHREALTIME` and pure-bash integer arithmetic, eliminating the need for external `date` and `bc` calls during tracing:
-  ```bash
-  readonly _trace_start_time_us=${EPOCHREALTIME//./}
-  PS4='[DEBUGLEVEL:${SHLVL} SUBSHELL:${BASH_SUBSHELL} LINE:${LINENO} DIFF:$(us=$(( ${EPOCHREALTIME//./} - _trace_start_time_us )); ms=$(( us / 1000 )); printf "%d.%03d" $((ms / 1000)) $((ms % 1000)) )s SOURCE:${BASH_SOURCE}] '
-  ```
-
 ## Testing Rules
 
-- Never modify tests unrelated to the code that is added or modified.
-- Always ask before adding or updating tests.
-- Run only the tests that cover the modified functionality; ask the user when the scope is unclear.
-- Invoke Bash scripts using `bash -x` to enable debug logging.
+- Testing falls into one of two categories: static analysis (linters and analyzers) and dynamic tests that execute project code.
+- Never invent custom test tooling, lint tooling, or coverage metrics. If the project's standard test entry point does not offer a way to exercise the required testing, suggest several standard tooling options to the user to pick from.
+
+Static analysis:
+
+- Never remove a TODO comment from code without approval, even if it fails a static linter.
+- If a TODO is found and fails, review the linter that failed and add an inline code comment that ignores that rule for that TODO comment.
+
+Dynamic tests:
+
+- Only implement offline tests. Tests should never require network access to install dependencies or execute tests.
+- When creating or expanding tests in a project, prefer implementing unit and integration tests on your own, but present the user options for implementing end-to-end tests so they can choose whether the complexity is worth the value.
+- Tests must be non-destructive such that repeated runs must not fill the disk, permanently delete files, or mutate source files.
+- Tests must be fast, with individual test cases completing under a second and the whole test entry point taking less than 30 seconds. If closing a coverage gap would take more than about 5 seconds, drop the test and add a multi-line `TODO:` comment describing the gap, how a test could cover it, and why speed forced the omission.
 
 ## Documentation Rules
 
@@ -112,7 +100,7 @@ brew cleanup --scrub --prune=all
 this — or that - thing
 ```
 
-- Prefer surround that text using paranthesis.
+- Prefer surrounding text using paranthesis.
 
 ```
 this (or that) thing
@@ -127,20 +115,6 @@ this (or that) thing
 
 - Follow XDG Base Directory specification: use `XDG_CONFIG_HOME` for configuration files, `XDG_DATA_HOME` for data files, and `XDG_CACHE_HOME` for cache files.
 - Organize configuration into modular, single-purpose files rather than monolithic configuration files for easier maintenance and version control.
-
-## Go Rules
-
-- When creating a new Go project, `go.mod` should use the oldest supported version of Go, 1.26.0, for the `go` directive, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
-- Run tests with: `go test -failfast -race -cpu=1,24 -cover -coverprofile=coverage.out`
-- Use `-run` during development for targeted feedback, but exclude `-run` for final validation.
-
-## Ansible Rules
-
-- Use `ansible.builtin.assert` for validation checks instead of `fail` with `when` conditions.
-- Prefer simplicity by avoiding complex backup/rollback systems, unless data cannot be recreated.
-- Make tasks idempotent by checking state before running commands (e.g., check if a file exists before running a command that creates it).
-- Validate inputs early (preflight checks) but let Ansible modules fail naturally rather than duplicating their validation logic.
-- For non-critical data backups, or when creating/writing temporary files and directories, use OS temp directories and let the OS clean up automatically.
 
 ## General Logging Rules
 
@@ -158,12 +132,3 @@ Logging from a command line tool may look like:
 ```bash
 DEBUG=codeberg.org/hutson/semantic-tag/semantictag LOG_LEVEL=debug cli-tool`
 ```
-
-## Dev Container Rules
-
-- Use the `vscode` user (Microsoft convention) for interactive development, not `linuxbrew` or custom names.
-- Match host UID/GID at build time via `build.args` when using tools that do not implement `updateRemoteUserUID`.
-- Use `remoteUser` for dev tools and lifecycle hooks; do not set `containerUser` to a non-root user.
-- Use spec-compliant properties (`capAdd`, `securityOpt`) instead of Docker-specific `runArgs`.
-- Security relaxations (like `capAdd` and `securityOpt`) are acceptable for dev containers but must be documented with inline comments explaining the accepted risk.
-- Keep the container's default user as `root` for orchestrator setup, then drop to `remoteUser` for dev work.

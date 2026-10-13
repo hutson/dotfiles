@@ -56,12 +56,20 @@ ln -s -f "$(pwd)/.config/ghostty/config" "${XDG_CONFIG_HOME}/ghostty/config"
 echo "> Symlinking coding agent files into the config directory (${XDG_CONFIG_HOME}/opencode)."
 mkdir -p "${XDG_CONFIG_HOME}/opencode"
 ln -s -f "$(pwd)/.config/opencode/opencode.jsonc" "${XDG_CONFIG_HOME}/opencode/opencode.jsonc"
-ln -s -f "$(pwd)/.config/opencode/cli.jsonc" "${XDG_CONFIG_HOME}/opencode/cli.jsonc"
+ln -s -f "$(pwd)/.config/opencode/cli.json" "${XDG_CONFIG_HOME}/opencode/cli.json"
 ln -s -f "$(pwd)/.config/opencode/AGENTS.md" "${XDG_CONFIG_HOME}/opencode/AGENTS.md"
 ln -s -T -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents"
 ln -s -T -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
 ln -s -T -f "$(pwd)/.config/opencode/scripts" "${XDG_CONFIG_HOME}/opencode/scripts"
 ln -s -T -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
+
+# Plugins are copied, not symlinked: the module loader resolves a plugin entry file to its real
+# path before looking for dependencies, so a symlinked plugin resolves into this repository and
+# cannot find "@opencode/plugin" in ${XDG_CONFIG_HOME}/opencode/node_modules (install it there
+# with: cd "${XDG_CONFIG_HOME}/opencode" && npm install). Re-run this script after editing the
+# plugin to sync the copy.
+rm -rf "${XDG_CONFIG_HOME}/opencode/plugins"
+cp -r "$(pwd)/.config/opencode/plugins" "${XDG_CONFIG_HOME}/opencode/plugins"
 
 echo
 echo "==================== DEPLOYMENT COMPLETE =============="

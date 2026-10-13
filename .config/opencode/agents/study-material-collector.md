@@ -5,15 +5,26 @@ request:
     body:
         temperature: 0.1
 permissions:
+    # Deny by default. The base policy grants every agent `allow` for `*`, and the last
+    # matching rule wins, so this rule overrides that default; the rules that follow reopen
+    # only the capabilities this role needs.
+    - action: "*"
+      resource: "*"
+      effect: deny
+    # Shell is denied beyond the catch-all because the role is pure reading and writing: it
+    # takes a website or file as input and emits question files, running no commands.
     - action: shell
       resource: "*"
       effect: deny
     - action: edit
       resource: "*"
       effect: allow
+    # The body accepts "a file on the disk" as input, which may sit outside the workspace, so
+    # external paths must stay human-approved rather than hard-denied; `ask` matches every
+    # other agent's posture here.
     - action: external_directory
       resource: "*"
-      effect: deny
+      effect: ask
     - action: glob
       resource: "*"
       effect: allow
@@ -26,15 +37,36 @@ permissions:
     - action: read
       resource: "*"
       effect: allow
+    # The base policy's `.env` guards are restated here because the catch-all above overrides
+    # them; last match wins, so a guard must follow the catch-all to survive.
+    - action: read
+      resource: "*.env"
+      effect: ask
+    - action: read
+      resource: "*.env.*"
+      effect: ask
+    - action: read
+      resource: "*.env.example"
+      effect: allow
+    # Allowed because the collector authors code examples in the language under study, and the
+    # project instructions require loading the matching skill for any stack touched.
     - action: skill
       resource: "*"
       effect: allow
+    # Subagents are denied so every claim in the material traces back to a reference this
+    # agent fetched itself; a delegated summary (with `explore`'s web access, for example)
+    # would put unverifiable content into answers graded as truthful to the source material.
     - action: subagent
       resource: "*"
       effect: deny
+    # The "website" half of the role's input arrives through webfetch; the body binds it to
+    # truthfulness: conflicting references go to the user instead of being resolved from model
+    # knowledge.
     - action: webfetch
       resource: "*"
       effect: allow
+    # Web search is denied so collection stays anchored to the references provided up front,
+    # not sources discovered mid-task; webfetch still reaches any given reference URL.
     - action: websearch
       resource: "*"
       effect: deny
