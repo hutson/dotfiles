@@ -47,9 +47,16 @@ setupEnvironment() {
 	updateEnvironment
 
 	# TODO: Replace with Homebrew package, or Flatpak package, when available.
-	wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.3.1/Ghostty-1.3.1-x86_64.AppImage -O "${HOMEBREW_PREFIX}/bin/ghostty"
-	echo "fde48d2b716afd1978766879bbf1aae30dd305e8ad86a1037a2614a14d82dc28 ${HOMEBREW_PREFIX}/bin/ghostty" | sha256sum -c -
-	chmod +x "${HOMEBREW_PREFIX}/bin/ghostty"
+	ghostty_appimage="$(mktemp)"
+	wget --quiet https://github.com/pkgforge-dev/ghostty-appimage/releases/download/v1.3.1/Ghostty-1.3.1-x86_64.AppImage -O "${ghostty_appimage}" &&
+		echo "fde48d2b716afd1978766879bbf1aae30dd305e8ad86a1037a2614a14d82dc28  ${ghostty_appimage}" | sha256sum --check --strict &&
+		install -m 755 "${ghostty_appimage}" "${HOMEBREW_PREFIX}/bin/ghostty"
+	ghostty_status=${?}
+	rm -f "${ghostty_appimage}"
+	if [ "${ghostty_status}" -ne 0 ]; then
+		echo "ERROR: Ghostty download failed or did not match its pinned digest; nothing was installed." >&2
+		return 1
+	fi
 }
 
 #! Set up Homebrew.

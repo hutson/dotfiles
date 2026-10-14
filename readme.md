@@ -11,7 +11,7 @@ First, pull down, and then extract, a copy of the repository into a hidden dotfi
 ```bash
 curl -L https://codeberg.org/hutson/dotfiles/archive/main.zip -o "/tmp/dotfiles.zip"
 unzip /tmp/dotfiles.zip && mv dotfiles .dotfiles
-rm "/tmp/dotfile.zip"
+rm "/tmp/dotfiles.zip"
 ```
 
 Navigate into the `${HOME}/.dotfiles` directory. Once there, run the deployment script to symlink the files into your home directory. The symbolic links will have names matching the names of the files in the repository.

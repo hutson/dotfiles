@@ -38,7 +38,17 @@
 		// - Multi-model: text, images, video, audio
 		//
 		"plan": {
-			"model": "opencode-go/mimo-v2.6-pro"
+			"model": "opencode-go/mimo-v2.6-pro",
+			// Skills and their reference files are standing instruction sources for planning, but the
+			// global skill tree resolves (through the deploy.sh symlink) into the dotfiles repository, so
+			// reading a skill's `references/*.md` from any other project is an external-directory read
+			// that asks for approval. Allow only the skill tree, matching the `skill: allow` rule the loop
+			// agents use; every other external directory still asks, and the shipped edit deny plus the
+			// base policy's `.env` guards remain in force because no `read`/`edit` rules exist.
+			"permissions": [
+				{ "action": "skill", "resource": "*", "effect": "allow" },
+				{ "action": "external_directory", "resource": "~/.config/opencode/skills/*", "effect": "allow" }
+			]
 		},
 		//
 		// GOAL: General model specialized in coding with ability to cheaply take a plan, execute it, and leverage tools to validate work.

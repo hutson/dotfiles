@@ -20,6 +20,13 @@ permissions:
     - action: external_directory
       resource: ~/.opencode/*
       effect: allow
+    # Skill guidance and its `references/` files live in the global skill tree, which deploy.sh
+    # symlinks into the dotfiles repository, so these reads land outside any workspace; the
+    # supervisor reads the `loop` skill's `references/` every phase, so prompting there is
+    # standing friction, not ad-hoc external access worth a prompt.
+    - action: external_directory
+      resource: ~/.config/opencode/skills/*
+      effect: allow
     - action: glob
       resource: "*"
       effect: allow

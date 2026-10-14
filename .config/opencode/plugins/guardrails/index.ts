@@ -1,6 +1,6 @@
-import { Plugin } from "@opencode/plugin"
+import type { Plugin } from "@opencode/plugin"
 
-export default Plugin.define({
+const plugin = {
 	id: "guardrails",
 	async setup(ctx) {
 		// Permission layer: a clean `deny` with a reason. The hook runs for allow/ask
@@ -59,7 +59,9 @@ export default Plugin.define({
 			}
 		})
 	},
-})
+} satisfies Plugin.Plugin
+
+export default plugin
 
 function isNonLowercaseReadme(path: string): boolean {
 	const base = path.split("/").pop() ?? ""

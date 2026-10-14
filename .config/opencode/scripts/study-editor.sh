@@ -46,22 +46,45 @@ sentinel="${exercise_file}.done"
 rm -f "$sentinel"
 
 print_manual_instructions() {
+	# The path is shown quoted with `%q` so a file name shaped by untrusted study
+	# material cannot read as extra commands when the user copies this line.
 	cat <<-EOF
 		Could not launch your editor automatically from this environment.
 
 		Please open the file yourself:
 
-		  \$EDITOR "${exercise_file}"
+		  \$EDITOR $(printf '%q' "${exercise_file}")
 
 		Then return here and let me know you are done.
 	EOF
 }
 
 launch_in_tmux() {
-	# tmux runs the command through a shell, so word-splitting on $EDITOR is
-	# intentional and matches how a user would type it.
-	# shellcheck disable=SC2086
-	tmux split-window -h "$EDITOR \"${exercise_file}\"; touch \"${sentinel}\""
+	# tmux evaluates its command argument through /bin/sh, so any value spliced into
+	# that string is parsed as shell syntax. The exercise file name comes from
+	# web-derived study material, so it is never spliced in: the command is written to
+	# a launcher script, where the file and sentinel land as `%q`-quoted literals, and
+	# tmux is handed only the launcher path, which `mktemp` guarantees is shell-safe.
+	# `${EDITOR}` is still written raw into the launcher and still evaluated by a
+	# shell, which is what makes a multi-word value such as `nvim -w log` work the way
+	# a user would type it; it stays a trusted value because running the user's own
+	# editor is the point of this script.
+	local launcher
+	launcher="$(mktemp)"
+	{
+		printf '#!/usr/bin/env bash\n'
+		printf '%s %q\n' "${EDITOR}" "${exercise_file}"
+		# Unconditional, matching the `;` this replaced: a non-zero editor exit must
+		# still create the sentinel, or the wait loop below stalls to its full timeout.
+		printf 'touch %q\n' "${sentinel}"
+		printf 'rm -f -- %q\n' "${launcher}"
+	} >"${launcher}"
+	# On a failed `split-window` the launcher never runs, so its self-removal never
+	# happens; delete it here so a tmux error does not leave a temp file behind.
+	tmux split-window -h "$(printf 'bash %q' "${launcher}")" || {
+		rm -f -- "${launcher}"
+		return 1
+	}
 }
 
 if [ -n "${TMUX:-}" ]; then

@@ -10,10 +10,9 @@ PS4='[DEBUGLEVEL:${SHLVL} SUBSHELL:${BASH_SUBSHELL} LINE:${LINENO} DIFF:$(us=$((
 # tooling pre-installed by the Dev Container environment responsible for building and testing
 # the given project.
 
-cat <<-'EOF' >"${XDG_CONFIG_HOME}/Brewfile"
-	brew "anomalyco/tap/opencode", trusted: true
-	brew "starship"
-EOF
+if [ -z "${XDG_CONFIG_HOME:-}" ]; then
+	export XDG_CONFIG_HOME="${HOME}/.config"
+fi
 
 # The Devsy in-memory secret mount only exists inside a Devsy workspace, where the
 # 'workspaceUp' alias provisions it via `--secret OPENCODE_KEY,type=mount,target=opencode.key`.

@@ -40,6 +40,10 @@ ln -s -f "$(pwd)/.ssh/allowed_signers" "${HOME}/.ssh/allowed_signers"
 
 echo "> Symlinking GnuPG files into GnuPG directory (${HOME}/.gnupg)."
 mkdir -p "${HOME}/.gnupg"
+# GnuPG warns about, and repairs on its first run, a ~/.gnupg readable by anyone other than its
+# owner, and the default umask creates it world-readable. Setting 700 here closes that first-run
+# window instead of leaving the keyring directory open until GnuPG notices.
+chmod 700 "${HOME}/.gnupg"
 ln -s -f "$(pwd)/.gnupg/gpg.conf" "${HOME}/.gnupg/gpg.conf"
 ln -s -f "$(pwd)/.gnupg/gpg-agent.conf" "${HOME}/.gnupg/gpg-agent.conf"
 ln -s -f "$(pwd)/.gnupg/scdaemon.conf" "${HOME}/.gnupg/scdaemon.conf"
@@ -62,14 +66,7 @@ ln -s -T -f "$(pwd)/.config/opencode/agents" "${XDG_CONFIG_HOME}/opencode/agents
 ln -s -T -f "$(pwd)/.config/opencode/commands" "${XDG_CONFIG_HOME}/opencode/commands"
 ln -s -T -f "$(pwd)/.config/opencode/scripts" "${XDG_CONFIG_HOME}/opencode/scripts"
 ln -s -T -f "$(pwd)/.config/opencode/skills" "${XDG_CONFIG_HOME}/opencode/skills"
-
-# Plugins are copied, not symlinked: the module loader resolves a plugin entry file to its real
-# path before looking for dependencies, so a symlinked plugin resolves into this repository and
-# cannot find "@opencode/plugin" in ${XDG_CONFIG_HOME}/opencode/node_modules (install it there
-# with: cd "${XDG_CONFIG_HOME}/opencode" && npm install). Re-run this script after editing the
-# plugin to sync the copy.
-rm -rf "${XDG_CONFIG_HOME}/opencode/plugins"
-cp -r "$(pwd)/.config/opencode/plugins" "${XDG_CONFIG_HOME}/opencode/plugins"
+ln -s -T -f "$(pwd)/.config/opencode/plugins" "${XDG_CONFIG_HOME}/opencode/plugins"
 
 echo
 echo "==================== DEPLOYMENT COMPLETE =============="
