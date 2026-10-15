@@ -1,0 +1,12 @@
+{
+	"files": {
+		// vim.pack generates nvim-pack-lock.json with two-space indentation with no customization option.
+		"includes": ["**", "!**/nvim-pack-lock.json"]
+	},
+	"overrides": [
+		{
+			"includes": [".config/opencode/opencode.jsonc"],
+			"formatter": { "lineWidth": 120 }
+		}
+	]
+}

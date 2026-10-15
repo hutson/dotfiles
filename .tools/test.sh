@@ -40,4 +40,10 @@ fi
 echo "✓ 'shellcheck' passed"
 echo
 
+echo "==================== BIOME =========================="
+echo "Running biome to lint and format-check TypeScript and JSONC files..."
+biome check --error-on-warnings .
+echo "✓ 'biome' passed"
+echo
+
 echo "==================== ALL CHECKS PASSED ==============="

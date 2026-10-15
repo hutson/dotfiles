@@ -109,12 +109,20 @@
 			// Disabling `opencode` is required to avoid `opencode` leaking session metadata to their free summary model:
 			// - https://github.com/anomalyco/opencode/issues/10416#issuecomment-3795342973
 			{ "action": "provider.use", "resource": "opencode", "effect": "deny" },
-			// Permission policies intended to provide a "defense-in-depth" approach to preventing agents from commiting code changes. Permission policies hard-deny after rules and saved approvals run, and global policies override project configuration, so a project configuration cannot re-allow these commands. Furthermore, these policies complement the same permission checks in the custom permission boundary plugin, in case the plugin fails to load.
+			// Backstop to the guardrails plugin in case it fails to load. Global hard-deny policies cannot be re-allowed by a project.
 			{ "action": "permission", "resource": "shell:git commit *", "effect": "deny" },
 			{ "action": "permission", "resource": "shell:git push *", "effect": "deny" },
 			{ "action": "permission", "resource": "shell:git add *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git update-index *", "effect": "deny" },
 			{ "action": "permission", "resource": "shell:git rm *", "effect": "deny" },
-			{ "action": "permission", "resource": "shell:git mv *", "effect": "deny" }
+			{ "action": "permission", "resource": "shell:git mv *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git config *", "effect": "deny" },
+			{ "action": "permission", "resource": "edit:.git", "effect": "deny" },
+			{ "action": "permission", "resource": "edit:*/.git", "effect": "deny" },
+			{ "action": "permission", "resource": "edit:.git/*", "effect": "deny" },
+			{ "action": "permission", "resource": "edit:*/.git/*", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:git credential *", "effect": "deny" },
+			{ "action": "permission", "resource": "shell:gh auth *", "effect": "deny" }
 		]
 	},
 	"formatter": true,

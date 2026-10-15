@@ -36,11 +36,12 @@ brew "ansible-language-server" # Language server for Ansible.
 
 # Linters and Formatters
 brew "shellcheck" # Linter for shell scripts, including Bash.
-brew "shfmt" # Install shell script formatter.
+brew "shfmt" # Shell script formatter.
 brew "hadolint" # Linter for Containerfiles.
 brew "yamllint" # Linter for YAML files.
 brew "ansible-lint" # Linter for Ansible files.
 brew "golangci-lint" # Metalinter for Go files.
+brew "biome" # Linter, formatter, and LSP server for TypeScript, JavaScript, and JSON/JSONC files.
 
 brew "forgejo-cli" # Command line tool for Forgejo instances.
 brew "gh" # Command line tool for GitHub instances.

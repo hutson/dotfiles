@@ -8,6 +8,7 @@ ARG USER_GID=1000
 RUN groupadd -g ${USER_GID} vscode \
 		&& useradd -l -u ${USER_UID} -g ${USER_GID} -d /home/vscode -s /bin/bash -m vscode
 
+# NOTE: Put everything specific to this repository within the `---` block.
 # ---
 
 # hadolint ignore=DL3008
@@ -20,6 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		shellcheck \
 		&& rm -rf /var/lib/apt/lists/*
 
+RUN curl --fail --silent --show-error --location "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%402.5.15/biome-linux-x64" \
+		-o /usr/local/bin/biome \
+		&& echo "5d867a0b2ccea1755b7e508b01d836a8c64e31a1e4d11ec24b43b6b4eec8b3b6	/usr/local/bin/biome" | sha256sum --check --strict \
+		&& chmod +x /usr/local/bin/biome
+
 # ---
 
 # NOTE: The container's default user must remain root for Dev Container
@@ -31,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # hadolint ignore=DL3002,DL3066
 USER root
 
-RUN curl -sSL "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64" \
+RUN curl --fail --silent --show-error --location "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64" \
 		-o /usr/local/bin/hadolint \
 		&& echo "56de6d5e5ec427e17b74fa48d51271c7fc0d61244bf5c90e828aab8362d55010	/usr/local/bin/hadolint" | sha256sum --check --strict \
 		&& chmod +x /usr/local/bin/hadolint

@@ -273,10 +273,22 @@ vim.lsp.config('lua_ls', {
 })
 vim.lsp.enable('lua_ls')
 
-vim.lsp.config('terraformls', {
+vim.filetype.add({
+	pattern = {
+		['.*/group_vars/.*'] = 'yaml.ansible',
+		['.*/host_vars/.*'] = 'yaml.ansible',
+		['.*/tasks/.*%.ya?ml'] = 'yaml.ansible',
+		['.*/roles/.*%.ya?ml'] = 'yaml.ansible',
+		['.*/handlers/.*%.ya?ml'] = 'yaml.ansible',
+		['.*/playbook%.ya?ml'] = 'yaml.ansible',
+		['.*/site%.ya?ml'] = 'yaml.ansible',
+		['.*/main%.ya?ml'] = 'yaml.ansible',
+	},
+})
+vim.lsp.config('ansiblels', {
 	capabilities = capabilities,
 })
-vim.lsp.enable('terraformls')
+vim.lsp.enable('ansiblels')
 
 vim.lsp.config('marksman', {
 	capabilities = capabilities,
@@ -287,6 +299,11 @@ vim.lsp.config('bashls', {
 	capabilities = capabilities,
 })
 vim.lsp.enable('bashls')
+
+vim.lsp.config('biome', {
+	capabilities = capabilities,
+})
+vim.lsp.enable('biome')
 
 -- The following key mapping is taken from https://github.com/neovim/nvim-lspconfig#suggested-configuration
 --
