@@ -18,6 +18,7 @@ description: Portable, defensive shell scripting: POSIX compliance, quoting, saf
     readonly _trace_start_time_us=${EPOCHREALTIME//./}
     PS4='[DEBUGLEVEL:${SHLVL} SUBSHELL:${BASH_SUBSHELL} LINE:${LINENO} DIFF:$(us=$(( ${EPOCHREALTIME//./} - _trace_start_time_us )); ms=$(( us / 1000 )); printf "%d.%03d" $((ms / 1000)) $((ms % 1000)) )s SOURCE:${BASH_SOURCE}] '
   ```
+- The `guardrails` plugin enforces this preamble on every written bash script: `set -o errexit -o nounset -o noglob -o pipefail` must be the first statement. The shebang, blank lines, and comment headers of any length may precede it, so a long rationale comment never conflicts with the rule; the old fixed line-window check was rejected because it failed exactly that case.
 
 ## Verify
 

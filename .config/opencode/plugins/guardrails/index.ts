@@ -4,7 +4,9 @@ import type { Plugin } from "@opencode/plugin";
 // cannot type-check it. A test should assert the fixture matrix: `git commit` denied,
 // `git log --grep commit` allowed, `git remote -v` allowed, `git reflog expire` denied,
 // `| sh -c` denied, `bash file.sh` allowed, `.github/` allowed, `id_rsa` denied,
-// `id_rsa.pub` allowed. Deferred because the validation environment has no JavaScript
+// `id_rsa.pub` allowed. Extend with the bash-header matrix: `set` preceded only by the
+// shebang and comment lines allowed, `set` missing denied, `set` after another statement
+// denied. Deferred because the validation environment has no JavaScript
 // runtime; once one exists, `node --test` with `node:assert` is the standard offline runner.
 const plugin = {
 	id: "guardrails",
@@ -54,30 +56,46 @@ const plugin = {
 			// case-insensitive filesystems, where `.GIT/` is the same directory.
 			const gitPath = /\.git\//i;
 
-			if (
-				event.action === "shell" &&
-				event.resources.some(
-					(r) =>
-						gitWrite.test(r) ||
-						ghAuth.test(r) ||
-						pipeToShell.test(r) ||
-						gitPath.test(r),
-				)
-			) {
-				event.effect = "deny";
-				event.message =
-					"Git writes, piped shells, .git paths, and credential readers are human-only (guardrails).";
-				return;
-			}
-
-			if (
-				event.action === "shell" &&
-				event.resources.some(mentionsSecretPath)
-			) {
-				event.effect = "deny";
-				event.message =
-					"Referencing secret files in shell commands is not allowed (guardrails).";
-				return;
+			if (event.action === "shell") {
+				// One message per rule: what matched, why it is restricted, and what
+				// to do instead, so the rejection text alone is enough to course-correct.
+				const gitWriteHit = firstMatch(event.resources, gitWrite);
+				if (gitWriteHit !== undefined) {
+					event.effect = "deny";
+					event.message =
+						`'${gitWriteHit[0].trim()}' mutates the repository and is human-only (guardrails): agents never stage, commit, push, or otherwise alter the repository. ` +
+						"Read-only git commands are allowed; ask the user to run the mutation.";
+					return;
+				}
+				const pipeHit = firstMatch(event.resources, pipeToShell);
+				if (pipeHit !== undefined) {
+					event.effect = "deny";
+					event.message =
+						`'${pipeHit[0].trim()}' pipes a payload into a shell for execution (guardrails): the payload never appears in the command text, so the git-write and secret scans cannot police it. ` +
+						"Write the script to a file and run it by path (bash file.sh), or ask the user.";
+					return;
+				}
+				const ghHit = firstMatch(event.resources, ghAuth);
+				if (ghHit !== undefined) {
+					event.effect = "deny";
+					event.message =
+						"'gh auth' reads stored credentials (guardrails): it prints the access token into command output. Ask the user for the specific value instead.";
+					return;
+				}
+				const gitPathHit = firstMatch(event.resources, gitPath);
+				if (gitPathHit !== undefined) {
+					event.effect = "deny";
+					event.message =
+						`'${gitPathHit[0].trim()}' references the Git internals directory (guardrails): shell access there can rewrite repository state or install hooks. ` +
+						"Use read-only git commands; ask the user for anything else.";
+					return;
+				}
+				const secretHit = event.resources.flatMap(secretMentions)[0];
+				if (secretHit !== undefined) {
+					event.effect = "deny";
+					event.message = `'${secretHit}' names a secret file in a shell command (guardrails): command output would expose it. Ask the user to run the command if it is genuinely needed.`;
+					return;
+				}
 			}
 
 			// The `edit` action covers write, edit, and patch, so an agent denied commits
@@ -86,11 +104,13 @@ const plugin = {
 			// The scan reads paths, not resolved targets, so a symlink into the Git directory
 			// or a path built by command substitution still escapes (a strict shell allowlist
 			// is the only complete fix, per the note on the verb scan).
-			if (event.action === "edit" && event.resources.some(touchesGitDir)) {
-				event.effect = "deny";
-				event.message =
-					"Writing into a .git directory is not allowed (guardrails).";
-				return;
+			if (event.action === "edit") {
+				const gitDirHit = event.resources.find(touchesGitDir);
+				if (gitDirHit !== undefined) {
+					event.effect = "deny";
+					event.message = `Writing into a .git directory is not allowed (guardrails): '${gitDirHit}' could install a hook or config that turns a later allowed command into arbitrary shell. Ask the user to change repository internals.`;
+					return;
+				}
 			}
 
 			// The `.git` deny above does not cover `~/.gitconfig`, which can redirect allowed
@@ -103,17 +123,18 @@ const plugin = {
 			) {
 				event.effect = "ask";
 				event.message =
-					"Modifying git configuration needs approval (guardrails).";
+					"Modifying git configuration needs approval (guardrails): gitconfig can redirect allowed commands into arbitrary shell via core.hooksPath and aliases. Have the user confirm this edit.";
 				return;
 			}
 
-			if (
-				event.action === "edit" &&
-				event.resources.some(isNonLowercaseReadme)
-			) {
-				event.effect = "deny";
-				event.message = "Name readme files in lowercase (readme.md).";
-				return;
+			if (event.action === "edit") {
+				const readmeHit = event.resources.find(isNonLowercaseReadme);
+				if (readmeHit !== undefined) {
+					const base = readmeHit.split(/[\\/]/).pop();
+					event.effect = "deny";
+					event.message = `Readme files must be lowercase (guardrails): '${base}' should be 'readme.md'. Re-run the change targeting the lowercase name.`;
+					return;
+				}
 			}
 
 			// Secret shapes the base `.env` guards miss, escalated to a prompt. Policies
@@ -121,13 +142,14 @@ const plugin = {
 			// this escalation lives in the hook rather than every agent file. It covers
 			// editor reads; shell readers (`cat`, `head`) that name a secret path are
 			// denied outright above.
+			const secretReadHit = event.resources.find(isSecretPath);
 			if (
 				event.action === "read" &&
 				event.effect === "allow" &&
-				event.resources.some(isSecretPath)
+				secretReadHit !== undefined
 			) {
 				event.effect = "ask";
-				event.message = "Reading secret material needs approval (guardrails).";
+				event.message = `Reading secret material needs approval (guardrails): '${secretReadHit}' matches a credential file shape. Have the user confirm, or ask them to provide the value.`;
 			}
 		});
 
@@ -151,32 +173,45 @@ const plugin = {
 			// the reverse. (Weakening or gutting a test, which these checks cannot
 			// catch, is graded by `test-design` at step 5 and on demand, on a tripwire
 			// fire or a worker signal.)
-			if (
-				/\*\*\* Delete File:/i.test(patchText) &&
-				deletedPaths(patchText).some(isTestPath)
-			) {
-				throw new Error("Deleting test files is not allowed (guardrails).");
+			if (/\*\*\* Delete File:/i.test(patchText)) {
+				const deletedTests = deletedPaths(patchText).filter(isTestPath);
+				if (deletedTests.length > 0) {
+					throw new Error(
+						`Deleting test files is not allowed (guardrails): ${deletedTests.join(", ")}. Code must satisfy the tests, not the reverse; fix the code, or ask the user if a test is genuinely wrong.`,
+					);
+				}
 			}
 			if (event.tool === "write" && isTestPath(path) && content.trim() === "") {
-				throw new Error("Blanking a test file is not allowed (guardrails).");
+				throw new Error(
+					`Blanking a test file is not allowed (guardrails): '${path}' would be emptied. Restore its tests; the code must satisfy them.`,
+				);
 			}
 
 			// Full-content checks run on `write`, where the complete file lands.
 			if (event.tool !== "write") return;
 
 			// Bash scripts must opt into safe shell behavior up front.
-			if (isBashScript(path, content) && !hasDefensiveSet(content)) {
-				throw new Error(
-					"Bash scripts must start with: set -o errexit -o nounset -o noglob -o pipefail (guardrails).",
-				);
+			if (isBashScript(path, content)) {
+				const headerProblem = bashHeaderProblem(content);
+				if (headerProblem !== null) {
+					throw new Error(
+						`'${path}': ${headerProblem} (guardrails: bash scripts must opt into safe shell behavior before any code runs).`,
+					);
+				}
 			}
 
 			// go.mod must carry both a `go` and a `toolchain` directive. This checks
 			// structure only and holds no version number, so it cannot drift.
-			if (isGoMod(path) && !hasGoAndToolchain(content)) {
-				throw new Error(
-					"go.mod must include both a `go` and a `toolchain` directive (guardrails).",
-				);
+			if (isGoMod(path)) {
+				const missingDirectives = [
+					/^\s*go\s+\S/m.test(content) ? null : "go",
+					/^\s*toolchain\s+\S/m.test(content) ? null : "toolchain",
+				].filter((directive) => directive !== null);
+				if (missingDirectives.length > 0) {
+					throw new Error(
+						`'${path}' must include both a 'go' and a 'toolchain' directive (guardrails); missing: ${missingDirectives.join(", ")}. Add them so builds select a pinned toolchain and stay reproducible.`,
+					);
+				}
 			}
 		});
 	},
@@ -227,13 +262,29 @@ function isSecretPath(path: string): boolean {
 	);
 }
 
+// Returns the first regex match across the permission resources, so a denial
+// can quote the exact text that tripped the rule.
+function firstMatch(
+	resources: string[],
+	rule: RegExp,
+): RegExpMatchArray | undefined {
+	for (const resource of resources) {
+		const match = resource.match(rule);
+		if (match !== null) {
+			return match;
+		}
+	}
+	return undefined;
+}
+
 // A shell command names a secret in free-form text rather than as one path, so split on shell
 // metacharacters and test each token as a path; quotes are stripped so quoted paths still match.
-function mentionsSecretPath(command: string): boolean {
+// Returns the offending tokens so a denial can name them.
+function secretMentions(command: string): string[] {
 	return command
 		.split(/[\s;|&()<>=]+/)
 		.map((token) => token.replace(/^["'`]+|["'`]+$/g, ""))
-		.some(isSecretPath);
+		.filter(isSecretPath);
 }
 
 // A write here can install `core.hooksPath` or a `!`-shell alias, turning an allowed verb like
@@ -267,17 +318,42 @@ function isBashScript(path: string, content: string): boolean {
 	);
 }
 
-function hasDefensiveSet(content: string): boolean {
-	const head = content.split("\n").slice(0, 20).join("\n");
-	return ["errexit", "nounset", "noglob", "pipefail"].every((flag) =>
-		head.includes(`-o ${flag}`),
-	);
+// The defensive set must be the first statement: shebang, blank lines, and comment
+// headers of any length may precede it, but no code may run before it. A fixed line
+// window was tried first and rejected long rationale headers that are otherwise
+// harmless. Returns null when compliant, otherwise the diagnosis naming the line to
+// fix so the rejection text alone is enough to correct the script.
+function bashHeaderProblem(content: string): string | null {
+	const lines = content.split("\n");
+	const requiredLine = "set -o errexit -o nounset -o noglob -o pipefail";
+	const isDefensiveSet = (line: string): boolean =>
+		/^\s*set\s/.test(line) &&
+		["errexit", "nounset", "noglob", "pipefail"].every((flag) =>
+			line.includes(`-o ${flag}`),
+		);
+
+	const setIndex = lines.findIndex(isDefensiveSet);
+	for (let index = 0; index < lines.length; index++) {
+		const line = lines[index];
+		const trimmed = line.trim();
+		// Shebang, blank lines, and comments are allowed before the set.
+		if (trimmed === "" || trimmed.startsWith("#")) {
+			continue;
+		}
+		if (isDefensiveSet(line)) {
+			return null;
+		}
+		return setIndex === -1
+			? `the first statement is line ${index + 1} ('${trimmed.slice(0, 40)}'), but '${requiredLine}' appears nowhere; add it above line ${index + 1}, directly after the shebang and any comment header`
+			: `the first statement is line ${index + 1} ('${trimmed.slice(0, 40)}'), but the defensive 'set' is at line ${setIndex + 1}; move it above line ${index + 1}`;
+	}
+	// Comment-only file with no statements: require the set anyway so adding code
+	// later cannot slip past it.
+	return setIndex === -1
+		? `no '${requiredLine}' found; add it after the shebang as the first statement`
+		: null;
 }
 
 function isGoMod(path: string): boolean {
 	return /(^|\/)go\.mod$/i.test(path);
-}
-
-function hasGoAndToolchain(content: string): boolean {
-	return /^\s*go\s+\S/m.test(content) && /^\s*toolchain\s+\S/m.test(content);
 }
