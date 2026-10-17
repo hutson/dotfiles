@@ -6,7 +6,7 @@ description: Markdown (CommonMark) and AsciiDoc syntax and style for writing and
 ## Markdown Conventions
 
 - One blank line between blocks; no trailing double-space hard breaks for soft wraps (use the source formatting the project already uses).
-- Sentence per line or consistent wrap so diffs stay readable.
+- One line per paragraph; never hard wrap (project rule in `AGENTS.md` Documentation Rules; existing files keep the wrapping style they already use).
 - Heading text in sentence case unless the project convention says otherwise; keep readme.md lowercase (project rule).
 - No em dashes in prose (project rule); prefer parentheses for asides.
 

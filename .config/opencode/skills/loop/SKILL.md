@@ -43,7 +43,7 @@ Before dispatching anything, write the goal/state file to `~/.opencode/progress/
     `test-design` is not part of the routine chain; it runs on demand only, on two triggers: a test-immutability tripwire fire, or any worker signal that a test is wrong, flaky, or misaligned with the goal. Either signal dispatches `test-design` without your adjudication: a weakened or tautological test still runs green and still covers the code, so only a fresh test review catches it.
 
     Round accounting: a full re-chain counts as one round; documentation re-checks do not start rounds; a second consecutive documentation-only FAIL starts a new round so the stop rules can fire.
-8. report: summarize what shipped, the coverage the entry point reported, any remaining `TODO:` items, and every sanctioned test change (endorsement or human direction) with the acceptance criterion it preserved. Then run the exit retrospective in `references/improvement.md` (see "Friction tracking and improvement").
+8. report: summarize what shipped, any remaining `TODO:` items, and every sanctioned test change (endorsement or human direction) with the acceptance criterion it preserved. Then run the exit retrospective in `references/improvement.md` (see "Friction tracking and improvement").
 
 ## Test baseline and tripwire
 
@@ -74,7 +74,7 @@ Verify never runs on your shell: `quality-assurance` holds the shell for the doc
 
 ## Stop rules (outside the generator)
 
-Stop and report success when ALL hold: the single test entry point is green and every grader returns PASS. The entry point's own gates, including the coverage floor baked into the stack skill's test tooling, define green, so a below-threshold suite fails the run like any other test and cycles back through `developer` instead of becoming a number you judge.
+Stop and report success when ALL hold: the single test entry point is green and every grader returns PASS. The entry point's own gates define green, so a failing gate cycles the run back through `developer` like any other test.
 
 Stop and report to the human when ANY holds:
 

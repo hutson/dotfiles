@@ -16,10 +16,12 @@ into a project layout and never duplicates their guidance.
 - The readme's `## Development` section documents exactly that command, using this paragraph copied verbatim:
 
   > Validate changes with this project's single test entry point, `.tools/test.sh`. It runs the static analysis and dynamic tests a change needs, entirely offline and is non-destructive and repeatable. No other commands are necessary to validate a change.
+- The readme's `## Design Decisions` section is created empty and stays empty until the human fills it. It records only high-level, subjective ground truths that direct future development (design, architecture, security posture). Implementation facts (a library in use, a tool name, a container detail) are not decisions: they live in the code and configuration that embody them. Agents never author entries; an entry appears only at the human's direction.
+- Prose in every generated file is one line per paragraph, never hard wrapped (the `AGENTS.md` documentation rule). Files copied for exactness (`license.md`, `.golangci.yaml`) keep their source formatting.
 
 - `license.md` is Apache-2.0 by default. Confirm the choice with the human before writing it; record any other choice as an assumption they can correct. Copy the license text from the dotfiles repository's `license.md` rather than writing it from memory (legal text must be exact, and the text never changes, so the copy is the canonical one).
 - `.gitattributes` contains exactly `* text=auto eol=lf`.
-- `.gitignore` covers `coverage.out` and the build outputs the project produces.
+- `.gitignore` covers the build outputs the project produces.
 - Tests run entirely offline, are non-destructive and repeatable, and use full flag names (`--help`, not `-h`).
 - If the folder is not a Git repository, ask the human to run `git init`. The `go mod tidy` cleanliness gate diffs against Git state, and `build.sh` reads Git metadata for container labels; agents are denied Git write commands.
 
@@ -42,10 +44,15 @@ On top of that, by goal (a project can hold more than one goal):
 - Service: add the release `Containerfile` (the image is the artifact) and a `## Deployment` section documenting configuration and environment; standalone-binary cross-compilation stays out unless the service also ships binaries.
 - Scripts or config repo: add a `scripts/` directory for the project's own shell scripts and a `## Usage` section that inventories them.
 
-The readme always closes with `## Design Decisions` and `## Development`. The Development
-section pairs the verbatim paragraph above with how to run the entry point inside the Dev
-Container, including the fallback for hosts without the tooling installed (`devsy ci . --
-bash .tools/test.sh`).
+The readme always closes with `## Design Decisions` and `## Development`. The Design
+Decisions section is created empty and never filled by an agent: per the Contract, it is
+the human's place to record the high-level ground truths that direct future development.
+The Development section pairs the verbatim paragraph above with how to run the entry
+point inside the Dev Container, including the fallback for hosts without the tooling
+installed (`devsy ci . -- bash .tools/test.sh`), and ends there. Dev Container
+provisioning, cache warming, and other environment implementation details are not readme
+content; a requirement that should shape that implementation (offline operation, for
+example) belongs in Design Decisions when the human records it there.
 
 ## File sources
 
@@ -58,8 +65,8 @@ bash .tools/test.sh`).
 | `biome.jsonc` | Only when the project deviates from Biome defaults; the `typescript` skill says when. |
 | `.gitleaks.toml` | Only when the secret gate misfires on generated or documentation files; the `security-tooling-architecture` skill says when and how (`[extend]` with `useDefault`, never a bare `[rules]` list). |
 | `license.md` | The dotfiles repository's `license.md`. |
-| `readme.md` | The outline above, with the `## Development` paragraph copied verbatim. |
-| `.gitignore` | `coverage.out` plus this project's build outputs. |
+| `readme.md` | The outline above, with the `## Development` paragraph copied verbatim and `## Design Decisions` left empty. |
+| `.gitignore` | This project's build outputs. |
 | `.tools/test.sh` | The frame below, filled by the loaded stack skills. |
 
 **Versions.** Pinned versions (base images, tool releases, checksums) age the moment they

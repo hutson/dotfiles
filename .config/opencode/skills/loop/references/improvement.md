@@ -9,7 +9,7 @@ Bucket each effort-log row into exactly one bucket, and root-cause each bucket t
 - GOAL-GAP: the request left something open (a boundary, an interface surface, a scope) and a question round trip or a corrected assumption resolved it. Target: clarification instructions.
 - SKILL-STRUCTURE: a question or step mandated by loop or AGENTS rules, not by user intent. Target: skills or instructions.
 - ENV-GAP: a workflow or environment fact missing from the project's docs (a prerequisite the scaffold assumes, an entry point the loop could not establish). Target: skills or instructions.
-- LATE-SURFACE: a decision that surfaced only after a worker ran but was knowable at phase 0 (a license default, a coverage-enforcement choice). Target: clarification instructions.
+- LATE-SURFACE: a decision that surfaced only after a worker ran but was knowable at phase 0 (a license default, an end-to-end testing scope choice). Target: clarification instructions.
 - WORKER-DRIFT: a worker produced work outside the recorded constraints (reintroducing excluded artifacts). Target: brief-composition rules (skills) or agent definitions.
 - INSTRUCTION-CHURN: instructions changed mid-loop, so already-written state or briefs followed the old rules. Target: instructions (a propagation rule).
 - SKILL-CONFLICT: two instruction sources conflicted and the human had to arbitrate. Target: whichever source is wrong.

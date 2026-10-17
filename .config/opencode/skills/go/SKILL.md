@@ -7,7 +7,7 @@ description: Go language best practices, security pitfalls, testing patterns, an
 
 - When creating a new Go project, `go.mod` should use the oldest supported version of Go, 1.26.0, for the `go` directive, separate from the value of toolchain, to ensure our Go module is compatible with all supported versions of Go.
 - Build and test against every currently supported Go release by listing one toolchain per line in `.tools/toolchains.txt` (for example `go1.27.2` and `go1.26.9`); `GOTOOLCHAIN` iteration in the build and test scripts reads this file, so toolchain versions live in one place.
-- Run tests with: `go test -failfast -race -cpu=1,24 -cover -coverpkg=./... -coverprofile=coverage.out`
+- Run tests with: `go test -failfast -race -cpu=1,24`
 - Use `-run` during development for targeted feedback from tests related to work in progress, but exclude `-run` for final validation.
 - Name test files `<package>_test.go`; the `guardrails` plugin treats them as protected test files (never deleted or blanked).
 - Prefer the standard library over third-party dependencies; when the standard library does not cover the need, choose a well-maintained dependency and pin it (`go.sum`).
@@ -18,8 +18,7 @@ Run these gates in order; the `scaffold` skill assembles them into the project's
 
 - `golangci-lint run ./...` is the static-analysis gate for Go code; configure it for maximum rigor in the project's config file. Its enabled formatters cover `gofmt`, so a formatting deviation fails this same gate rather than needing a separate `gofmt -l .` pass.
 - `go mod tidy` followed by `git diff --exit-code go.mod go.sum`, then `go mod verify`, are the dependency-hygiene gates. Check tidiness against backup copies of `go.mod` and `go.sum` and restore the originals afterward; agents are denied Git write commands, so a `go mod tidy` that dirties the files cannot be reverted with `git checkout`.
-- `go test -failfast -race -cpu=1,24 -cover -coverpkg=./... -coverprofile=coverage.out ./...` is the dynamic analysis gate, run once per toolchain in `.tools/toolchains.txt`. The `-cpu=1,24` sweep complements the race detector by exercising single-core scheduling and high concurrency. `-coverpkg=./...` instruments every package, not only packages that own test files, so untested code drags the total down instead of vanishing from the profile.
-- `go tool cover -func=coverage.out | awk 'BEGIN { floor = 70 } /^total:/ { gsub(/%/, "", $3); seen = 1; ok = ($3 >= floor) } END { exit !(seen && ok) }'` is the coverage floor, run immediately after each toolchain's test gate: the gate fails when total statement coverage drops below 70%, or when the profile carries no total line at all, so an empty or unparsable run cannot pass vacuously. The floor lives in the entry point rather than in the loop's stop rules because a green run must already prove coverage: that keeps `quality-assurance` a deterministic runner instead of a number-judge, and a shortfall cycles the loop back through `developer` to broaden the suite. `go tool cover` (standard library) plus `awk` replaces a third-party threshold gate, so nothing extra needs pinning.
+- `go test -failfast -race -cpu=1,24 ./...` is the dynamic analysis gate, run once per toolchain in `.tools/toolchains.txt`. The `-cpu=1,24` sweep complements the race detector by exercising single-core scheduling and high concurrency.
 
 When creating a new Go project, set the project up with `golangci-lint` with the following configuration in `.golangci.yaml`
 

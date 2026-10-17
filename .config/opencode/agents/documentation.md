@@ -74,7 +74,7 @@ Documentation falls into two categories:
 
 Unless told what to review, use `git diff` to review staged, unstaged, and new files against the project's default branch.
 
-For standalone files, check tone consistency across the document and adherence to the documentation language's specification and best practices.
+For standalone files, check tone consistency across the document, adherence to the documentation language's specification and best practices, and the `docs` skill's Markdown conventions (no hard word wraps in new prose, no em dashes).
 
 For each comment block and inline comment, check:
 1. Concise phrasing that still preserves the rationale (the "why").
