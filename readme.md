@@ -35,6 +35,7 @@ Run `gpg --import <public key>` to import the GPG public key used for signing op
 
 - One entry point to invoke all tests and quality checks.
 - Shell scripts should minimize their dependence on Bash features to remain portable across different shell environments and Linux distributions.
+- Security scanning runs offline and deterministically at scan time, enforced by language-specific single-binary tools with embedded rules; keeping rules current is a tool-version upgrade, never vendored rule sets or runtime downloads.
 
 ## Development
 

@@ -58,6 +58,7 @@ Dynamic tests:
 
 ## Documentation Rules
 
+- Do not use hard word wraps in new files, and do not introduce them in existing files, unless hard wrapping is the convention in that file (follow the wrapping style a file already uses).
 - When editing or rewriting a comment, always preserve the rationale (the "why") even if the phrasing is shortened.
 - Do not add comments that explain what is happening or how it is happening.
 

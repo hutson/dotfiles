@@ -1,14 +1,20 @@
 ---
 agent: plan
-description: Review the staged, unstaged, and untracked, files witin the current working directory with the assistance of specialized sub-agents and suggest improvements.
+description: Review the staged, unstaged, and untracked files with the specialized reviewers and return ranked improvement proposals. Proposes only; edits no files.
 subagent: false
 ---
 
-The current working directory is a source code repository. You will create a plan to make improvements to this repository's staged file changes, unstaged file changes, and files listed as untracked, by dispatching those files to specialized sub-agents. Those sub-agents will provide you a list of suggestions for improvements along with a justification for each suggestion. You do not have to call every sub-agent. Review the description for each sub-agent and dispatch a limited set of files to each sub-agent if that sub-agent is designed to support those files.
+The current working directory is a source code repository. Derive the change set mechanically (`git status --porcelain` and `git diff`), then dispatch each changed file to the reviewers whose role covers it, passing the relevant paths and the checks to grade in each brief so no reviewer needs its own view of the change set. You do not have to call every reviewer; send files to a reviewer only when that reviewer's role covers those files.
 
-- @quality-assurance if the changes included source code changes or configuration changes that might modify how code is built and executed.
-- @security if the changes included any changes to code, or to LLM-related Markdown files, including agents and `AGENTS.md`.
-- @documentation if the changes included source code changes, addition/modified of code comments, or the addition/modified of documentation files such as Markdown or AsciiDoc.
-- @test-design if changes included new or modified test files.
+- @security for any code change, or changes to LLM-related Markdown files (agents and `AGENTS.md`): vulnerabilities and unmitigated risk, each with the recommended control.
+- @test-design for new or modified test files: whether the tests still capture the project's intent, with no weakened, deleted, or tautological assertions.
+- @documentation for code-comment changes and standalone documentation (Markdown, AsciiDoc, txt): tone, consistency, conciseness, readability, and accuracy.
+- @architect for implementation files: code organization and idiomatic opportunities judged against the loaded stack skills' conventions and the project's existing structure.
 
-Take the feedback from the sub-agents and create a plan to implement improvements. Not all suggestions for improvement will be worth the risk or complexity. Based on your understanding of the current project, and instructions you have received from me, take a conservative approach and preemptively exclude any low value improvements that are high risk.
+$ARGUMENTS may narrow or extend the scope of the review.
+
+`quality-assurance` is never dispatched here: its contract belongs to the engineering loop (it verifies the recorded test baseline, runs the documented test entry point, and reports verdicts without proposing fixes). To verify the project or remediate a failing suite, run `/loop` with the failure as the goal.
+
+Each reviewer returns one `PASS|FAIL <check>: <reason>` line per check its brief names, followed by findings with recommended fixes. Take the feedback and produce a ranked list of improvement proposals, each with its justification. Not all suggestions are worth the risk or complexity: based on the current project and the instructions received from me, take a conservative approach and preemptively exclude low-value improvements that are high risk.
+
+Propose only: edit no files. If the proposals should be applied, run `/loop` with the chosen proposals as the goal so the engineering loop implements them under its graders and stop rules.

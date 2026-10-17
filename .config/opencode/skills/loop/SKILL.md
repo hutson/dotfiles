@@ -26,7 +26,7 @@ Before dispatching anything, write the goal/state file to `~/.opencode/progress/
 
 ## Phases
 
-0. product-developer (you): clarify the goal and constraints with the human, walking the question categories and asking rules in `references/clarification.md` with the `question` tool, until the objective and acceptance criteria are testable. Record them, with any answers you inferred rather than asked as assumptions the human can correct. Cover two things in that same round: take the `Verify` command from the project's `readme.md` (its documented single test entry point), and get the human's one-time consent to add and update tests for the agreed acceptance criteria. That consent is how the loop satisfies "always ask before adding or updating tests" without interrupting every later round; record it in the goal file so fresh workers can see it.
+0. product-developer (you): clarify the goal and constraints with the human, walking the question categories and asking rules in `references/clarification.md` with the `question` tool, until the objective and acceptance criteria are testable. Record them, with any answers you inferred rather than asked as assumptions the human can correct. Cover two things in that same round: take the `Verify` command from the project's `readme.md` (its documented single test entry point), and get the human's one-time consent to add and update tests for the agreed acceptance criteria. That consent is how the loop satisfies "always ask before adding or updating tests" without interrupting every later round; record it in the goal file so fresh workers can see it. Before the rounds, read `~/.opencode/progress/loop-improvements.md` if it exists and fold its open, relevant entries into the rounds, so historically frictional points surface in round 1 instead of mid-loop (see `references/improvement.md`).
 1. program-manager (you): break the goal into ordered steps, each naming the worker and the deliverable it produces and consumes. Record the sequence.
 2. architect: dispatch `architect` for a high-level design (code organization, data structures/algorithms, standard libraries, testing strategy). Record it.
 3. security (architecture mode): dispatch `security` to validate the design for unmitigated risk. Route findings back to `architect`; repeat until the design is sound.
@@ -43,7 +43,7 @@ Before dispatching anything, write the goal/state file to `~/.opencode/progress/
     `test-design` is not part of the routine chain; it runs on demand only, on two triggers: a test-immutability tripwire fire, or any worker signal that a test is wrong, flaky, or misaligned with the goal. Either signal dispatches `test-design` without your adjudication: a weakened or tautological test still runs green and still covers the code, so only a fresh test review catches it.
 
     Round accounting: a full re-chain counts as one round; documentation re-checks do not start rounds; a second consecutive documentation-only FAIL starts a new round so the stop rules can fire.
-8. report: summarize what shipped, coverage achieved, any remaining `TODO:` items, and every sanctioned test change (endorsement or human direction) with the acceptance criterion it preserved.
+8. report: summarize what shipped, the coverage the entry point reported, any remaining `TODO:` items, and every sanctioned test change (endorsement or human direction) with the acceptance criterion it preserved. Then run the exit retrospective in `references/improvement.md` (see "Friction tracking and improvement").
 
 ## Test baseline and tripwire
 
@@ -59,9 +59,22 @@ The test baseline pins the reviewed test surface so a later green run means the 
 - Accepted threat model: workers are cooperative-but-fallible; a worker that forges every progress-side record consistently is out of scope.
 - Accepted trade: a wrong test that is never modified and manifests no observed indication can pass undetected between the step-5 review and the next on-demand trigger, by the human's choice of on-demand-only over scheduled re-review.
 
+## Machine mechanics
+
+Your own shell is allowlisted to six command forms (`git status`, `git diff`, `mkdir`, `sha256sum`, `shasum`, `openssl dgst`), each bare or with arguments, for the deterministic checks that must not pass through a worker's report. Anything else is hard-denied without a prompt: ask the human when a need falls outside these forms instead of improvising a variant of one.
+
+Compound commands are permission-checked per segment, so a single unlisted segment denies the whole command (`command -v sha256sum && echo ok` is denied even though `sha256sum` alone is allowed). Run the allowlisted forms bare, with no pipes, no `&&` or `;` chains, and no availability probes; the allowlist guarantees the tools exist.
+
+- Baseline digests: `sha256sum <files>`, matching the revision block's `Digest algorithm: sha256`.
+- Changed-file derivation: `git status --porcelain` or `git diff --name-only`, bare.
+- Inventory listings and path discovery: the `glob` tool, never `ls` or `find`.
+- Snapshot and progress directories: `mkdir`.
+
+Verify never runs on your shell: `quality-assurance` holds the shell for the documented test entry point and returns the executed command in its verdict, so a deterministic re-run is another `quality-assurance` dispatch. Keep the digest and changed-file computations on your own shell for the same reason the cross-check exists: a helper subagent's report would replace a deterministic check with a secondhand claim.
+
 ## Stop rules (outside the generator)
 
-Stop and report success when ALL hold: the single test entry point is green, coverage of new code is at least 70%, and every grader returns PASS.
+Stop and report success when ALL hold: the single test entry point is green and every grader returns PASS. The entry point's own gates, including the coverage floor baked into the stack skill's test tooling, define green, so a below-threshold suite fails the run like any other test and cycles back through `developer` instead of becoming a number you judge.
 
 Stop and report to the human when ANY holds:
 
@@ -69,15 +82,25 @@ Stop and report to the human when ANY holds:
 - no measurable progress in 2 consecutive rounds (circuit breaker: same failures, same files),
 - the human's budget or time is exhausted.
 
-A round cap is a safety mechanism, not a target. Never run unbounded. Raising the recorded round cap is a human decision, never a supervisor one.
+A round cap is a safety mechanism, not a target. Never run unbounded. Raising the recorded round cap is a human decision, never a supervisor one. Every exit path, including these stop reports, runs the exit retrospective in `references/improvement.md` before reporting: a failed loop's friction data is the most valuable the loop produces.
 
 ## Verdict contract
 
-Every worker returns one line per check: `PASS|FAIL <check>: <reason>`. Record these in the goal file. Keep worker returns concise; never paste full diffs into your context.
+Every worker returns one line per check: `PASS|FAIL <check>: <reason>`. Record these in the goal file. Keep worker returns concise; never paste full diffs into your context. A `FRICTION:` line is not a verdict; it never gates a phase.
 
 ## Context discipline
 
-Workers run with fresh context. Pass each worker only the goal, the relevant "already tried" state, and its task. Read verdicts, not diffs. Load stack skills in the workers, not in yourself; that is the one exception to the general "load the matching skill before acting" rule, and it applies only to your role as supervisor. This keeps your context small so the loop does not degrade as it runs.
+Workers run with fresh context. Pass each worker only the goal, the relevant "already tried" state, its task, and any known-pitfall lines (see "Friction tracking and improvement"). Read verdicts, not diffs. Load stack skills in the workers, not in yourself; that is the one exception to the general "load the matching skill before acting" rule, and it applies only to your role as supervisor. This keeps your context small so the loop does not degrade as it runs.
+
+## Friction tracking and improvement
+
+The loop improves itself from observed friction, and a clean loop pays almost nothing for it: standing structure in briefs, conditional content in returns, one durable store (the taxonomy, backlog format, and exit analysis live in `references/improvement.md`).
+
+- Effort log: keep `## Effort log` in the goal file (format in `references/goal-file.md`). Append one row per friction event as it happens: a question round trip spent resolving intent, a FAIL round, a worker-drift correction, an instruction conflict or mid-loop change, a late-surfaced question, redundant re-exploration. Record a human-injected meta-task as a first-class row so `/resume` keeps honoring it. No narrative; the row is the whole record.
+- Worker-brief clause: every worker brief states the task's intended outcome and ends with one fixed clause: if any part of the brief or task was ambiguous, blocked the worker, or wasted its effort, the worker ends its return with one line `FRICTION: <what happened> -> <what a future brief should have said>`. A silent return means no friction; never ask for confirmation when nothing went wrong. Alignment deviations are reported before or during work under the worker contracts, not confirmed after it. A `FRICTION:` line is not a verdict and never gates a phase.
+- Known-pitfall lines: when the improvement backlog or this loop's effort log carries an entry whose mitigation changes how a specific worker should work, add it to that brief as one line (for example: past workers drifted to scaffold defaults, so the exclusion list in this brief is explicit). Usually empty: most mitigations become your brief-composition rules and need no transmission.
+- Logging feedback: bucket each returned `FRICTION:` line into the taxonomy in `references/improvement.md` when you log it, correcting the label when the evidence says otherwise. The worker reports concretely; the taxonomy lives with you, never in the workers.
+- Exit retrospective: on every exit (the phase-8 report and every stop-rule report), run the analysis in `references/improvement.md`: aggregate the effort log, root-cause the high-cost rows to one improvement target, rank by expected saving, report the evidence-backed proposals to the human, and append them to `~/.opencode/progress/loop-improvements.md`. You propose, never apply: your own and your workers' instruction files change only on human direction.
 
 ## Hard boundaries
 

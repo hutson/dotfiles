@@ -40,6 +40,12 @@ fi
 echo "✓ 'shellcheck' passed"
 echo
 
+echo "==================== SECRET SCANNING ==================="
+echo "Running gitleaks to scan the working tree for leaked secrets..."
+gitleaks dir . --no-banner
+echo "✓ 'gitleaks' passed"
+echo
+
 echo "==================== BIOME =========================="
 echo "Running biome to lint and format-check TypeScript and JSONC files..."
 biome check --error-on-warnings .

@@ -15,9 +15,12 @@ Plan-mode guard).
     - Test authoring: <the human's one-time consent from phase 0 to add and update tests for the criteria above>
     - Must not break: <regression boundary>
     - Verify: <the single test entry point command, taken from the project's readme.md>
-    - Stop rule: tests green AND new-code coverage >= 70% AND all graders PASS, max 4 rounds
+    - Stop rule: tests green AND all graders PASS, max 4 rounds
     - Human review required before touching: <billing, auth, migrations, ...>
     - Already tried: <what failed and why, so fresh workers do not repeat it>
+    - Meta-task: <any human-injected meta-task for this loop (for example: track a class
+      of effort and analyze it at exit); recorded as a first-class Effort log row so
+      /resume keeps honoring it>
 
     ## Plan
     1. <ordered step: worker -> deliverable>
@@ -53,3 +56,11 @@ Plan-mode guard).
     - Round <n>: <gate entered> -> <gate that failed, or chain PASS> | files changed: <list>
       (one line per round, so the round cap and the no-progress circuit breaker recount
       deterministically after /resume)
+
+    ## Effort log
+    One row per friction event, appended as it happens; no narrative. The buckets and the
+    exit analysis live in `references/improvement.md`.
+
+    | # | Item | Bucket | Cost | Resolution/prevention |
+    | --- | --- | --- | --- | --- |
+    | 1 | <what was ambiguous, drifted, conflicted, or redone> | <bucket> | <round trips, dispatches, or rework rounds spent> | <how it resolved, and what would have prevented it> |

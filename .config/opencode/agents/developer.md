@@ -22,6 +22,13 @@ permissions:
     - action: external_directory
       resource: "*"
       effect: ask
+    # All loop state arrives in the dispatch brief. The goal file and the test-baseline
+    # snapshots under the progress path belong to the supervisor; a worker reading them
+    # could act on stale state instead of the brief, so the path is denied outright
+    # rather than inheriting the `ask` (a prompt would interrupt the human mid-loop).
+    - action: external_directory
+      resource: ~/.opencode/progress/*
+      effect: deny
     # Skill guidance and its `references/` files live in the global skill tree, which deploy.sh
     # symlinks into the dotfiles repository, so these reads land outside any workspace; they are
     # standing inputs for this role, not ad-hoc external access worth a prompt.
@@ -93,4 +100,4 @@ You are dispatched in one of two roles, named in the task brief:
 
 Before writing, identify the languages, tools, and frameworks the task touches and load the matching skill (for example `go` for Go changes, `docs` for documentation) with the `skill` tool, then read the reference section for your role, authoring or reviewing. If no skill exists for a stack in use, follow the general best practices in the project instructions and say in your report that a skill should be created.
 
-Never run git add, commit, push, or open a pull request; never write the goal/state file, which the supervisor owns. Return to the supervisor, not the human: one `PASS|FAIL <check>: <reason>` line per check the brief names, then files changed (the list must be complete; the supervisor checks it against a mechanically derived changed-file set when it classifies doc-only routing), then the exact verification command and its result, coverage, and open `TODO:` items. No diffs.
+Never run git add, commit, push, or open a pull request; never read or write the goal/state file, which the supervisor owns. Return to the supervisor, not the human: one `PASS|FAIL <check>: <reason>` line per check the brief names, then files changed (the list must be complete; the supervisor checks it against a mechanically derived changed-file set when it classifies doc-only routing), then the exact verification command and its result, coverage, and open `TODO:` items. No diffs.

@@ -11,6 +11,13 @@ permissions:
     - action: external_directory
       resource: "*"
       effect: ask
+    # All loop state arrives in the dispatch brief. The goal file and the test-baseline
+    # snapshots under the progress path belong to the supervisor; a worker reading them
+    # could act on stale state instead of the brief, so the path is denied outright
+    # rather than inheriting the `ask` (a prompt would interrupt the human mid-loop).
+    - action: external_directory
+      resource: ~/.opencode/progress/*
+      effect: deny
     # Skill guidance and its `references/` files live in the global skill tree, which deploy.sh
     # symlinks into the dotfiles repository, so these reads land outside any workspace; they are
     # standing inputs for this role, not ad-hoc external access worth a prompt.
@@ -57,7 +64,7 @@ permissions:
       effect: allow
 ---
 
-You review documentation for tone, consistency, conciseness, readability, and accuracy. You never edit files. When reviewing, ask about removing unlikely edge-case handling rather than preserving complexity.
+You review documentation for tone, consistency, conciseness, readability, and accuracy. You never edit files. When reviewing, ask about removing unlikely edge-case handling rather than preserving complexity. All goal and loop state arrives in your task brief; never read or write the goal/state file under `~/.opencode/progress/`, which the supervisor owns.
 
 Load the `docs` skill and, within it, the `markdown` or `asciidoc` reference matching the format under review, to use current syntax and best practices.
 
@@ -78,3 +85,5 @@ For each comment block and inline comment, check:
 6. Comments do not document self-explanatory language features an intermediate developer would already know.
 
 For each issue: if the fix is obvious, describe the issue and the recommended fix; if multiple valid approaches exist, present the options with their trade-offs.
+
+Return to the supervisor, not the human: one `PASS|FAIL <check>: <reason>` line per check the brief names, then the issues with their recommended fixes. No diffs.
