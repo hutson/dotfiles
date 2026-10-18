@@ -18,6 +18,7 @@ into a project layout and never duplicates their guidance.
   > Validate changes with this project's single test entry point, `.tools/test.sh`. It runs the static analysis and dynamic tests a change needs, entirely offline and is non-destructive and repeatable. No other commands are necessary to validate a change.
 - The readme's `## Design Decisions` section is created empty and stays empty until the human fills it. It records only high-level, subjective ground truths that direct future development (design, architecture, security posture). Implementation facts (a library in use, a tool name, a container detail) are not decisions: they live in the code and configuration that embody them. Agents never author entries; an entry appears only at the human's direction.
 - Prose in every generated file is one line per paragraph, never hard wrapped (the `AGENTS.md` documentation rule). Files copied for exactness (`license.md`, `.golangci.yaml`) keep their source formatting.
+- Scaffolding never relaxes security controls. A Dev Container gains `capAdd`, `securityOpt`, or privileged `runArgs` only when the project has a hard requirement for the capability and the human has explicitly confirmed it (the `devcontainer` skill owns the policy), and a generated `devcontainer.json` carries no comments.
 
 - `license.md` is Apache-2.0 by default. Confirm the choice with the human before writing it; record any other choice as an assumption they can correct. Copy the license text from the dotfiles repository's `license.md` rather than writing it from memory (legal text must be exact, and the text never changes, so the copy is the canonical one).
 - `.gitattributes` contains exactly `* text=auto eol=lf`.
@@ -27,7 +28,7 @@ into a project layout and never duplicates their guidance.
 
 ## Process
 
-1. Identify the stacks in use from the folder (`go.mod`, shell scripts, `package.json` or `*.ts`) and the project's goal from the request. Ask with the `question` tool when either is unclear, batching the stack, goal, and license confirmations into one call. Record inferred answers as correctable assumptions.
+1. Identify the stacks in use from the folder (`go.mod`, shell scripts, `package.json` or `*.ts`) and the project's goal from the request. Ask with the `question` tool when either is unclear, batching the stack, goal, and license confirmations into one call. When the project has a hard requirement for a security relaxation (ptrace-based debugging, for example), fold the relaxation confirmation into the same call; absent a confirmed requirement, the Dev Container keeps the platform's default security profile. Record inferred answers as correctable assumptions.
 2. Load the matching stack skills: `bash` and `devcontainer` apply to every project, because every project ships `.tools/` shell scripts and a Dev Container; `security-tooling-architecture` applies to every project, because every project enforces secret scanning; add `go` and/or `typescript` for the languages present.
 3. Create only the missing files from the table in "File sources", never overwrite an existing file. When a selected stack's gates are absent from an existing `.tools/test.sh`, add them (see "Composing .tools/test.sh").
 4. Compose `.tools/test.sh` from the loaded stack skills' `Verify` gates.
@@ -58,7 +59,7 @@ example) belongs in Design Decisions when the human records it there.
 
 | Project file | Source of truth |
 | --- | --- |
-| `.devcontainer/` | Copy from an existing checkout (semantic-tag is the living example), then rename the project, align the pins per "Versions" below, and adjust the installed tools to exactly the set the composed gates invoke: drop tools for stacks not in use, and add any missing ones (an older exemplar predating the composition model may lack, for example, `shfmt` and `shellcheck`). The pattern itself is the `devcontainer` skill. |
+| `.devcontainer/` | Copy from an existing checkout (semantic-tag is the living example), then rename the project, align the pins per "Versions" below, and adjust the installed tools to exactly the set the composed gates invoke: drop tools for stacks not in use, and add any missing ones (an older exemplar predating the composition model may lack, for example, `shfmt` and `shellcheck`). Treat the exemplar as structure, not security posture: strip any `capAdd`, `securityOpt`, or `runArgs` entries and every comment from the copied `devcontainer.json`, and add a relaxation back only when the project has a hard requirement and the human has confirmed it. The pattern itself is the `devcontainer` skill. |
 | `.tools/build.sh` | Copy from an existing checkout of the same stack, adapt the binary name and targets; the build strategy is the `go` skill's Build section. |
 | `.tools/toolchains.txt` | Populated per the `go` skill's toolchain policy. |
 | `.golangci.yaml` | The config block in the `go` skill, copied byte-for-byte (maximal lint configuration is hard to validate by eye, so it is never rewritten from memory). |
