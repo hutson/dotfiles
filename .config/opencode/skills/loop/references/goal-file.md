@@ -1,18 +1,30 @@
 # Goal/state file format
 
 Write to `~/.opencode/progress/<project>-<slug>.md`. One file per loop. Update it in place.
+Refresh `- Updated:` on every write. It is the recency signal `/resume` ranks a project's
+goal files by, because the supervisor's shell is allowlisted to six forms that cannot list
+files by modification time and the model has no clock finer than the current date. The field
+is date-granular by necessity, so a tie routes to the human instead of a guess. A stamp that
+does not parse as `YYYY-MM-DD`, or that is later than today, is treated exactly like a
+missing field and never ranks; `/resume` proceeds when exactly one candidate holds the
+strictly newest ranking stamp and names every candidate whose stamp never ranks in its
+summary, while a tie or no ranking stamp among a non-empty match list routes to the human
+and an empty match list reports and stops. Keep the slug in `<project>-<slug>.md` within
+`^[A-Za-z0-9_-]+$` so name-based resolution cannot widen.
 The `supervisor` agent owns this file: a session under Plan-mode restrictions cannot write
 outside the plan directory, so the loop never maintains state as `plan` (see the skill's
 Plan-mode guard).
 
     # Loop: <slug>
+    - Updated: <YYYY-MM-DD, refreshed on every write; the newest ranking stamp among this
+      project's goal files is the loop `/resume` continues; a missing, unparseable, or
+      future-dated stamp never ranks>
     - Objective: <the testable goal>
     - Acceptance criteria: <observable outcomes, mechanically checkable>
     - Constraints: <the phase-0 answers that shape the deliverable (stack, interface
       surface, invocation and distribution, presentation) plus any answer inferred from
       the request or repo instead of asked, so fresh workers brief from it and the human
       can correct the assumption>
-    - Test authoring: <the human's one-time consent from phase 0 to add and update tests for the criteria above>
     - Must not break: <regression boundary>
     - Verify: <the single test entry point command, taken from the project's readme.md>
     - Stop rule: tests green AND all graders PASS, max 4 rounds
@@ -50,6 +62,20 @@ Plan-mode guard).
     - Snapshots: <slug>-baseline/, a supervisor-written-only subdirectory of the progress
       path holding the content of every inventoried file; each re-baseline refreshes it in
       full to match the appended revision, so prior content persists only in the digest log
+
+    ## Scratch manifest
+    The section is optional: a goal file that predates it has no manifest, so every scratch
+    artifact is unrecorded and nothing is executable until it is re-derived (fail-closed).
+    The supervisor owns it, recording each entry at creation with the digest it computes
+    itself; entries are immutable, one per path.
+    Workers report `sha256sum` output lines and never edit it; an entry's recorded digest is
+    verified before its script is ever executed.
+    Append-only log of per-run blocks; a prior entry is never edited.
+
+    ### Run <n>
+    - Run directory: <absolute path of the current run's /tmp/opencode/<name>/<run>/>
+    - Digest algorithm: sha256
+    - Files: <one `path` + `digest` line per scratch script>
 
     ## Status
     - PASS|FAIL <check>: <reason>   (one line per check, updated each round)

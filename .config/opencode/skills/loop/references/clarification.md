@@ -16,7 +16,7 @@ Cover each category, asking the questions whose answers change what gets built:
 8. Failure behavior: what happens when the input is wrong or a dependency is missing (error messages, exit codes). Testable criteria depend on this.
 9. Platform and environment: target operating systems, terminals, and other environment constraints that change the implementation.
 10. Scope boundaries: what the human deliberately does not want built, so the loop does not gold-plate.
-11. Acceptance and verification: how correctness gets checked. This is where the loop's `Verify` command and the test authoring consent from SKILL.md phase 0 live, so confirm them in this walkthrough rather than as a separate interruption. When the project has no `readme.md` yet and the `scaffold` skill applies, do not ask the human to invent a command: `bash .tools/test.sh` (the scaffold's single entry point, its gates assembled from the stack skills' `Verify` sections) is the recommended answer, and the scaffolding pass writes the readme that documents it.
+11. Acceptance and verification: how correctness gets checked. This is where the loop's `Verify` command from SKILL.md phase 0 lives, so confirm it in this walkthrough rather than as a separate interruption. When the project has no `readme.md` yet and the `scaffold` skill applies, do not ask the human to invent a command: `bash .tools/test.sh` (the scaffold's single entry point, its gates assembled from the stack skills' `Verify` sections) is the recommended answer, and the scaffolding pass writes the readme that documents it.
 
 ## Asking rules
 
@@ -37,4 +37,4 @@ Goal: "implement a cli that displays a random number." A seasoned product develo
 - Do you have any existing project I should use as a template? (conventions)
 - How do you want to invoke this CLI? Directly in the folder via `go run`, or do you plan to publish it somewhere eventually? (invocation and distribution)
 
-Round 2 follows only on the answers. If the human chose a TUI, ask the presentation questions (color, font, animation, etc.). If standard output, skip them. Either round ends by confirming the `Verify` command and the test authoring consent.
+Round 2 follows only on the answers. If the human chose a TUI, ask the presentation questions (color, font, animation, etc.). If standard output, skip them. Either round ends by confirming the `Verify` command.

@@ -5,9 +5,7 @@ description: Offline, deterministic security scanning and enforcement: single-bi
 
 # Security Tooling Architecture
 
-Security scanning and enforcement lives in each project's `.tools/test.sh` entry point, composed by
-the `scaffold` skill. This skill decides which tools qualify and how they are wired so every gate is
-deterministic and runs with no network at scan time.
+Security scanning and enforcement lives in each project's `.tools/test.sh` entry point, composed by the `scaffold` skill. This skill decides which tools qualify and how they are wired so every gate is deterministic and runs with no network at scan time.
 
 ## Conventions
 

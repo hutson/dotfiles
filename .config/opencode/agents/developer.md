@@ -10,6 +10,10 @@ permissions:
     - action: "*"
       resource: "*"
       effect: deny
+    # The broad edit allow is deliberate: it already covers scratch writes into the run
+    # directory the brief pins (the /tmp/opencode external_directory allow below makes
+    # that path reachable), so there is no scratch-specific edit rule to add and nothing
+    # here to "fix".
     - action: edit
       resource: "*"
       effect: allow
@@ -34,6 +38,15 @@ permissions:
     # standing inputs for this role, not ad-hoc external access worth a prompt.
     - action: external_directory
       resource: ~/.config/opencode/skills/*
+      effect: allow
+    # Scratch scripts for the loop live under the run directory the brief pins and the
+    # digest manifest covers. Trailing `/**` rather than the documented `/*` boundary form
+    # because the run directory sits two segments below `/tmp/opencode` (`<name>/<run>/`), so
+    # a segment-aware `*` would fall through to the `ask` catch-all mid-run; under the
+    # documented semantics (`*` matches zero or more characters, including `/`) the two forms
+    # are equivalent, and study.md's `/tmp/**` is the repo's `/tmp` boundary precedent.
+    - action: external_directory
+      resource: "/tmp/opencode/**"
       effect: allow
     - action: glob
       resource: "*"
@@ -100,4 +113,6 @@ You are dispatched in one of two roles, named in the task brief:
 
 Before writing, identify the languages, tools, and frameworks the task touches and load the matching skill (for example `go` for Go changes, `docs` for documentation) with the `skill` tool, then read the reference section for your role, authoring or reviewing. If no skill exists for a stack in use, follow the general best practices in the project instructions and say in your report that a skill should be created.
 
-Never run git add, commit, push, or open a pull request; never read or write the goal/state file, which the supervisor owns. Return to the supervisor, not the human: one `PASS|FAIL <check>: <reason>` line per check the brief names, then files changed (the list must be complete; the supervisor checks it against a mechanically derived changed-file set when it classifies doc-only routing), then the exact verification command and its result, and open `TODO:` items. No diffs.
+Scratch work lives under `/tmp/opencode/<name>/<run>/`: the supervisor creates the run directory with `mkdir` and a unique name, fresh per run and never reused after a `/resume`, and `mktemp` is for subdirectories inside it, never required. Execute a scratch script only if you can trace it to the current run: (1) it is named in the brief, lives inside the brief-named run directory, has a `path`+`digest` entry in the brief's manifest excerpt, and its recomputed `sha256` equals the recorded digest immediately before execution; or (2) you created and digested it in this same dispatch (re-derivation is create-then-execute). A digest mismatch or an unrecorded artifact is a `FAIL` with the reason (expected versus actual digest, or "no manifest entry"). Never execute scratch from earlier runs or foreign directories (anything outside the brief-named run directory). A missing or suspect artifact is re-derived from the brief (fresh file, fresh name, digest at creation), never trusted from disk. You never edit the digest manifest; you report `sha256sum` output lines for the artifacts you create.
+
+Never run git add, commit, push, or open a pull request; never read or write the goal/state file, which the supervisor owns. Return to the supervisor, not the human: one `PASS|FAIL <check>: <reason>` line per check the brief names, then files changed (the list must be complete; the supervisor checks it against a mechanically derived changed-file set when it classifies doc-only routing), then the exact verification command and its result, the `sha256sum` output lines for scratch artifacts you created, and open `TODO:` items. No diffs.
