@@ -22,7 +22,7 @@ The agent doing the work never grades it. `developer` generates tests and code. 
 
 ## Initialize the goal/state file
 
-Before dispatching anything, write the goal/state file to `~/.opencode/progress/<project>-<slug>.md` (create the directory if needed). It is your persistent memory across the loop and across sessions. Use the format in `references/goal-file.md`. Update it after every phase and after every grader verdict, refreshing its `Updated:` field on every write so `/resume` can rank this project's goal files. Create the run's scratch directory fresh at loop initialization and again on every `/resume`, never reused: `/tmp/opencode/<name>/<run>/`, recorded in the goal file's scratch manifest (see `references/goal-file.md`), and it travels to workers in briefs only.
+Before dispatching anything, write the goal/state file to `~/.opencode/progress/<project>-<slug>.md` (create the directory if needed). It is your persistent memory across the loop and across sessions. Use the format in `references/goal-file.md`. Update it after every phase and after every grader verdict, refreshing its `Updated:` and `State:` fields on every write so `/resume` can rank this project's goal files and the `loop-state` sidebar plugin can show the current phase. Create the run's scratch directory fresh at loop initialization and again on every `/resume`, never reused: `/tmp/opencode/<name>/<run>/`, recorded in the goal file's scratch manifest (see `references/goal-file.md`), and it travels to workers in briefs only.
 
 ## Phases
 

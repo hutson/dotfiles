@@ -19,6 +19,13 @@ Plan-mode guard).
     - Updated: <YYYY-MM-DD, refreshed on every write; the newest ranking stamp among this
       project's goal files is the loop `/resume` continues; a missing, unparseable, or
       future-dated stamp never ranks>
+    - State: <node-id, refreshed on every write alongside `Updated:`; the current phase,
+      one of clarify | plan | design | secure-design | write-tests | review-tests |
+      implement | grade-qa | grade-security | grade-docs | report; the grade-* ids name
+      the active gate so a status display reads the loop's position instead of re-deriving
+      it from the sections below; the `loop-state` sidebar plugin consumes this field, so
+      a phase change in `SKILL.md` must update the vocabulary here and the plugin's node
+      table together>
     - Objective: <the testable goal>
     - Acceptance criteria: <observable outcomes, mechanically checkable>
     - Constraints: <the phase-0 answers that shape the deliverable (stack, interface
@@ -80,8 +87,12 @@ Plan-mode guard).
     ## Status
     - PASS|FAIL <check>: <reason>   (one line per check, updated each round)
     - Round <n>: <gate entered> -> <gate that failed, or chain PASS> | files changed: <list>
-      (one line per round, so the round cap and the no-progress circuit breaker recount
-      deterministically after /resume)
+      (written on gate-chain entry with the entered gate and the arrow left open, and
+      completed when the traversal ends, so the round cap and the no-progress circuit
+      breaker recount deterministically after /resume; the `loop-state` sidebar plugin
+      counts these lines for its grade-round display but marks gates only from the
+      newest line with a completed outcome, with the cap taken from the header's
+      `max <n> rounds` phrase in `Stop rule:`)
 
     ## Effort log
     One row per friction event, appended as it happens; no narrative. The buckets and the
