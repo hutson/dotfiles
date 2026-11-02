@@ -69,3 +69,10 @@ alias workspaceUp='devsy workspace build . --verbose && devsy workspace up . --v
 
 # Shutdown and delete the Dev Container workspace for the current working directory.
 alias workspaceDown='devsy workspace stop . --verbose && devsy workspace delete . --verbose'
+
+# Shortcut to invoke project's tests inside isolated Dev Container using Devsy.
+alias verify='devsy ci . -- bash .tools/test.sh'
+
+# Kali Linux rolling release pulled following Kali's guide for Podman (https://www.kali.org/docs/containers/using-kali-podman-images/).
+# Container: podman create --name kali registry-1.docker.io/kalilinux/kali-rolling:latest
+alias kali='podman start kali && podman attach kali && podman stop kali'
