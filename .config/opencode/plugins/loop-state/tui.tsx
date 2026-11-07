@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { Plugin } from "@opencode/plugin/tui";
@@ -21,6 +21,22 @@ const ruleWidth = 33;
 const stateValuePattern = /^[a-z0-9-]{1,40}$/;
 const slugPattern = /^[A-Za-z0-9_-]{1,80}$/;
 const sessionIdPattern = /^ses_[A-Za-z0-9]{1,64}$/;
+
+// The host's toggle persists `session.sidebar` to cli.json (`auto` when it opens
+// the sidebar), which would replace the `hide` at-rest default this repo
+// configures and make the sidebar auto-show at the next TUI start outside loops.
+// Rewriting just that one value keeps the tracked dotfile byte-identical
+// elsewhere (a full JSON re-serialize would churn its formatting), and the 1 s
+// delay lets the host's asynchronous config write land before ours. The window
+// is accepted: a manual `<leader>b` inside it only affects the persisted
+// default, never the visible sidebar.
+const cliConfigPath = join(
+	process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"),
+	"opencode",
+	"cli.json",
+);
+const sidebarValuePattern =
+	/("session"\s*:\s*\{[^}]*?"sidebar"\s*:\s*")([^"]*)(")/;
 
 // The `State:` node vocabulary lives in `skills/loop/references/goal-file.md`
 // and the phase sequence in `skills/loop/SKILL.md`; this table is the display
@@ -351,7 +367,7 @@ function chooseLinked(candidates: GoalRecord[]): LoopSnapshot | undefined {
 interface LoopSessionCache {
 	root: (sessionID: string) => string | undefined;
 	family: (sessionID: string) => string[] | undefined;
-	get: (sessionID: string) => { agent?: string } | undefined;
+	get: (sessionID: string) => { agent?: string; parentID?: string } | undefined;
 	status: (sessionID: string) => unknown;
 }
 
@@ -699,10 +715,15 @@ function colorForKind(theme: unknown, kind: LineKind): string | undefined {
 }
 
 // `session.sidebar.toggle` is the only documented sidebar command and it flips
-// rather than shows, so the reveal consults the command state where the keymap
-// exposes it. The shape of `commands()` entries is not documented: probing a few
-// plausible boolean fields reads it if present and returns undefined otherwise,
-// which degrades to the one-shot flip rather than closing an open sidebar.
+// rather than shows, so the reveal must know the current state before flipping.
+// The v2.2.6 `commands()` entries carry no boolean state field (their shape is
+// id/title/description/group/enabled/palette/slash/suggested/run), but the host
+// re-renders the entry title as `Hide sidebar` while the sidebar is shown and
+// `Show sidebar` while it is hidden, and the keymap replaces the command object
+// when that non-function field changes, so the title is the live state signal.
+// Boolean fields are probed first in case a future OpenCode exposes real state;
+// an unrecognized shape returns undefined and degrades to the bounded one-flip
+// behavior rather than closing an open sidebar on every sighting.
 function sidebarVisible(commands: unknown): boolean | undefined {
 	if (!Array.isArray(commands)) {
 		return undefined;
@@ -726,8 +747,66 @@ function sidebarVisible(commands: unknown): boolean | undefined {
 				}
 			}
 		}
+		if (command.title === "Hide sidebar") {
+			return true;
+		}
+		if (command.title === "Show sidebar") {
+			return false;
+		}
 	}
 	return undefined;
+}
+
+function restoreSidebarDefault(): void {
+	setTimeout(() => {
+		void (async () => {
+			let text: string;
+			try {
+				text = await readFile(cliConfigPath, "utf8");
+			} catch {
+				return;
+			}
+			const current = text.match(sidebarValuePattern)?.[2];
+			if (current === "auto") {
+				try {
+					await writeFile(
+						cliConfigPath,
+						text.replace(sidebarValuePattern, "$1hide$3"),
+						"utf8",
+					);
+					return;
+				} catch {
+					// A failed restore degrades the at-rest default to `auto`; the
+					// reveal itself must never fail over a config write-back.
+					return;
+				}
+			}
+			if (current !== undefined) {
+				// Already `hide` (or some non-`auto` value): nothing to restore.
+				return;
+			}
+			// The regex did not locate the value (a reshaped config file): fall back
+			// to a full JSON round-trip. This may reformat the file, so it runs only
+			// when the surgical replace cannot match.
+			try {
+				const parsed = JSON.parse(text) as {
+					session?: { sidebar?: unknown };
+				};
+				if (parsed.session?.sidebar !== "auto") {
+					return;
+				}
+				parsed.session.sidebar = "hide";
+				await writeFile(
+					cliConfigPath,
+					`${JSON.stringify(parsed, null, "\t")}\n`,
+					"utf8",
+				);
+			} catch {
+				// A failed restore degrades the at-rest default to `auto`; the
+				// reveal itself must never fail over a config write-back.
+			}
+		})();
+	}, 1000);
 }
 
 export default Plugin.define({
@@ -760,34 +839,61 @@ export default Plugin.define({
 		});
 
 		// `/loop` is when the human starts watching, so the first sighting of a loop in
-		// this TUI reveals the sidebar. One decision per family per process: cli.json
-		// keeps `session.sidebar: "hide"` as the non-loop default, so the common path is
-		// closed to open, and an unreadable state can at worst close a hand-opened
-		// sidebar once per loop until `<leader>b` reopens it. Per-process rather than
-		// durable storage because sidebar visibility belongs to one terminal, not to
-		// the loop.
-		const revealedFamilies = new Set<string>();
-		const revealForLoop = (sessions: LoopSessionCache, sessionID: string) => {
-			let familyKey: string;
-			try {
-				familyKey = sessions.root(sessionID) ?? sessionID;
-			} catch {
-				familyKey = sessionID;
-			}
-			if (revealedFamilies.has(familyKey)) {
+		// this TUI reveals the sidebar. The decision lives in memory storage rather
+		// than a closure Set: OpenCode re-runs `setup()` whenever plugins re-reconcile
+		// (config saves, `/reload`, plugin file edits), and a fresh closure re-armed
+		// the flip and closed the sidebar the previous setup had just opened. Memory
+		// storage survives those reloads but dies with the TUI, which is exactly the
+		// once-per-family-per-terminal semantics wanted. Marks hold whole family id
+		// sets and the skip test is set overlap, because `session.root()` walks the
+		// parent chain over a cache that fills asynchronously: keying on the root id
+		// alone let a not-yet-resolved view slip past the guard and flip a second
+		// time. cli.json keeps `session.sidebar: "hide"` as the non-loop default (see
+		// `restoreSidebarDefault` for how the toggle's own write-back is undone).
+		const [revealState, updateRevealState] = context.storage.memory("reveal", {
+			initial: { ids: [] as string[] },
+		});
+		const markRevealed = (ids: Set<string>) => {
+			// `updateRevealState` is async by contract; the decision must stay
+			// synchronous inside a render pass, and a lost update only re-arms one
+			// bounded flip, never a loop.
+			void updateRevealState((draft) => {
+				for (const id of ids) {
+					if (!draft.ids.includes(id)) {
+						draft.ids.push(id);
+					}
+				}
+			});
+		};
+		const revealForLoop = (
+			sessions: LoopSessionCache,
+			viewed: string,
+			ids: Set<string>,
+		) => {
+			// The host's own visibility getter keys on `parentID` and never shows
+			// the sidebar while the pane views a child (subagent) session, so a
+			// flip there shows nothing yet still rewrites cli.json and spends the
+			// reveal.
+			if (sessions.get(viewed)?.parentID) {
 				return;
 			}
-			revealedFamilies.add(familyKey);
+			// Reading `revealState.ids` inside the render is a store read and may
+			// retrigger a render; the guard above makes that a no-op.
+			if (ids.some((id) => revealState.ids.includes(id))) {
+				return;
+			}
 			let visible: boolean | undefined;
 			try {
 				visible = sidebarVisible(context.keymap.commands());
 			} catch {
 				visible = undefined;
 			}
+			markRevealed(ids);
 			if (visible === true) {
 				return;
 			}
 			context.keymap.dispatch("session.sidebar.toggle");
+			restoreSidebarDefault();
 		};
 
 		const renderLines = (lines: DiagramLine[]) => (
@@ -810,7 +916,7 @@ export default Plugin.define({
 				if (!familyHasSupervisor(sessions, ids)) {
 					return null;
 				}
-				revealForLoop(sessions, viewed);
+				revealForLoop(sessions, viewed, ids);
 				const linked = records().filter(
 					(record) =>
 						record.sessionId !== undefined && ids.has(record.sessionId),
