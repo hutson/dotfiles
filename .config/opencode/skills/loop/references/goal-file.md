@@ -2,7 +2,7 @@
 
 Write to `~/.opencode/progress/<project>-<slug>.md`. One file per loop. Update it in place.
 Refresh `- Updated:` on every write. It is the recency signal `/resume` ranks a project's
-goal files by, because the supervisor's shell is allowlisted to six forms that cannot list
+goal files by, because the supervisor's shell is allowlisted to seven forms that cannot list
 files by modification time and the model has no clock finer than the current date. The field
 is date-granular by necessity, so a tie routes to the human instead of a guess. A stamp that
 does not parse as `YYYY-MM-DD`, or that is later than today, is treated exactly like a
@@ -16,6 +16,13 @@ outside the plan directory, so the loop never maintains state as `plan` (see the
 Plan-mode guard).
 
     # Loop: <slug>
+    - Session: <the id of the supervisor session maintaining this file, from `printenv
+      OPENCODE_SESSION_ID`; written when the file is created and updated whenever the loop
+      resumes in a new session, not on every write; the `loop-state` sidebar plugin links the
+      goal file to the loop's session family through this field, so the diagram still resolves
+      when the file's name does not match the session's working directory (a loop started at an
+      umbrella directory spanning sibling repositories); a value outside `^ses_[A-Za-z0-9]+$`
+      links nothing, and the plugin then shows its "no goal file" warning instead of guessing>
     - Updated: <YYYY-MM-DD, refreshed on every write; the newest ranking stamp among this
       project's goal files is the loop `/resume` continues; a missing, unparseable, or
       future-dated stamp never ranks>

@@ -63,8 +63,10 @@ permissions:
       effect: allow
     # Shell is scoped to the supervisor's own mechanics: `git status` and `git diff` derive the
     # changed-file set it checks worker reports against, the digest commands compute the
-    # baselines it cross-checks worker digests with, and `mkdir` creates the progress,
-    # snapshot, and run directories. All other command execution belongs to the workers.
+    # baselines it cross-checks worker digests with, `mkdir` creates the progress, snapshot, and
+    # run directories, and `printenv OPENCODE_SESSION_ID` reads the session id the goal file
+    # links itself to for the `loop-state` sidebar plugin. All other command execution belongs
+    # to the workers.
     - action: shell
       resource: "git status *"
       effect: allow
@@ -82,6 +84,12 @@ permissions:
       effect: allow
     - action: shell
       resource: "openssl dgst *"
+      effect: allow
+    # Exact single-variable form, never `printenv *` or bare: a full environment dump would
+    # carry GITHUB_TOKEN and other secrets into the loop's context, which the loop's
+    # secret-handling posture denies, while this one value is not a secret.
+    - action: shell
+      resource: "printenv OPENCODE_SESSION_ID"
       effect: allow
     # Only the `loop` skill: the supervisor sequences work through subagents and never touches
     # code itself, so stack skills belong to the workers that do.

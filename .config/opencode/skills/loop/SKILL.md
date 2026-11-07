@@ -10,19 +10,17 @@ metadata:
 
 # Engineering Loop
 
-You are the supervisor of a multi-agent engineering loop. You coordinate specialized workers; you do not write project code yourself. Your job: clarify the goal, sequence the work, dispatch workers, route feedback, and enforce stop rules.
-
 ## The one rule
 
 The agent doing the work never grades it. `developer` generates tests and code. `security`, `documentation`, `test-design`, and `quality-assurance` grade it. Never let `developer`, or yourself, declare `developer`'s work "done." The exit condition is a deterministic check or a fresh grader, not the generator's opinion. The rule governs grading, not information gathering: every loop agent may dispatch `explore`, a read-only code-exploration sub-agent, and none may dispatch a grader of its own work.
 
 ## Plan-mode guard
 
-`/loop`, `/resume`, and `/save` select the `supervisor` agent because the loop needs two capabilities Plan mode denies: writing the goal/state file outside the plan directory, and dispatching workers that modify files. If this skill loads in a session under Plan-mode restrictions (the `plan` agent, or any policy that denies edits to project files), those restrictions win over this skill and neither capability is available. Do not attempt them: run phases 0 and 1 in conversation only, then stop and ask the human to re-run `/loop` on the `supervisor` agent.
+`/loop`, `/resume`, and `/save` select the `supervisor` agent because the loop needs two capabilities Plan mode denies: writing the goal/state file outside the plan directory, and dispatching workers that modify files. If this skill loads in a session under Plan-mode restrictions (the `plan` agent, or any policy that denies edits to project files), stop and ask the human to re-run `/loop` on the `supervisor` agent.
 
 ## Initialize the goal/state file
 
-Before dispatching anything, write the goal/state file to `~/.opencode/progress/<project>-<slug>.md` (create the directory if needed). It is your persistent memory across the loop and across sessions. Use the format in `references/goal-file.md`. Update it after every phase and after every grader verdict, refreshing its `Updated:` and `State:` fields on every write so `/resume` can rank this project's goal files and the `loop-state` sidebar plugin can show the current phase. Create the run's scratch directory fresh at loop initialization and again on every `/resume`, never reused: `/tmp/opencode/<name>/<run>/`, recorded in the goal file's scratch manifest (see `references/goal-file.md`), and it travels to workers in briefs only.
+Before dispatching anything, write the goal/state file to `~/.opencode/progress/<project>-<slug>.md` (create the directory if needed). It is your persistent memory across the loop and across sessions. Use the format in `references/goal-file.md`. Update it after every phase and after every grader verdict, refreshing its `Updated:` and `State:` fields on every write so `/resume` can rank this project's goal files and the `loop-state` sidebar plugin can show the current phase. Record `- Session:` from `printenv OPENCODE_SESSION_ID` when you create the file, and update it there whenever `/resume` continues the loop in a new session: the sidebar plugin links the goal file to your session family through that field, so a file whose name does not match the working directory (a loop started at an umbrella directory) still renders instead of silently hiding. Create the run's scratch directory fresh at loop initialization and again on every `/resume`, never reused: `/tmp/opencode/<name>/<run>/`, recorded in the goal file's scratch manifest (see `references/goal-file.md`), and it travels to workers in briefs only.
 
 ## Phases
 
@@ -61,7 +59,7 @@ The test baseline pins the reviewed test surface so a later green run means the 
 
 ## Machine mechanics
 
-Your own shell is allowlisted to six command forms (`git status`, `git diff`, `mkdir`, `sha256sum`, `shasum`, `openssl dgst`), each bare or with arguments, for the deterministic checks that must not pass through a worker's report. Anything else is hard-denied without a prompt: ask the human when a need falls outside these forms instead of improvising a variant of one.
+Your own shell is allowlisted to seven command forms (`git status`, `git diff`, `mkdir`, `sha256sum`, `shasum`, `openssl dgst`, each bare or with arguments, plus exactly `printenv OPENCODE_SESSION_ID`, which is denied bare or with any other variable), for the deterministic checks that must not pass through a worker's report. Anything else is hard-denied without a prompt: ask the human when a need falls outside these forms instead of improvising a variant of one.
 
 Compound commands are permission-checked per segment, so a single unlisted segment denies the whole command (`command -v sha256sum && echo ok` is denied even though `sha256sum` alone is allowed). Run the allowlisted forms bare, with no pipes, no `&&` or `;` chains, and no availability probes; the allowlist guarantees the tools exist.
 

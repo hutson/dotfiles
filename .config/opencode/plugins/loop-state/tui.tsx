@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 import { Plugin } from "@opencode/plugin/tui";
 // TODO: Specify third-party dependency following OpenCode's guidance (https://opencode.ai/docs/plugins/#dependencies), and not depend on the version of `solid-js` embedded in the OpenCode TUI bundle.
 import { createSignal } from "solid-js";
@@ -12,11 +12,15 @@ const eventRefreshThrottleMs = 500;
 const defaultRoundCap = 4;
 const labelFieldWidth = 15;
 const ruleWidth = 33;
-// Documented shapes for the two agent-written strings the widget renders:
-// vocabulary ids are lowercase with hyphens; slugs carry underscores too
-// (`goal-file.md`: `^[A-Za-z0-9_-]+$`). Anything else is never shown raw.
+// Documented shapes for the agent-written strings the widget reads: vocabulary ids
+// are lowercase with hyphens; slugs and goal-file names carry underscores too
+// (`goal-file.md`: `^[A-Za-z0-9_-]+$`); session ids are `ses_` plus alphanumeric.
+// Values outside a shape are never rendered raw nor trusted as links: a state shows
+// as `<invalid>` and a bad session id links nothing, so agent-written text can
+// neither inject bytes nor point the diagram at a wrong loop.
 const stateValuePattern = /^[a-z0-9-]{1,40}$/;
 const slugPattern = /^[A-Za-z0-9_-]{1,80}$/;
+const sessionIdPattern = /^ses_[A-Za-z0-9]{1,64}$/;
 
 // The `State:` node vocabulary lives in `skills/loop/references/goal-file.md`
 // and the phase sequence in `skills/loop/SKILL.md`; this table is the display
@@ -108,10 +112,10 @@ interface LoopSnapshot {
 	ambiguity: string[] | undefined;
 }
 
-interface GoalCandidate {
+interface GoalRecord {
 	name: string;
-	slug: string;
-	text: string;
+	snapshot: LoopSnapshot;
+	sessionId: string | undefined;
 	stamp: string | undefined;
 }
 
@@ -137,6 +141,19 @@ function parseRawState(text: string): string | undefined {
 	// unknown id still shows verbatim, because the widget must display what
 	// the supervisor actually wrote before deciding it is unknown.
 	return stateValuePattern.test(raw) ? raw : "<invalid>";
+}
+
+// `- Session:` links the goal file to the supervisor session that maintains it, so
+// the widget finds a loop's file even when its name does not match the session's
+// working directory (the umbrella-root shape: sibling repositories under one root).
+// The value is agent-written, so outside the `ses_` charset it links nothing rather
+// than matching some other session's family.
+function parseSessionId(text: string): string | undefined {
+	const raw = text.match(/^\s*-\s*Session:\s*(\S+)/m)?.[1];
+	if (!raw || !sessionIdPattern.test(raw)) {
+		return undefined;
+	}
+	return raw;
 }
 
 // Anchored to the header's `- Stop rule:` line: prose elsewhere in the file
@@ -230,10 +247,8 @@ function buildSnapshot(slug: string, text: string): LoopSnapshot {
 // is shown even when its stamp does not rank: a deliberate divergence from
 // `/resume`, because a passive display cannot ask and one file can only be
 // that file.
-function pickStrictlyNewest(
-	candidates: GoalCandidate[],
-): GoalCandidate | undefined {
-	let chosen: GoalCandidate | undefined;
+function pickStrictlyNewest(candidates: GoalRecord[]): GoalRecord | undefined {
+	let chosen: GoalRecord | undefined;
 	let newest = "";
 	for (const candidate of candidates) {
 		if (!candidate.stamp) {
@@ -249,15 +264,18 @@ function pickStrictlyNewest(
 	return chosen;
 }
 
-async function resolveSnapshot(
-	project: string,
-): Promise<LoopSnapshot | undefined> {
+// The progress directory is small, so every poll re-reads every goal file and the
+// family filter runs at render against the live session cache: a `- Session:` link
+// that `/resume` moved to a new session resolves on the next poll with no cache to
+// invalidate. Reading the files here, rather than the ranking, keeps the link
+// decision reactive to which session is being viewed.
+async function loadGoalRecords(): Promise<GoalRecord[]> {
 	let entries: Dirent[];
 	try {
 		entries = await readdir(progressDirectory, { withFileTypes: true });
 	} catch {
-		// No progress directory means no loop to show.
-		return undefined;
+		// No progress directory means no goal file to link.
+		return [];
 	}
 	// `/resume` ranks against the human's calendar date, so the future-dated
 	// check compares against local today: an `toISOString()` slice returns the
@@ -267,47 +285,56 @@ async function resolveSnapshot(
 	const month = String(now.getMonth() + 1).padStart(2, "0");
 	const day = String(now.getDate()).padStart(2, "0");
 	const today = `${now.getFullYear()}-${month}-${day}`;
-	const parsed: GoalCandidate[] = [];
+	const records: GoalRecord[] = [];
 	for (const entry of entries) {
-		// Goal files are `<project>-<slug>.md`. Snapshot directories
-		// (`*-baseline/`) are excluded by the file filter; `loop-improvements.md`
-		// needs an explicit exclusion because a project named `loop` would match
-		// the prefix rule. A slug outside `goal-file.md`'s documented charset is
-		// not a valid goal file: the slug is agent-chosen filename text the
-		// widget renders, so it never reaches the terminal unvalidated.
+		// Goal files are the `*.md` entries; snapshot directories
+		// (`*-baseline/`) are excluded by the file filter and
+		// `loop-improvements.md` is the backlog, not a goal file. A name
+		// outside `goal-file.md`'s documented charset is not a valid goal
+		// file: the name is agent-chosen filename text the widget renders on
+		// its `loop:` line, so it never reaches the terminal unvalidated.
 		if (
 			!entry.isFile() ||
 			entry.name === "loop-improvements.md" ||
-			!entry.name.startsWith(`${project}-`) ||
 			!entry.name.endsWith(".md")
 		) {
 			continue;
 		}
-		const slug = entry.name.slice(project.length + 1, -".md".length);
-		if (!slugPattern.test(slug)) {
+		const name = entry.name.slice(0, -".md".length);
+		if (!slugPattern.test(name)) {
 			continue;
 		}
 		try {
 			const text = await readFile(join(progressDirectory, entry.name), "utf8");
-			parsed.push({
-				name: entry.name,
-				slug,
-				text,
+			records.push({
+				name,
+				snapshot: buildSnapshot(name, text),
+				sessionId: parseSessionId(text),
 				stamp: parseUpdatedStamp(text, today),
 			});
 		} catch {
 			// An unreadable candidate is skipped rather than drawn partially.
 		}
 	}
-	if (parsed.length === 0) {
+	return records;
+}
+
+// A goal file belongs to the loop whose supervisor session id it records, so the
+// candidate set is the viewed family's linked files, ranked by `/resume`'s rule:
+// strictly newest `Updated:` wins, a lone candidate shows even unranked, and a
+// tie becomes the ambiguity note rather than a guess. Name-prefix matching is gone
+// by design: it silently hid loops started at umbrella directories.
+function chooseLinked(candidates: GoalRecord[]): LoopSnapshot | undefined {
+	if (candidates.length === 0) {
 		return undefined;
 	}
-	if (parsed.length === 1 && parsed[0]) {
-		return buildSnapshot(parsed[0].slug, parsed[0].text);
+	const only = candidates[0];
+	if (candidates.length === 1 && only) {
+		return only.snapshot;
 	}
-	const chosen = pickStrictlyNewest(parsed);
+	const chosen = pickStrictlyNewest(candidates);
 	if (chosen) {
-		return buildSnapshot(chosen.slug, chosen.text);
+		return chosen.snapshot;
 	}
 	return {
 		slug: "",
@@ -317,7 +344,7 @@ async function resolveSnapshot(
 		roundCap: defaultRoundCap,
 		gateMarks: ["", "", ""],
 		tripwireFail: false,
-		ambiguity: parsed.map((candidate) => candidate.slug).sort(),
+		ambiguity: candidates.map((candidate) => candidate.name).sort(),
 	};
 }
 
@@ -346,21 +373,49 @@ function isRunning(status: unknown): boolean {
 	return false;
 }
 
+// The viewed session with its family root and every family member: a loop's
+// `- Session:` link and its running workers all resolve inside this set. If the
+// family API itself fails, the set holds only the viewed session, so the gate and
+// the link fail closed (nothing shows) rather than matching another session's loop.
+function familyIds(sessions: LoopSessionCache, sessionID: string): Set<string> {
+	const ids = new Set<string>([sessionID]);
+	try {
+		const root = sessions.root(sessionID);
+		if (root) {
+			ids.add(root);
+		}
+		for (const id of sessions.family(sessionID) ?? []) {
+			ids.add(id);
+		}
+	} catch {
+		// Fail closed to the viewed session alone.
+	}
+	return ids;
+}
+
+// The diagram is a loop instrument, so it renders only inside a loop: `/loop`,
+// `/resume`, and `/save` all select the `supervisor` agent (a command's frontmatter
+// switches the session's agent at invocation), and dispatched workers share that
+// family, so a family holding a supervisor session is the active-loop signal.
+// Outside a loop nothing renders, the warning included.
+function familyHasSupervisor(
+	sessions: LoopSessionCache,
+	ids: Set<string>,
+): boolean {
+	for (const id of ids) {
+		if (sessions.get(id)?.agent === supervisorAgent) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function collectRunningAgents(
 	sessions: LoopSessionCache,
-	sessionID: string | undefined,
+	ids: Set<string>,
 ): Map<string, number> {
 	const counts = new Map<string, number>();
-	if (!sessionID) {
-		return counts;
-	}
 	try {
-		const root = sessions.root(sessionID) ?? sessionID;
-		const ids = new Set<string>([
-			sessionID,
-			root,
-			...(sessions.family(sessionID) ?? []),
-		]);
 		for (const id of ids) {
 			if (!isRunning(sessions.status(id))) {
 				continue;
@@ -417,6 +472,20 @@ function ambiguityLines(slugs: string[]): DiagramLine[] {
 		{ text: "─".repeat(ruleWidth), kind: "muted" },
 		{ text: "no unique newest Updated:", kind: "faint" },
 		{ text: "pick one: /resume <slug>", kind: "faint" },
+	];
+}
+
+// Rendered only inside a loop (the supervisor-family gate passed) when no goal
+// file links to this family: a running loop whose state cannot be seen is exactly
+// the failure the old silent hide produced, so it gets named instead.
+function warningLines(): DiagramLine[] {
+	return [
+		{ text: "loop: no goal file", kind: "fail" },
+		{ text: "─".repeat(ruleWidth), kind: "muted" },
+		{ text: "no goal file links this loop", kind: "faint" },
+		{ text: "via `- Session:`; the supervisor", kind: "faint" },
+		{ text: "writes it at creation and on", kind: "faint" },
+		{ text: "/resume", kind: "faint" },
 	];
 }
 
@@ -629,22 +698,46 @@ function colorForKind(theme: unknown, kind: LineKind): string | undefined {
 	return undefined;
 }
 
+// `session.sidebar.toggle` is the only documented sidebar command and it flips
+// rather than shows, so the reveal consults the command state where the keymap
+// exposes it. The shape of `commands()` entries is not documented: probing a few
+// plausible boolean fields reads it if present and returns undefined otherwise,
+// which degrades to the one-shot flip rather than closing an open sidebar.
+function sidebarVisible(commands: unknown): boolean | undefined {
+	if (!Array.isArray(commands)) {
+		return undefined;
+	}
+	for (const entry of commands) {
+		if (typeof entry !== "object" || entry === null) {
+			continue;
+		}
+		const command = entry as Record<string, unknown>;
+		if (command.id !== "session.sidebar.toggle") {
+			continue;
+		}
+		for (const source of [command, command.state]) {
+			if (typeof source !== "object" || source === null) {
+				continue;
+			}
+			for (const key of ["visible", "shown", "checked", "open"]) {
+				const value = (source as Record<string, unknown>)[key];
+				if (typeof value === "boolean") {
+					return value;
+				}
+			}
+		}
+	}
+	return undefined;
+}
+
 export default Plugin.define({
 	id: "loop-state",
 	setup(context) {
-		const [snapshot, setSnapshot] = createSignal<LoopSnapshot | undefined>(
-			undefined,
-		);
+		const [records, setRecords] = createSignal<GoalRecord[]>([]);
 
 		const refresh = async () => {
-			const location = context.location ?? context.data.location.default();
-			const directory = location?.directory;
-			if (!directory) {
-				setSnapshot(undefined);
-				return;
-			}
 			try {
-				setSnapshot(await resolveSnapshot(basename(directory)));
+				setRecords(await loadGoalRecords());
 			} catch {
 				// A transient read failure keeps the last rendered state rather
 				// than flashing the widget off mid-poll.
@@ -666,29 +759,73 @@ export default Plugin.define({
 			void refresh();
 		});
 
+		// `/loop` is when the human starts watching, so the first sighting of a loop in
+		// this TUI reveals the sidebar. One decision per family per process: cli.json
+		// keeps `session.sidebar: "hide"` as the non-loop default, so the common path is
+		// closed to open, and an unreadable state can at worst close a hand-opened
+		// sidebar once per loop until `<leader>b` reopens it. Per-process rather than
+		// durable storage because sidebar visibility belongs to one terminal, not to
+		// the loop.
+		const revealedFamilies = new Set<string>();
+		const revealForLoop = (sessions: LoopSessionCache, sessionID: string) => {
+			let familyKey: string;
+			try {
+				familyKey = sessions.root(sessionID) ?? sessionID;
+			} catch {
+				familyKey = sessionID;
+			}
+			if (revealedFamilies.has(familyKey)) {
+				return;
+			}
+			revealedFamilies.add(familyKey);
+			let visible: boolean | undefined;
+			try {
+				visible = sidebarVisible(context.keymap.commands());
+			} catch {
+				visible = undefined;
+			}
+			if (visible === true) {
+				return;
+			}
+			context.keymap.dispatch("session.sidebar.toggle");
+		};
+
+		const renderLines = (lines: DiagramLine[]) => (
+			<box>
+				{lines.map((line) => (
+					<text fg={colorForKind(context.theme, line.kind)}>{line.text}</text>
+				))}
+			</box>
+		);
+
 		const unregister = context.ui.slot({
 			append: "sidebar.content",
 			render: (props: { sessionID?: string }) => {
-				const shown = snapshot();
-				if (!shown) {
+				const sessions = context.data.session;
+				const viewed = props.sessionID;
+				if (!viewed) {
 					return null;
+				}
+				const ids = familyIds(sessions, viewed);
+				if (!familyHasSupervisor(sessions, ids)) {
+					return null;
+				}
+				revealForLoop(sessions, viewed);
+				const linked = records().filter(
+					(record) =>
+						record.sessionId !== undefined && ids.has(record.sessionId),
+				);
+				const shown = chooseLinked(linked);
+				if (!shown) {
+					return renderLines(warningLines());
 				}
 				// Badges read the session cache inside the render pass, so every
 				// redraw shows current session state; the 2s poll is the
 				// guaranteed refresh whether or not these reads are tracked.
 				const running = shown.ambiguity
 					? new Map<string, number>()
-					: collectRunningAgents(context.data.session, props?.sessionID);
-				const lines = buildDiagramLines(shown, running);
-				return (
-					<box>
-						{lines.map((line) => (
-							<text fg={colorForKind(context.theme, line.kind)}>
-								{line.text}
-							</text>
-						))}
-					</box>
-				);
+					: collectRunningAgents(sessions, ids);
+				return renderLines(buildDiagramLines(shown, running));
 			},
 		});
 

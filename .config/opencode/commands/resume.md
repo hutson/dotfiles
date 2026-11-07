@@ -4,7 +4,7 @@ agent: supervisor
 subagent: false
 ---
 
-Load the `loop` skill first, then resolve this project's goal/state file under `~/.opencode/progress/`. Use `glob` and `read` only: the supervisor's shell is allowlisted to six forms, none of which list files by modification time, so `ls`, `find`, and `stat` are denied and must not be improvised around.
+Load the `loop` skill first, then resolve this project's goal/state file under `~/.opencode/progress/`. Use `glob` and `read` only: the supervisor's shell is allowlisted to seven forms, none of which list files by modification time, so `ls`, `find`, and `stat` are denied and must not be improvised around.
 
 Resolve in this order, taking the first rule that decides. Rules 1 and 2 decide by yielding exactly one file; rule 3 decides by asking me, or by reporting that nothing matched:
 
