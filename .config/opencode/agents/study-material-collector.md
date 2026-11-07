@@ -19,6 +19,14 @@ permissions:
     - action: edit
       resource: "*"
       effect: allow
+    # Code Mode: `execute` batches independent tool calls and keeps intermediate results out
+    # of context, so this role reads broadly but returns only what it computed. Without this
+    # rule the catch-all above removes Code Mode entirely, along with every tool reached only
+    # through it. Nested calls inside an `execute` script still match the rules below, so the
+    # capability adds efficiency, not authority.
+    - action: execute
+      resource: "*"
+      effect: allow
     # The body accepts "a file on the disk" as input, which may sit outside the workspace, so
     # external paths must stay human-approved rather than hard-denied; `ask` matches every
     # other agent's posture here.

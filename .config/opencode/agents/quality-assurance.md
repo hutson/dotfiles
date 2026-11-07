@@ -21,6 +21,14 @@ permissions:
     - action: edit
       resource: "**/tmp/opencode/**"
       effect: allow
+    # Code Mode: `execute` batches independent tool calls and keeps intermediate results out
+    # of context, so this role reads broadly but returns only what it computed. Without this
+    # rule the catch-all above removes Code Mode entirely, along with every tool reached only
+    # through it. Nested calls inside an `execute` script still match the rules below, so the
+    # capability adds efficiency, not authority.
+    - action: execute
+      resource: "*"
+      effect: allow
     - action: external_directory
       resource: "*"
       effect: ask
