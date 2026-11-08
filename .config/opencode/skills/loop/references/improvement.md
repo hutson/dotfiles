@@ -34,6 +34,21 @@ Run on every exit: the phase-8 report and every stop-rule report (round cap, no-
 3. Rank proposals by expected saving: frequency (this log plus the backlog) times cost per occurrence.
 4. Drop any proposal with no evidence row behind it; a speculative rewrite of instructions is itself friction.
 5. Report the ranked list to the human in the exit report (each entry naming the exact target file and the proposed change) and append the entries to the backlog.
+6. Append this loop's stage-usage record (see "Stage usage records") whether or not any proposal was appended; a failed loop's timing data is part of the same value as its friction data.
+
+## Stage usage records
+
+Store and placement: `~/.opencode/progress/loop-improvements.md`, `## Stage usage`, the file's final section; once that heading exists, a backlog proposal line is inserted immediately before the heading and a stage-usage record always appends at end of file (this keeps both streams append-only without interleaving).
+
+Record format, exact:
+
+    - <date> | <loop slug> | <stage>=<HH:MM:SS> tok=<input>/<output>/<reasoning>/<cacheRead>/<cacheWrite> | ... | total=<HH:MM:SS> tok=<input>/<output>/<reasoning>/<cacheRead>/<cacheWrite>
+
+Segments appear in state-vocabulary order (`clarify`, `plan`, `design`, `secure-design`, `write-tests`, `review-tests`, `implement`, `grade-qa`, `grade-security`, `grade-docs`, `report`); a stage with no recorded activity is omitted. `<HH:MM:SS>` is zero-padded active time (hours may exceed two digits). The five `tok` fields are raw token counts in the fixed order input, output, reasoning, cache read, cache write. `<date>` is `YYYY-MM-DD`; `<loop slug>` is the loop's slug as in backlog lines.
+
+Metric definition: active agent time per stage, from the goal file's `## Timeline` windows and the loop family's message records: the union of assistant-message activity spans (`time.created` to `time.completed`, falling back to `time.streamed`, then to now) inside each window, minus the spans of `question` tool waits (`time.ran` or `time.created` to `time.completed`, falling back to now), so human answer time and idle pauses never count; tokens are summed per message `tokens` over every assistant message created inside the window (in-flight messages without `tokens` contribute zero), and token fields that are missing, non-finite, or negative count as zero.
+
+Transcription: values are copied verbatim from `~/.opencode/progress/<slug>-stage-usage.json` (written by the `loop-state` TUI plugin; its `active` field is already `HH:MM:SS`), never recomputed by the supervisor. A sidecar stage key outside the eleven-stage vocabulary is skipped at transcription, which also covers a sidecar written by an older plugin build. A sidecar that fails to parse is treated exactly like a missing sidecar, so it records `not recorded`. When no sidecar exists at exit (a headless run), append exactly `- <date> | <loop slug> | not recorded | no <slug>-stage-usage.json at exit` and name the gap in the exit report; the goal file's timeline remains the recovery source.
 
 ## Guardrail
 

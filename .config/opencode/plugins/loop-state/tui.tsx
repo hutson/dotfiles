@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { readdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { Plugin } from "@opencode/plugin/tui";
@@ -21,6 +21,30 @@ const ruleWidth = 33;
 const stateValuePattern = /^[a-z0-9-]{1,40}$/;
 const slugPattern = /^[A-Za-z0-9_-]{1,80}$/;
 const sessionIdPattern = /^ses_[A-Za-z0-9]{1,64}$/;
+// The `## Timeline` id matcher reuses `stateValuePattern`'s own character class
+// rather than retyping the charset: the two guards must accept exactly the same
+// ids, and a retyped copy could drift from the vocabulary with nothing to notice.
+// The composition assumes `stateValuePattern`'s source carries no anchors or
+// capture groups beyond the leading `^` and trailing `$` sliced off here.
+const timelineStateClass = stateValuePattern.source.slice(1, -1);
+const timelineLinePattern = new RegExp(
+	`^\\s*-\\s*(${timelineStateClass})\\s*\\|\\s*(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z)\\s*$`,
+);
+// The sidecar is the plugin's only write into the progress directory: per-stage
+// times and token counts, named by goal-file name, never message content.
+const stageUsageSuffix = "-stage-usage.json";
+// A `question` tool part spans the human's answer wait, the one interval the
+// active-time metric must never count.
+const questionToolName = "question";
+// Message lists are read on the 2 s poll, but `sync` reaches the server, so it is
+// throttled separately: a per-poll sync per family member would spend the loop's
+// round trips on a read the list already serves.
+const messageSyncIntervalMs = 30_000;
+const timelineHeaderPattern = /^## Timeline[ \t]*$/;
+const sectionHeaderPattern = /^## /;
+const assistantMessageType = "assistant";
+const toolPartType = "tool";
+const timelineEndId = "end";
 
 // The host's toggle persists `session.sidebar` to cli.json (`auto` when it opens
 // the sidebar), which would replace the `hide` at-rest default this repo
@@ -133,6 +157,45 @@ interface GoalRecord {
 	snapshot: LoopSnapshot;
 	sessionId: string | undefined;
 	stamp: string | undefined;
+	timeline: TimelineEntry[];
+}
+
+// One `- <node-id | end> | <stamp>` line of the goal file's `## Timeline` section.
+interface TimelineEntry {
+	stateId: string;
+	isEnd: boolean;
+	stampMs: number;
+}
+
+// The five token fields, in the order the exit record pins them (input, output,
+// reasoning, cache read, cache write) so the sidecar and `loop-improvements.md`
+// cannot drift into different field orders.
+interface TokenTotals {
+	input: number;
+	output: number;
+	reasoning: number;
+	cacheRead: number;
+	cacheWrite: number;
+}
+
+interface StageUsage {
+	activeMs: number;
+	active: string;
+	tokens: TokenTotals;
+}
+
+// A stage's span between its own `State:` stamp and the next timeline stamp. An
+// open window (`endMs` undefined) is the stage still in flight.
+interface StageWindow {
+	stateId: string;
+	startMs: number;
+	endMs: number | undefined;
+}
+
+// One merged, question-subtracted interval of assistant activity.
+interface ActiveInterval {
+	startMs: number;
+	endMs: number;
 }
 
 // A missing, unparseable, or future-dated stamp never ranks, mirroring the
@@ -258,6 +321,485 @@ function buildSnapshot(slug: string, text: string): LoopSnapshot {
 	};
 }
 
+// TODO: parseTimeline is the pure section/id/stamp seam and has no automated
+// tests. The validation environment gates biome and shell only, and has no
+// JavaScript runtime to execute this module, so once one exists `node --test`
+// with `node:assert` is the standard offline runner. Cases: a goal file with no
+// `## Timeline` section, the section as the final section with no closing header,
+// a section terminated by the next `## ` header, an id outside the state charset,
+// a stamp that is not `YYYY-MM-DDTHH:MM:SSZ`, a stamp that `Date.parse` rejects,
+// and entries kept in file order rather than sorted.
+
+// The `## Timeline` section is agent-written, so it parses fail-closed: an
+// unmatched line contributes nothing, and a file without the section yields no
+// entries at all (no times anywhere) rather than a wall-clock substitute.
+function parseTimeline(text: string): TimelineEntry[] {
+	const entries: TimelineEntry[] = [];
+	let inSection = false;
+	for (const line of text.split("\n")) {
+		if (!inSection) {
+			inSection = timelineHeaderPattern.test(line);
+			continue;
+		}
+		if (sectionHeaderPattern.test(line)) {
+			break;
+		}
+		const match = line.match(timelineLinePattern);
+		const stateId = match?.[1];
+		const stamp = match?.[2];
+		if (!match || stateId === undefined || stamp === undefined) {
+			continue;
+		}
+		const stampMs = Date.parse(stamp);
+		if (!Number.isFinite(stampMs)) {
+			continue;
+		}
+		entries.push({ stateId, isEnd: stateId === timelineEndId, stampMs });
+	}
+	return entries;
+}
+
+// TODO: stageWindows is the pure timeline-to-span seam and has no automated
+// tests (no JavaScript runtime in the validation environment; `node --test` with
+// `node:assert` is the runner once one exists). Cases: an empty entry list, a
+// single open entry, consecutive entries closing each other's windows, an `end`
+// line closing the previous window while opening none, a re-entry after `end`
+// opening a fresh window for the same id, and out-of-order stamps yielding a
+// non-positive span that the attribution pass must drop.
+
+// Consecutive timeline stamps are consecutive window edges whatever the later
+// entry's kind is, so an `end` line freezes the stage before it instead of
+// letting post-exit conversation accrue, and the last non-`end` entry stays open
+// because it is the stage running now.
+function stageWindows(entries: TimelineEntry[]): StageWindow[] {
+	const windows: StageWindow[] = [];
+	for (const [index, entry] of entries.entries()) {
+		if (entry.isEnd) {
+			continue;
+		}
+		const next = entries[index + 1];
+		windows.push({
+			stateId: entry.stateId,
+			startMs: entry.stampMs,
+			endMs: next === undefined ? undefined : next.stampMs,
+		});
+	}
+	return windows;
+}
+
+// Message times and token counts are server-shaped data, not this plugin's
+// contract: a value that is not a usable number is treated as absent (times) or
+// zero (counts) rather than entering arithmetic as `NaN`.
+function readFiniteTime(value: unknown): number | undefined {
+	return typeof value === "number" && Number.isFinite(value)
+		? value
+		: undefined;
+}
+
+function readTokenCount(value: unknown): number {
+	return typeof value === "number" && Number.isFinite(value) && value >= 0
+		? value
+		: 0;
+}
+
+interface MessageTimeFields {
+	created?: number;
+	streamed?: number;
+	completed?: number;
+	ran?: number;
+}
+
+interface AssistantMessage {
+	time: MessageTimeFields;
+	content: unknown[];
+	tokens: unknown;
+}
+
+function readTimeFields(value: unknown): MessageTimeFields {
+	if (typeof value !== "object" || value === null) {
+		return {};
+	}
+	const time = value as Record<string, unknown>;
+	return {
+		created: readFiniteTime(time.created),
+		streamed: readFiniteTime(time.streamed),
+		completed: readFiniteTime(time.completed),
+		ran: readFiniteTime(time.ran),
+	};
+}
+
+// Only an assistant message with a usable `time.created` is an activity record;
+// anything else is skipped rather than guessed at.
+function readAssistantMessage(record: unknown): AssistantMessage | undefined {
+	if (typeof record !== "object" || record === null) {
+		return undefined;
+	}
+	const message = record as Record<string, unknown>;
+	if (message.type !== assistantMessageType) {
+		return undefined;
+	}
+	const time = readTimeFields(message.time);
+	if (time.created === undefined) {
+		return undefined;
+	}
+	return {
+		time,
+		content: Array.isArray(message.content) ? message.content : [],
+		tokens: message.tokens,
+	};
+}
+
+function mergeIntervals(spans: ActiveInterval[]): ActiveInterval[] {
+	const sorted = [...spans].sort((left, right) => left.startMs - right.startMs);
+	const merged: ActiveInterval[] = [];
+	for (const span of sorted) {
+		const previous = merged[merged.length - 1];
+		if (previous && span.startMs <= previous.endMs) {
+			previous.endMs = Math.max(previous.endMs, span.endMs);
+			continue;
+		}
+		merged.push({ startMs: span.startMs, endMs: span.endMs });
+	}
+	return merged;
+}
+
+function subtractIntervals(
+	spans: ActiveInterval[],
+	cuts: ActiveInterval[],
+): ActiveInterval[] {
+	let remaining = spans;
+	for (const cut of cuts) {
+		const next: ActiveInterval[] = [];
+		for (const span of remaining) {
+			if (cut.endMs <= span.startMs || cut.startMs >= span.endMs) {
+				next.push(span);
+				continue;
+			}
+			if (cut.startMs > span.startMs) {
+				next.push({ startMs: span.startMs, endMs: cut.startMs });
+			}
+			if (cut.endMs < span.endMs) {
+				next.push({ startMs: cut.endMs, endMs: span.endMs });
+			}
+		}
+		remaining = next;
+	}
+	return remaining;
+}
+
+function assistantActivitySpans(
+	messages: unknown[],
+	nowMs: number,
+): ActiveInterval[] {
+	const spans: ActiveInterval[] = [];
+	for (const record of messages) {
+		const message = readAssistantMessage(record);
+		if (!message) {
+			continue;
+		}
+		const startMs = message.time.created;
+		if (startMs === undefined) {
+			continue;
+		}
+		// An in-flight message has no end yet, so its span runs to now: that is what
+		// makes the current stage's time grow while the loop works.
+		const endMs = message.time.completed ?? message.time.streamed ?? nowMs;
+		if (endMs > startMs) {
+			spans.push({ startMs, endMs });
+		}
+	}
+	return spans;
+}
+
+function questionWaitSpans(
+	messages: unknown[],
+	nowMs: number,
+): ActiveInterval[] {
+	const spans: ActiveInterval[] = [];
+	for (const record of messages) {
+		const message = readAssistantMessage(record);
+		if (!message) {
+			continue;
+		}
+		for (const part of message.content) {
+			if (typeof part !== "object" || part === null) {
+				continue;
+			}
+			const tool = part as Record<string, unknown>;
+			if (tool.type !== toolPartType || tool.name !== questionToolName) {
+				continue;
+			}
+			const time = readTimeFields(tool.time);
+			const startMs = time.ran ?? time.created;
+			if (startMs === undefined) {
+				continue;
+			}
+			// An unanswered question has no `completed`, so the wait runs to now and
+			// human answer time never counts as active time.
+			const endMs = time.completed ?? nowMs;
+			if (endMs > startMs) {
+				spans.push({ startMs, endMs });
+			}
+		}
+	}
+	return spans;
+}
+
+// TODO: collectActiveIntervals is the pure union-minus-waits seam and has no
+// automated tests (no JavaScript runtime in the validation environment; `node
+// --test` with `node:assert` is the runner once one exists). Cases: overlapping
+// assistant spans merging to their union, parallel workers on one stage never
+// double-counting, a question span wholly inside and another straddling an
+// activity span's edges, an unanswered question subtracting up to now, zero and
+// negative spans dropped, and a message whose `time.created` is absent skipped.
+// Accepted residual this test should pin: a span opened by an in-flight message
+// ends at the poll's `now`, so a worker session that never completes leaves a
+// stale open span until its message gains a `completed` time.
+
+// Active time is what the agents worked, not what the clock spent: the union of
+// assistant-message spans minus the union of `question` tool waits. Merging both
+// sides before subtracting is what keeps two workers streaming in the same window
+// from counting the shared seconds twice.
+function collectActiveIntervals(
+	messages: unknown[],
+	nowMs: number,
+): ActiveInterval[] {
+	return subtractIntervals(
+		mergeIntervals(assistantActivitySpans(messages, nowMs)),
+		mergeIntervals(questionWaitSpans(messages, nowMs)),
+	);
+}
+
+function emptyTokenTotals(): TokenTotals {
+	return {
+		input: 0,
+		output: 0,
+		reasoning: 0,
+		cacheRead: 0,
+		cacheWrite: 0,
+	};
+}
+
+// `tokens` is null on an in-flight message, which contributes zero: an unfinished
+// message has no usage to charge to a stage yet.
+function readTokenTotals(value: unknown): TokenTotals | undefined {
+	if (typeof value !== "object" || value === null) {
+		return undefined;
+	}
+	const tokens = value as Record<string, unknown>;
+	const cache =
+		typeof tokens.cache === "object" && tokens.cache !== null
+			? (tokens.cache as Record<string, unknown>)
+			: {};
+	return {
+		input: readTokenCount(tokens.input),
+		output: readTokenCount(tokens.output),
+		reasoning: readTokenCount(tokens.reasoning),
+		cacheRead: readTokenCount(cache.read),
+		cacheWrite: readTokenCount(cache.write),
+	};
+}
+
+function addTokenTotals(target: TokenTotals, source: TokenTotals): void {
+	target.input += source.input;
+	target.output += source.output;
+	target.reasoning += source.reasoning;
+	target.cacheRead += source.cacheRead;
+	target.cacheWrite += source.cacheWrite;
+}
+
+// `HH:MM:SS`, the exit record's form: zero-padded hours that keep growing past 99,
+// because a multi-day loop's stage total is data, not a display width.
+function formatStageTime(activeMs: number): string {
+	const seconds = Math.max(0, Math.floor(activeMs / 1000));
+	const hours = String(Math.floor(seconds / 3600)).padStart(2, "0");
+	const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+	const rest = String(seconds % 60).padStart(2, "0");
+	return `${hours}:${minutes}:${rest}`;
+}
+
+// The stage vocabulary is the only key set the sidecar and the record may carry,
+// so windows are attributed by id and merged across re-entries.
+function attributeUsage(
+	windows: StageWindow[],
+	messages: unknown[],
+	nowMs: number,
+): Map<string, StageUsage> | undefined {
+	const activity = collectActiveIntervals(messages, nowMs);
+	const usage = new Map<string, StageUsage>();
+	const closedStages: StageUsage[] = [];
+	for (const window of windows) {
+		// A window whose edges are not finite numbers cannot yield a trustworthy
+		// total, so the whole read fails closed rather than attributing zero: the
+		// stamps come from agent-written text, and `Date.parse` accepts shapes well
+		// outside the documented one.
+		const endMs = window.endMs ?? nowMs;
+		if (!Number.isFinite(window.startMs) || !Number.isFinite(endMs)) {
+			return undefined;
+		}
+		let stage = usage.get(window.stateId);
+		if (!stage) {
+			stage = { activeMs: 0, active: "", tokens: emptyTokenTotals() };
+			usage.set(window.stateId, stage);
+		}
+		if (window.endMs !== undefined) {
+			closedStages.push(stage);
+		}
+		for (const interval of activity) {
+			const startMs = Math.max(interval.startMs, window.startMs);
+			const stopMs = Math.min(interval.endMs, endMs);
+			if (stopMs > startMs) {
+				stage.activeMs += stopMs - startMs;
+			}
+		}
+		for (const record of messages) {
+			const message = readAssistantMessage(record);
+			const createdMs = message?.time.created;
+			if (message === undefined || createdMs === undefined) {
+				continue;
+			}
+			if (createdMs < window.startMs || createdMs >= endMs) {
+				continue;
+			}
+			const tokens = readTokenTotals(message.tokens);
+			if (tokens) {
+				addTokenTotals(stage.tokens, tokens);
+			}
+		}
+	}
+	// A closed stage whose total is not a sane number means the message shapes
+	// drifted or a stamp was out of order: report nothing rather than a wrong time.
+	for (const stage of closedStages) {
+		if (!stageUsageIsSane(stage)) {
+			return undefined;
+		}
+	}
+	for (const stage of usage.values()) {
+		stage.active = formatStageTime(stage.activeMs);
+	}
+	return usage;
+}
+
+function stageUsageIsSane(stage: StageUsage): boolean {
+	if (!Number.isFinite(stage.activeMs) || stage.activeMs < 0) {
+		return false;
+	}
+	return Object.values(stage.tokens).every(
+		(count) => Number.isFinite(count) && count >= 0,
+	);
+}
+
+// TODO: attributeUsage is the pure window-attribution seam and has no automated
+// tests (no JavaScript runtime in the validation environment; `node --test` with
+// `node:assert` is the runner once one exists). Cases: a message created exactly
+// on a window's closing stamp landing in the next window only, a question wait
+// crossing a window boundary charging both windows' activity but neither's wait,
+// an in-flight `tokens: null` message adding time but zero counts, a stage
+// re-entered twice merging both windows' time and tokens, `HH:MM:SS` rendering
+// past 99 hours, and an insane closed-stage total returning undefined.
+
+// TODO: formatCompact and formatStageTime are the pure duration-formatting seams
+// and have no automated tests (no JavaScript runtime in the validation
+// environment; `node --test` with `node:assert` is the runner once one exists).
+// Cases: the compact boundaries at 59 s, 60 s, 59 m, 60 m, and 61 m; whole-unit
+// truncation with no rounding up to a unit not yet spent; and `HH:MM:SS` padding
+// and overflow past 99 and 999 hours.
+
+// The sidebar is a glance, so times render in whole units; the sidecar keeps the
+// millisecond and `HH:MM:SS` precision the exit record transcribes.
+function formatCompact(ms: number): string {
+	const minutes = Math.floor(Math.max(0, ms) / 60_000);
+	if (minutes >= 1) {
+		const hours = Math.floor(minutes / 60);
+		return hours >= 1 ? `${hours}h${minutes % 60}m` : `${minutes}m`;
+	}
+	return `${Math.floor(Math.max(0, ms) / 1000)}s`;
+}
+
+// Unknown or absent usage shows no time text: silence is the honest reading of "not
+// measured", where `0s` would claim a measured zero.
+function stageTimeText(
+	usage: Map<string, StageUsage> | undefined,
+	stateId: string | undefined,
+): string {
+	const stage =
+		usage === undefined || stateId === undefined
+			? undefined
+			: usage.get(stateId);
+	if (!stage || !(stage.activeMs > 0)) {
+		return "";
+	}
+	return ` ${formatCompact(stage.activeMs)}`;
+}
+
+// TODO: the timeline coupling this writer depends on (goal-file names and the
+// `-stage-usage.json` suffix) has no automated tests because the validation
+// environment has no JavaScript runtime to load this module; `node --test` with
+// `node:assert` is the runner once one exists. Cases: the payload key order, a
+// sidecar name derived from a goal-file name, and the identical-payload skip.
+
+// The sidecar is where token counts become observable at all (neither the
+// supervisor nor a worker can read them anywhere else), so its stage keys are the
+// node table's vocabulary in table order and nothing else: an out-of-vocabulary
+// window is attributed for the display but never serialized, keeping the exit
+// record's grammar closed. `total` sums exactly those keys.
+//
+// The identical-payload skip keys on `stages` and `total` alone: comparing the
+// whole payload would rewrite the file on every poll for a `generated` stamp no
+// reader uses.
+//
+// Written to a temp sibling and renamed over the target: `rename` is atomic on
+// POSIX, so the exit-time reader never sees a half-written payload, and a rename
+// replaces a destination symlink entry where `writeFile` would follow the link and
+// write through it into whatever the link points at.
+async function writeStageUsage(
+	record: GoalRecord,
+	usage: Map<string, StageUsage>,
+	lastPayloadBySlug: Map<string, string>,
+): Promise<void> {
+	if (record.timeline.length === 0) {
+		return;
+	}
+	const stages: Record<string, StageUsage> = {};
+	const total: StageUsage = {
+		activeMs: 0,
+		active: "00:00:00",
+		tokens: emptyTokenTotals(),
+	};
+	for (const node of loopNodes) {
+		const stage = usage.get(node.stateId);
+		if (!stage) {
+			continue;
+		}
+		stages[node.stateId] = {
+			activeMs: stage.activeMs,
+			active: stage.active,
+			tokens: { ...stage.tokens },
+		};
+		total.activeMs += stage.activeMs;
+		addTokenTotals(total.tokens, stage.tokens);
+	}
+	total.active = formatStageTime(total.activeMs);
+	const payload = JSON.stringify({ stages, total });
+	if (lastPayloadBySlug.get(record.name) === payload) {
+		return;
+	}
+	const path = join(progressDirectory, `${record.name}${stageUsageSuffix}`);
+	const body = `${JSON.stringify(
+		{
+			slug: record.name,
+			generated: new Date().toISOString(),
+			stages,
+			total,
+		},
+		null,
+		2,
+	)}\n`;
+	await writeFile(`${path}.tmp`, body, "utf8");
+	await rename(`${path}.tmp`, path);
+	lastPayloadBySlug.set(record.name, payload);
+}
+
 // A tie means two or more candidates share the strictly newest ranking stamp;
 // the choice then belongs to the human, like `/resume` rule 3. A lone candidate
 // is shown even when its stamp does not rank: a deliberate divergence from
@@ -327,6 +869,7 @@ async function loadGoalRecords(): Promise<GoalRecord[]> {
 				snapshot: buildSnapshot(name, text),
 				sessionId: parseSessionId(text),
 				stamp: parseUpdatedStamp(text, today),
+				timeline: parseTimeline(text),
 			});
 		} catch {
 			// An unreadable candidate is skipped rather than drawn partially.
@@ -369,6 +912,13 @@ interface LoopSessionCache {
 	family: (sessionID: string) => string[] | undefined;
 	get: (sessionID: string) => { agent?: string; parentID?: string } | undefined;
 	status: (sessionID: string) => unknown;
+	// The message list is the loop's only source of token counts and of the
+	// activity timestamps the active-time metric needs, so stage timing reads it
+	// even though the badges and links never do.
+	message: {
+		sync: (sessionID: string) => Promise<unknown>;
+		list: (sessionID: string) => unknown[];
+	};
 }
 
 // `session.status()` mirrors the server's active-session report, which lists a
@@ -511,6 +1061,7 @@ function warningLines(): DiagramLine[] {
 function buildDiagramLines(
 	snapshot: LoopSnapshot,
 	running: Map<string, number>,
+	usage: Map<string, StageUsage> | undefined,
 ): DiagramLine[] {
 	if (snapshot.ambiguity) {
 		return ambiguityLines(snapshot.ambiguity);
@@ -601,7 +1152,9 @@ function buildDiagramLines(
 				: primary.agent;
 		const body = `${primary.label.padEnd(labelFieldWidth)}  ${agentField}`;
 		lines.push({
-			text: `${isCurrent ? "▶ " : "  "}${body}${marker ? ` ${marker}` : ""}`.trimEnd(),
+			text: `${isCurrent ? "▶ " : "  "}${body}${marker ? ` ${marker}` : ""}${
+				phase === 7 ? "" : stageTimeText(usage, primary.stateId)
+			}`.trimEnd(),
 			kind,
 		});
 
@@ -633,7 +1186,10 @@ function buildDiagramLines(
 			}
 			const branch = gateIndex < gradeGateAgents.length - 1 ? "├" : "└";
 			lines.push({
-				text: `   │  ${branch} ${agent.padEnd(18)}${gateMarker}`.trimEnd(),
+				text: `   │  ${branch} ${agent.padEnd(18)}${gateMarker}${stageTimeText(
+					usage,
+					gateState?.stateId,
+				)}`.trimEnd(),
 				kind: gateKind,
 			});
 		}
@@ -645,6 +1201,10 @@ function buildDiagramLines(
 	lines.push({ text: "  ● running (●x2 = two at once)", kind: "badge" });
 	lines.push({ text: "  PASS gate passed", kind: "pass" });
 	lines.push({ text: "  ↺n gate failed, back to node n", kind: "fail" });
+	lines.push({ text: " ", kind: "faint" });
+	lines.push({ text: "  time = active agent work in", kind: "faint" });
+	lines.push({ text: "  a stage; question waits and", kind: "faint" });
+	lines.push({ text: "  pauses are excluded.", kind: "faint" });
 	lines.push({ text: " ", kind: "faint" });
 	lines.push({ text: "  round = one full qa → security", kind: "faint" });
 	lines.push({ text: "  → documentation pass; the grade", kind: "faint" });
@@ -813,14 +1373,91 @@ export default Plugin.define({
 	id: "loop-state",
 	setup(context) {
 		const [records, setRecords] = createSignal<GoalRecord[]>([]);
+		// Times and token totals are keyed by goal-file name because the sidebar shows
+		// one loop at a time and the poll recomputes every loop's file: a failed or
+		// skipped computation therefore cannot blank another loop's display.
+		const [usageBySlug, setUsageBySlug] = createSignal<
+			Map<string, Map<string, StageUsage>>
+		>(new Map());
+		// `message.sync` reaches the server, so it is throttled per session id and
+		// kept out of the render path entirely: the 2 s poll must not become a 2 s
+		// server round trip per family member.
+		const lastMessageSyncMs = new Map<string, number>();
+		// The sidecar's identical-payload skip lives per TUI process: a plugin reload
+		// rewriting one identical file once is the accepted cost of not persisting a
+		// cache the goal files already are.
+		const lastUsagePayload = new Map<string, string>();
+
+		// Stage accounting runs off the goal-file poll, not the render, so a loop in a
+		// background tab keeps accruing while nobody looks at it.
+		const refreshStageUsage = async (loaded: GoalRecord[]) => {
+			const sessions = context.data.session;
+			const updates = new Map(usageBySlug());
+			for (const record of loaded) {
+				const lastEntry = record.timeline[record.timeline.length - 1];
+				if (record.timeline.length === 0 || lastEntry?.isEnd) {
+					// No timeline means nothing to attribute; a timeline whose last entry is
+					// `end` is closed, so the loop is over and post-exit conversation must
+					// not accrue into the final stage. The last values stay in the map, which
+					// is what keeps a finished loop's frozen totals rendering until an entry
+					// after `end` reopens recording for a resumed run.
+					continue;
+				}
+				const sessionId = record.sessionId;
+				if (!sessionId || !sessions.get(sessionId)) {
+					continue;
+				}
+				// One record's failure must not cost the other loops their times, and a
+				// reshaped message API must never take the widget down, so the whole
+				// computation is contained and leaves the last values on failure.
+				try {
+					const nowMs = Date.now();
+					const messages: unknown[] = [];
+					for (const id of familyIds(sessions, record.sessionId)) {
+						const lastSyncMs = lastMessageSyncMs.get(id);
+						if (
+							lastSyncMs === undefined ||
+							nowMs - lastSyncMs >= messageSyncIntervalMs
+						) {
+							await sessions.message.sync(id);
+							lastMessageSyncMs.set(id, nowMs);
+						}
+						messages.push(...sessions.message.list(id));
+					}
+					const usage = attributeUsage(
+						stageWindows(record.timeline),
+						messages,
+						nowMs,
+					);
+					if (usage === undefined) {
+						// A completed stage's total failed the numeric guard: drop this
+						// record's times rather than render a number the arithmetic cannot
+						// vouch for, and write no sidecar. Only the displayed times are
+						// cleared; the last sidecar file stands, since a stale file a human
+						// can inspect beats a destroyed one.
+						updates.delete(record.name);
+						continue;
+					}
+					await writeStageUsage(record, usage, lastUsagePayload);
+					updates.set(record.name, usage);
+				} catch {
+					// Fail closed: no sidecar update and no new displayed times.
+				}
+			}
+			setUsageBySlug(updates);
+		};
 
 		const refresh = async () => {
+			let loaded: GoalRecord[];
 			try {
-				setRecords(await loadGoalRecords());
+				loaded = await loadGoalRecords();
 			} catch {
 				// A transient read failure keeps the last rendered state rather
 				// than flashing the widget off mid-poll.
+				return;
 			}
+			setRecords(loaded);
+			await refreshStageUsage(loaded);
 		};
 
 		void refresh();
@@ -879,8 +1516,10 @@ export default Plugin.define({
 			}
 			// Reading `revealState.ids` inside the render is a store read and may
 			// retrigger a render; the guard above makes that a no-op.
-			if (ids.some((id) => revealState.ids.includes(id))) {
-				return;
+			for (const id of ids) {
+				if (revealState.ids.includes(id)) {
+					return;
+				}
 			}
 			let visible: boolean | undefined;
 			try {
@@ -931,7 +1570,9 @@ export default Plugin.define({
 				const running = shown.ambiguity
 					? new Map<string, number>()
 					: collectRunningAgents(sessions, ids);
-				return renderLines(buildDiagramLines(shown, running));
+				return renderLines(
+					buildDiagramLines(shown, running, usageBySlug().get(shown.slug)),
+				);
 			},
 		});
 

@@ -2,14 +2,14 @@
 
 Write to `~/.opencode/progress/<project>-<slug>.md`. One file per loop. Update it in place.
 Refresh `- Updated:` on every write. It is the recency signal `/resume` ranks a project's
-goal files by, because the supervisor's shell is allowlisted to seven forms that cannot list
-files by modification time and the model has no clock finer than the current date. The field
-is date-granular by necessity, so a tie routes to the human instead of a guess. A stamp that
-does not parse as `YYYY-MM-DD`, or that is later than today, is treated exactly like a
-missing field and never ranks; `/resume` proceeds when exactly one candidate holds the
-strictly newest ranking stamp and names every candidate whose stamp never ranks in its
-summary, while a tie or no ranking stamp among a non-empty match list routes to the human
-and an empty match list reports and stops. Keep the slug in `<project>-<slug>.md` within
+goal files by, because the supervisor's shell is allowlisted to eight forms that cannot list
+files by modification time and its one clock read reports the current time, never a file's
+age. The field is date-granular (the ranking rule parses `YYYY-MM-DD`), so a tie routes to
+the human instead of a guess. A stamp that does not parse as `YYYY-MM-DD`, or that is later
+than today, is treated exactly like a missing field and never ranks; `/resume` proceeds
+when exactly one candidate holds the strictly newest ranking stamp and names every candidate
+whose stamp never ranks in its summary, while a tie or no ranking stamp among a non-empty
+match list routes to the human and an empty match list reports and stops. Keep the slug in
 `^[A-Za-z0-9_-]+$` so name-based resolution cannot widen.
 The `supervisor` agent owns this file: a session under Plan-mode restrictions cannot write
 outside the plan directory, so the loop never maintains state as `plan` (see the skill's
@@ -32,7 +32,9 @@ Plan-mode guard).
       the active gate so a status display reads the loop's position instead of re-deriving
       it from the sections below; the `loop-state` sidebar plugin consumes this field, so
       a phase change in `SKILL.md` must update the vocabulary here and the plugin's node
-      table together>
+      table together; the timeline stamps additionally couple this section's `## Timeline`
+      block, `SKILL.md`'s recording rule, and `agents/supervisor.md`'s `date`
+      permission>
     - Objective: <the testable goal>
     - Acceptance criteria: <observable outcomes, mechanically checkable>
     - Constraints: <the phase-0 answers that shape the deliverable (stack, interface
@@ -100,6 +102,20 @@ Plan-mode guard).
       counts these lines for its grade-round display but marks gates only from the
       newest line with a completed outcome, with the cap taken from the header's
       `max <n> rounds` phrase in `Stop rule:`)
+
+    ## Timeline
+    Append-only stage clock; one line per `State:` change and one `end` line per exit; a
+    prior line is never edited. The stamp is the verbatim output of exactly
+    `date -u +%Y-%m-%dT%H:%M:%SZ` (the loop's only clock read), written in the same
+    goal-file write that refreshes `State:`. Every re-entry after a FAIL appends again, and
+    an on-demand `test-design` run records `review-tests` so its cost lands on the right
+    stage. A final `- end | <stamp>` line lands on every exit before the retrospective,
+    closing the open window so post-exit conversation cannot accrue into the last stage;
+    entries after an `end` reopen recording for a resumed run. The `loop-state` sidebar
+    plugin derives per-stage active time and token totals from these windows for its
+    display and for the `<slug>-stage-usage.json` sidecar the exit retrospective reads.
+
+    - <node-id | end> | <YYYY-MM-DDTHH:MM:SSZ>
 
     ## Effort log
     One row per friction event, appended as it happens; no narrative. The buckets and the

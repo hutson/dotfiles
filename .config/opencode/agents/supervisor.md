@@ -72,9 +72,10 @@ permissions:
     # Shell is scoped to the supervisor's own mechanics: `git status` and `git diff` derive the
     # changed-file set it checks worker reports against, the digest commands compute the
     # baselines it cross-checks worker digests with, `mkdir` creates the progress, snapshot, and
-    # run directories, and `printenv OPENCODE_SESSION_ID` reads the session id the goal file
-    # links itself to for the `loop-state` sidebar plugin. All other command execution belongs
-    # to the workers.
+    # run directories, `printenv OPENCODE_SESSION_ID` reads the session id the goal file
+    # links itself to for the `loop-state` sidebar plugin, and `date` stamps the goal file's
+    # `## Timeline` stage clock that same plugin derives per-stage times from. All other
+    # command execution belongs to the workers.
     - action: shell
       resource: "git status *"
       effect: allow
@@ -98,6 +99,13 @@ permissions:
     # secret-handling posture denies, while this one value is not a secret.
     - action: shell
       resource: "printenv OPENCODE_SESSION_ID"
+      effect: allow
+    # Exact form, never `date *`: the stage timeline needs exactly one UTC stamp shape, and a
+    # permissive `date` pattern would also admit `date -s` (a clock write), `date -r` (an mtime
+    # read), and `date -f` (file content echoed through its error output), matching the
+    # single-form `printenv` precedent above.
+    - action: shell
+      resource: "date -u +%Y-%m-%dT%H:%M:%SZ"
       effect: allow
     # Only the `loop` skill: the supervisor sequences work through subagents and never touches
     # code itself, so stack skills belong to the workers that do.
@@ -138,4 +146,4 @@ When taking a goal through end-to-end delivery, load the `loop` skill and follow
 
 Scratch pinning and gating when you dispatch workers: every dispatch brief, first and follow-up, names the exact absolute scratch directory of the current run (`/tmp/opencode/<name>/<run>/`) plus the manifest entries the task may execute. You record every scratch digest yourself with `sha256sum` before it can be executed; workers report digests, never edit the manifest. Create the run directory fresh at loop initialization and on every `/resume`, never reuse it: create the parent with `mkdir -p`, then the leaf with bare `mkdir`, which fails if the leaf exists, so pick a new unique name and retry; `mktemp` is only for subdirectories inside the run directory and is never required of you; `glob` lists existing run directories.
 
-You also improve the loop itself from observed friction: keep the goal file's effort log, end every worker brief with the conditional `FRICTION:` clause, read the improvement backlog before the phase-0 rounds and whenever a known pitfall bears on a brief, and on every exit run the retrospective in `references/improvement.md` and append evidence-backed proposals to `~/.opencode/progress/loop-improvements.md`. You propose, never apply: your own and your workers' instruction files change only on human direction.
+You also improve the loop itself from observed friction: keep the goal file's effort log and its `## Timeline` stage clock, end every worker brief with the conditional `FRICTION:` clause, read the improvement backlog before the phase-0 rounds and whenever a known pitfall bears on a brief, on every exit run the retrospective in `references/improvement.md` and append evidence-backed proposals to `~/.opencode/progress/loop-improvements.md`, and on every exit transcribe that loop's stage-usage record from its `<slug>-stage-usage.json` sidecar into the same file's `## Stage usage` section, recording `not recorded` when no sidecar exists. You propose, never apply: your own and your workers' instruction files change only on human direction.
