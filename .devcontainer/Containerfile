@@ -10,6 +10,7 @@ RUN groupadd -g ${USER_GID} vscode \
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
+		bats \
 		ca-certificates \
 		curl \
 		file \

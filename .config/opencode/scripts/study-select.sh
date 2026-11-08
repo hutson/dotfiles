@@ -80,15 +80,34 @@ fi
 
 extract_questions() {
 	awk '
+		# Bounds are per-file line numbers (`FNR`), not the cumulative `NR` count across files,
+		# so a multi-file run reports positions the caller can feed straight into a reader for
+		# one file. The boundary rule closes the open question belonging to the previous file,
+		# ending it at the last line of that file, before any later rule on the same record can
+		# see the new file.
+		FILENAME != open_file {
+			if (q > 0) {
+				records[r++] = diff "|" open_file "|" q "|" (last_line + 1) "|" section
+				q = 0
+			}
+			open_file = FILENAME
+		}
+		{
+			last_line = FNR
+		}
 		/^## / {
 			section = $0
 			sub(/^## +/, "", section)
 		}
+		# Opening a question clears `diff` so a block without a parseable `**Difficulty:**` line
+		# records an empty difficulty (and is dropped by the caller) instead of inheriting the
+		# difficulty left over from the previous block.
 		/^\*\*Question:\*\*/ {
 			if (q > 0) {
-				records[r++] = diff "|" FILENAME "|" q "|" NR "|" section
+				records[r++] = diff "|" FILENAME "|" q "|" FNR "|" section
 			}
-			q = NR
+			q = FNR
+			diff = ""
 		}
 		/^\*\*Difficulty:\*\* (Easy|Medium|Hard)$/ {
 			if (q > 0) {
@@ -97,7 +116,7 @@ extract_questions() {
 		}
 		END {
 			if (q > 0) {
-				records[r++] = diff "|" FILENAME "|" q "|" (NR + 1) "|" section
+				records[r++] = diff "|" FILENAME "|" q "|" (last_line + 1) "|" section
 			}
 			for (i = 0; i < r; i++) {
 				print records[i]
@@ -120,11 +139,16 @@ is_excluded() {
 # shellcheck disable=SC2178
 consume_front() {
 	local -n pool=$1
-	local n=$2
+	local -n taken=$2
+	local n=$3
 	local i
 
+	# The caller passes an array to fill rather than reading stdout: this function previously
+	# ran inside `mapfile < <(...)`, and the subshell discarded its consumption, so the pools
+	# never shrank and every block of a multi-block run re-selected the same questions.
+	taken=()
 	for ((i = 0; i < n && ${#pool[@]} > 0; i++)); do
-		printf '%s\n' "${pool[0]}"
+		taken+=("${pool[0]}")
 		unset 'pool[0]'
 		pool=("${pool[@]}")
 	done
@@ -188,6 +212,7 @@ shuffle_array medium
 shuffle_array hard
 
 declare -a warnings=()
+declare -a picked=()
 selected=0
 
 while [ "$selected" -lt "$question_count" ]; do
@@ -209,7 +234,7 @@ while [ "$selected" -lt "$question_count" ]; do
 			warnings+=("Easy question pool exhausted; substituting from remaining pools")
 		fi
 	fi
-	mapfile -t picked < <(consume_front easy "$take_easy")
+	consume_front easy picked "$take_easy"
 	block+=("${picked[@]}")
 
 	take_medium=2
@@ -223,7 +248,7 @@ while [ "$selected" -lt "$question_count" ]; do
 			warnings+=("Medium question pool exhausted; substituting from remaining pools")
 		fi
 	fi
-	mapfile -t picked < <(consume_front medium "$take_medium")
+	consume_front medium picked "$take_medium"
 	block+=("${picked[@]}")
 
 	take_hard=1
@@ -237,7 +262,7 @@ while [ "$selected" -lt "$question_count" ]; do
 			warnings+=("Hard question pool exhausted; substituting from remaining pools")
 		fi
 	fi
-	mapfile -t picked < <(consume_front hard "$take_hard")
+	consume_front hard picked "$take_hard"
 	block+=("${picked[@]}")
 
 	block_remaining=$((block_size - ${#block[@]}))

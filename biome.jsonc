@@ -1,7 +1,10 @@
 {
 	"files": {
 		// vim.pack generates nvim-pack-lock.json with two-space indentation with no customization option.
-		"includes": ["**", "!**/nvim-pack-lock.json"]
+		// Markdown is excluded because Biome's Markdown formatter rewraps prose to its own line width and
+		// rewrites YAML frontmatter, which conflicts with this repository's hand-wrapped dotfiles markdown
+		// and the byte-exact `license.md` copy; `marksman` (LSP) assists with markdown instead.
+		"includes": ["**", "!**/*.md", "!**/nvim-pack-lock.json"]
 	},
 	"overrides": [
 		{

@@ -46,6 +46,9 @@ brew "biome" # Linter, formatter, and LSP server for TypeScript, JavaScript, and
 # Security Scanners
 brew "gitleaks" # Secret scanner with embedded rules.
 
+# Test Runners
+brew "bats-core" # Test runner for Bash scripts, providing the `bats` command.
+
 brew "forgejo-cli" # Command line tool for Forgejo instances.
 brew "gh" # Command line tool for GitHub instances.
 

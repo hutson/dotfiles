@@ -40,6 +40,12 @@ fi
 echo "✓ 'shellcheck' passed"
 echo
 
+echo "==================== BATS =========================="
+echo "Running bats for dynamic tests of the shell scripts..."
+bats tests/
+echo "✓ 'bats' passed"
+echo
+
 echo "==================== SECRET SCANNING ==================="
 echo "Running gitleaks to scan the working tree for leaked secrets..."
 gitleaks dir . --no-banner

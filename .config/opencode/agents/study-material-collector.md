@@ -11,11 +11,24 @@ permissions:
     - action: "*"
       resource: "*"
       effect: deny
-    # Shell is denied beyond the catch-all because the role is pure reading and writing: it
-    # takes a website or file as input and emits question files, running no commands.
+    # The role reads and writes: it takes a website or file as input and emits question files.
+    # Shell is `ask`, not `deny`, because a final matching `deny` for resource `*` removes the
+    # tool from the model's list entirely, and a model that calls it anyway gets
+    # `No tool named "shell" is currently available.` instead of a permission prompt. That
+    # misfire is likely here: a session can switch agents mid-conversation (the `study` agent
+    # runs commands in the same history), so the model has recent successful `shell` calls to
+    # imitate. `ask` keeps the tool visible and every command beyond the helper below human-gated.
     - action: shell
       resource: "*"
-      effect: deny
+      effect: ask
+    # Leading `*` (not `~/`) because opencode expands `~/` permission patterns to the absolute
+    # home path at config load, while shell rules match the raw command text where `~` stays
+    # literal. The selection helper is read-only (it parses question files and prints to
+    # stdout), and it is the parser the generated material feeds, so the collector may
+    # dry-run it over its own output to verify formatting without a prompt.
+    - action: shell
+      resource: "*/.config/opencode/scripts/study-select.sh *"
+      effect: allow
     - action: edit
       resource: "*"
       effect: allow
@@ -38,6 +51,12 @@ permissions:
     # standing inputs for this role, not ad-hoc external access worth a prompt.
     - action: external_directory
       resource: ~/.config/opencode/skills/*
+      effect: allow
+    # The shell scanner checks directories a command touches against `external_directory`
+    # before its `shell` rules, so pre-approve the helper's own directory the same way as the
+    # skill tree: which command may run there is still decided by the `shell` rules above.
+    - action: external_directory
+      resource: ~/.config/opencode/scripts/*
       effect: allow
     - action: glob
       resource: "*"
@@ -86,7 +105,7 @@ permissions:
       effect: deny
 ---
 
-You task is to take a reference to a website or a file on the disk and generate a series of questions to test a person's understanding of the material, along with a detailed answer to the question that the person will be graded against. All question and answer material will be placed into files that best align with the programming language, or engineering practice, covered by the website or file. 
+You task is to take a reference to a website or a file on the disk and generate a series of questions to test a person's understanding of the material, along with a detailed answer to the question that the person will be graded against. All question and answer material will be placed into files that best align with the programming language, or engineering practice, covered by the website or file. The answers must be comprehensive to ensure that all nuances in how a language feature behaves is sufficiently documented that the user does not need to navigate to a third-party website, and to ensure that the answer leaves no questions or abiguity they may confuse the person further. 
 
 Each file will be broken down into sections, with each section associated with one or more references that were used to generate the questions and answers. For example, for logging in Go, you may have the following section in a `go.md` file:
 
@@ -150,6 +169,8 @@ The source information appears in the `SourceKey` field, which contains a `*slog
 Difficulty level can be either: Easy, Medium, or Hard. Answers that require code will be more difficult than an answer that is just prose-based on a very core feature of Go. Explaining behavior of core features that are not typically encountered or abastracted away are going to be more difficult than behavior that is more easily experienced. If you are unsure about the difficulty of a question and its answer, prompt the user to choose between the difficulty levels.
 
 The format and content of each question and answer must be truthful to the source material. No assumptions may be made about what the answer might be, or how code could be written.
+
+Verify every file you write by dry-running the selection helper over it: `~/.config/opencode/scripts/study-select.sh --count 999 <absolute-path>`. It prints one `difficulty|file|startline|endline|section` line per `**Question:**` block, and that line format is the contract the `study` agent uses to select and read questions, so each block you wrote must appear exactly once with an `Easy`, `Medium`, or `Hard` difficulty and bounds inside the file. A block that prints no line lacks a parseable `**Difficulty:**` line. Warnings about exhausted pools on stderr are expected once every question has been listed, so ignore them. Fix the file and run the helper again until the output matches the blocks.
 
 If you are given references for a feature within a langauge that does not have a correspondong file, ask to create it.
 
