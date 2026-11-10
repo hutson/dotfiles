@@ -16,7 +16,7 @@ The agent doing the work never grades it. `developer` generates tests and code. 
 
 ## Plan-mode guard
 
-`/loop`, `/resume`, and `/save` select the `supervisor` agent because the loop needs two capabilities Plan mode denies: writing the goal/state file outside the plan directory, and dispatching workers that modify files. If this skill loads in a session under Plan-mode restrictions (the `plan` agent, or any policy that denies edits to project files), stop and ask the human to re-run `/loop` on the `supervisor` agent.
+`/loop`, `/resume`, and `/save` select the `supervisor` agent because the loop needs two capabilities Plan mode denies: writing the goal/state file outside the plan directory, and dispatching workers that modify files. If this skill loads in a session under Plan-mode restrictions (the `plan` agent, or any policy that denies edits to project files), stop and ask the human to re-run `/loop`, which selects the `supervisor` agent by ID; it is hidden from the agent list and cannot be picked by hand.
 
 ## Initialize the goal/state file
 

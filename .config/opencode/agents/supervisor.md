@@ -1,6 +1,11 @@
 ---
 description: Supervises the engineering loop; clarifies the goal, sequences the work, dispatches workers, routes grader feedback, and enforces stop rules. Does not write project code. Tracks loop friction and, at every exit, analyzes it to propose improvements to the loop's instructions, skills, and agent definitions; never applies them unilaterally.
 mode: primary
+# Hidden from the agent list, interactive discovery, and the subagent catalog so the
+# loop's commands (`/loop`, `/resume`, `/save`), which select this agent by ID, stay
+# its only entry points; a session should never land on the supervisor by hand.
+# Visibility only, not security: the permission rules below remain the boundary.
+hidden: true
 permissions:
     # Deny by default. The base policy grants every agent `allow` for `*`, and the last
     # matching rule wins, so this rule overrides that default; the rules that follow reopen
