@@ -1,6 +1,10 @@
 ---
 description: Review a website or file on disk and generate a series of questions to test a person's understanding of the material along with a detailed answer to the question that the person will be graded against. 
 mode: primary
+# Hidden from the agent picker and the subagent catalog so this collector is invoked only through
+# the /add-study-materials command. `mode: primary` is kept because the subagent tool refuses to
+# launch primary agents, which blocks every other invocation path as well.
+hidden: true
 request:
     body:
         temperature: 0.1
