@@ -4,41 +4,133 @@
 	// Usage limits - https://opencode.ai/docs/go/#usage-limits
 	"agents": {
 		//
-		// Engineering loop agents.
+		// ========================
+		// Product Engineering Team
+		// ========================
 		//
-		"architect": {
-			"model": "opencode-go/mimo-v2.6-pro"
-		},
-		"developer": {
-			"model": "opencode-go/qwen3.8-flash#medium"
-		},
-		"documentation": {
-			"model": "opencode-go/mimo-v2.6-pro"
-		},
-		"quality-assurance": {
-			"model": "opencode-go/glm-5.3-flash#low"
-		},
-		"security": {
-			"model": "opencode-go/glm-5.3-flash#max"
-		},
-		"supervisor": {
-			"model": "opencode-go/mimo-v2.6-pro"
-		},
-		"test-design": {
-			"model": "opencode-go/glm-5.3-flash#high"
-		},
+		// GOAL: Agent team that takes desired outcome as input, clarifies requirements, architects solution, implements specification, grades against outcome, and documents results, while using models aligned with each agents stated purpose.
 		//
-		// GOAL: A strong reasoning model that specializes in coding with multi-modal support for acessing any required knowledge.
+		// Requirements
+		// - Grading/verifier agents must not use the same model vendor as implementation agents.
+		// - Each agent should be aligned with a model that scores well against the agent's purpose.
+		// - Quality of security agent takes priority.
+		//
+
+		//
+		// GOAL: Produces a high-level technical design for a goal (code organization, data structures and algorithms, standard libraries, interfaces, testing strategy) without naming lines of code.
 		//
 		// Model - https://models.dev/models/xiaomi/mimo-v2.6-pro/
 		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-mimo-v2.6-pro
 		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
 		//
-		// - Slightly less good at reasoning/coding compared to GLM-5.3 but at 3.5x cheaper per token.
+		// - Coding rank 25 (38.3) and reasoning rank 39 (45.3); wins 6 of 8 shared benchmarks against GLM-5.3 at 3.5x cheaper per token.
+		// - Shares the Xiaomi vendor with developer/build (all implementers); graders stay on Zhipu GLM per the separation requirement.
+		// - Trade-off: DeepSeek-V4.1-Flash scores higher at coding (rank 15, 40.1) and tool calling (rank 8, 31.9), but it requires the Global region setting; MiMo-V2.6-Pro operates in the US/EU region and wins 5 of 8 shared benchmarks against it.
+		//
+		"architect": {
+			"model": "opencode-go/mimo-v2.6-pro"
+		},
+		//
+		// GOAL: Writes tests and code for the engineering loop as directed by the supervisor, following the architect's design and loading the skill for each language or tool it writes. Does not grade its own work.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-pro/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-pro-vs-qwen3.8-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-coding
+		//
+		// - Coding rank 25 (38.3) vs Qwen3.8-Flash rank 53 (32.8); DeepSWE 1.1 72 vs 59.
+		// - Cache reads $0.003625/M vs $0.016/M and cache writes unmetered vs $0.20/M cut its 30-day metered estimate (Oct 12 - Nov 11 traffic) from $3.79 to $1.84.
+		// - Trade-off: Qwen3.8-Flash keeps a slight tool-calling edge (rank 17, 29.9 vs rank 23, 29.5) and instruction-following rank 9; chosen against it because the recorded misses were coding misses and MiMo is open-weight while Qwen3.8-Flash is closed.
+		//
+		"developer": {
+			"model": "opencode-go/mimo-v2.6-pro"
+		},
+		//
+		// GOAL: Reviews inline comments and standalone docs (Markdown, AsciiDoc, txt) for tone, consistency, conciseness, readability, and accuracy (read-only).
+		//
+		// Model - https://models.dev/models/zhipuai/glm-5.3-flash/
+		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-mimo-v2.6-pro
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-writing
+		//
+		// - #high effort: documentation is the most FAIL-prone gate in ~/.data/opencode/progress/ (accuracy and specification-precision findings in nearly every loop), so it gets more reasoning budget than quality-assurance but less than security.
+		// - Chosen over MiMo-V2.6-Pro even though both score 48.2 on the general index because graders must not share the Xiaomi vendor with architect/developer/build, and GLM-5.3-Flash leads on reasoning (rank 29, 47.1 vs rank 39, 45.3), the best proxy for accuracy review.
+		// - Trade-off: no Go catalog model is scored on the writing leaderboard (it covers only 2025-era checkpoints), so reasoning and instruction-following ranks stand in. If documentation churn persists, Qwen3.8-Flash (instruction-following rank 9) is the proxy-best fallback at about $0.51/mo.
+		//
+		"documentation": {
+			"model": "opencode-go/glm-5.3-flash#high"
+		},
+		//
+		// GOAL: Runs the project's tests, analyzes failures, and reports root cause. Read-only for source; executes the documented test entry point with debug logging.
+		//
+		// Model - https://models.dev/models/zhipuai/glm-5.3-flash/
+		// Comparison - https://llm-stats.com/models/compare/glm-5.3-flash-vs-qwen3.8-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-tool-calling
+		//
+		// - #low effort: every QA failure recorded in ~/.data/opencode/progress/ was environmental (stale devsy workspaces, missing C compilers), not a reasoning miss, so the reasoning budget goes to the graders whose failures are reasoning-bound.
+		// - Trade-off: #low weakens failure root-causing relative to #high; accepted because the verdict is evidence-backed command output and security/test-design catch logic errors. Upgrading costs under $0.10/mo at current volumes.
+		//
+		"quality-assurance": {
+			"model": "opencode-go/glm-5.3-flash#low"
+		},
+		//
+		// GOAL: Validates design or code for security vulnerabilities and unmitigated risk, ordered by severity. Loads language-specific attack guidance on demand.
+		//
+		// Model - https://models.dev/models/zhipuai/glm-5.3-flash/
+		// Comparison - https://llm-stats.com/models/compare/glm-5.3-vs-mimo-v2.6-pro
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-coding
+		//
+		// - #max effort per the security-quality priority.
+		// - Trade-off: MiMo-V2.6-Pro holds the catalog's best policy-clean security record (CyberGym 94% rank 2, SEC-bench Pro 66% rank 4, safety index 24.3 rank 4) but is excluded because architect/developer/build share the Xiaomi vendor; DeepSeek-V4.1-Flash (CyberGym 88% rank 3) is excluded because it requires the Global region setting. GLM-5.3-Flash at #max is the strongest independent grader that fits the budget.
+		//
+		"security": {
+			"model": "opencode-go/glm-5.3-flash#max"
+		},
+		//
+		// GOAL: Orchestrates the engineering loop (clarify, plan, route work, report) and is the only agent that questions the human.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/qwen3.8-flash-vs-mimo-v2.6-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - Not a grader, so it may share the Xiaomi vendor with the implementers; gate verdicts always come from the four grading agents.
+		// - Chosen over MiMo-V2.6-Pro even though MiMo-V2.6-Pro reasons better (rank 39, 45.3 vs rank 57, 42.7) because the supervisor's recorded slips in ~/.data/opencode/progress/ were transcription and paraphrase discipline rather than reasoning depth, and its 4.4M fresh-input tokens per 30 days at $0.14/M cut the metered estimate from $3.42 to $1.23.
+		// - Trade-off: less depth for adjudicating conflicting verdicts. Promote back to MiMo-V2.6-Pro (about +$2.2/mo) if re-adjudication rounds rise.
+		//
+		"supervisor": {
+			"model": "opencode-go/mimo-v2.6-flash"
+		},
+		//
+		// GOAL: Reviews tests against the project's goals to ensure they validate the desired outcome, adhere to test-design best practices, and recommends missing tests for new or changed behavior.
+		//
+		// Model - https://models.dev/models/zhipuai/glm-5.3-flash/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-flash-vs-glm-5.3-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - #high effort: its recorded FAILs are reasoning-bound and each bounce forces a full write-tests re-dispatch.
+		// - Trade-off: GLM-5.3 reasons better (rank 16, 49.8 vs rank 29, 47.1) but at test-design's volumes costs about $2/mo more (input $1.40/M vs $0.15/M); revisit if test-design bounces keep forcing re-dispatch rounds.
+		//
+		"test-design": {
+			"model": "opencode-go/glm-5.3-flash#high"
+		},
+
+		//
+		// ===============
+		// Built-in Agents
+		// ===============
+		//
+
+		//
+		// GOAL: A strong reasoning model that specializes in coding with multi-modal support for acessing any required knowledge.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-flash-vs-glm-5.3-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - Trade-off against this GOAL: MiMo-V2.6-Pro reasons better (rank 39, 45.3 vs rank 57, 42.7) and codes better (rank 25, 38.3 vs rank 45, 33.8), but plan is the heaviest single consumer (about 1,200 messages per 30 days) and the flash tier cuts its metered estimate from $5.51 to $1.70, which is what holds the monthly total under $10. Promote back to MiMo-V2.6-Pro (about +$3.3/mo) if planning quality slips.
+		// - Chosen over GLM-5.3-Flash (reasoning rank 29, 47.1) because cache reads cost $0.0028/M vs $0.03/M on the 62M cache-read context and input is $0.14/M vs $0.15/M.
 		// - Multi-model: text, images, video, audio
 		//
 		"plan": {
-			"model": "opencode-go/mimo-v2.6-pro",
+			"model": "opencode-go/mimo-v2.6-flash",
 			// Skills and their reference files are standing instruction sources for planning, but the
 			// global skill tree resolves (through the deploy.sh symlink) into the dotfiles repository, so
 			// reading a skill's `references/*.md` from any other project is an external-directory read
@@ -53,52 +145,102 @@
 		//
 		// GOAL: General model specialized in coding with ability to cheaply take a plan, execute it, and leverage tools to validate work.
 		//
-		// Model - https://models.dev/models/alibaba/qwen3.8-flash/
-		// Comparison - https://llm-stats.com/models/compare/deepseek-v4.1-flash-vs-qwen3.8-flash
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-pro/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-pro-vs-qwen3.8-flash
 		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-coding
 		//
-		// - Considered good at coding and tool calling - https://llm-stats.com/leaderboards/best-ai-for-tool-calling
-		// - Not as good as DeepSeek, but DeepSeek is not available inside the US/EU region.
+		// - Coding rank 25 (38.3) vs Qwen3.8-Flash rank 53 (32.8); DeepSWE 1.1 72 vs 59. Cache reads $0.003625/M vs $0.016/M and cache writes unmetered vs $0.20/M cut the 30-day metered estimate from $3.67 to $1.37.
+		// - Same generator family as developer (per developer.md: graders never share the generator's model).
+		// - Trade-off: Qwen3.8-Flash keeps a slight tool-calling edge (rank 17, 29.9 vs rank 23, 29.5). DeepSeek-V4.1-Flash leads on coding (rank 15) and tool calling (rank 8) at similar cost, but is not usable inside the US/EU region setting.
 		//
 		"build": {
-			"model": "opencode-go/qwen3.8-flash#medium"
+			"model": "opencode-go/mimo-v2.6-pro"
 		},
 		//
-		// GOAL: A strong model that is balanced, not favoring any particular specialty.
+		// GOAL: A general model that is balanced, not favoring any particular specialty.
 		//
-		// Per OpenCode: `Handles research and multi-step work with broad tool access, but cannot launch more subagents.`
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/qwen3.8-flash-vs-mimo-v2.6-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - Trade-off: Qwen3.8-Flash is the better all-rounder (general rank 37, 47.6 vs rank 51, 44.4) but is closed-weight and meters cache writes at $0.20/M; general is the lowest-volume agent (about 16 messages per 30 days), so the capability gap has a small blast radius and the team stays on open weights.
 		//
 		"general": {
-			"model": "opencode-go/qwen3.8-flash#medium"
+			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		//
 		// GOAL: A fast and cheap model that is still capable of basic reasoning.
 		//
 		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
 		// Comparison - https://llm-stats.com/models/compare/deepseek-v4.1-flash-vs-mimo-v2.6-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-coding
 		//
-		// mimo-v2.5 - https://models.dev/models/xiaomi/mimo-v2.5/
-		// Comparison - https://llm-stats.com/models/compare/deepseek-v4-flash-0731-vs-mimo-v2.5
-		//
+		// - Coding rank 45 (33.8), reasoning rank 57 (42.7); best code benchmarks at the cheapest paid tier (CyberGym 95%, rank 1 of 21).
 		// - ~10% weaker at benchmarks compared to DeepSeek-v4.1 but is 1.9x cheaper
+		// - MiMo-V2.5 is dominated: same Go price as V2.6-Flash but about 9 points lower on every index; links kept only as the previous baseline.
 		//
 		"explore": {
 			"model": "opencode-go/mimo-v2.6-flash"
 		},
+		//
+		// GOAL: A fast model capable of compacting very large contexts with a high degree of accuracy.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-flash-vs-glm-5.3-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - 1M-token context with the cheapest paid cache reads ($0.0028/M) suits compaction's full-context re-reads; usage is negligible (about 3 recorded messages per 30 days), so benchmark rank trails GLM-5.3-Flash but price decides.
+		//
 		"compaction": {
 			"model": "opencode-go/mimo-v2.6-flash"
 		},
+		//
+		// GOAL: A fast and cheap model that is still capable of basic reasoning.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-flash-vs-glm-5.3-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - Titles and summaries are short, low-stakes generations fired at high frequency; the cheapest paid tier keeps them off the metered budget (about $0.03/mo combined) with reasoning rank 57 (42.7) as the accepted floor.
+		//
 		"title": {
 			"model": "opencode-go/mimo-v2.6-flash"
 		},
 		"summary": {
 			"model": "opencode-go/mimo-v2.6-flash"
 		},
+
+		//
+		// ===================
+		// Personal Assistants
+		// ===================
+		//
+
 		//
 		// GOAL: A strong reasoning model that specializes in coding and writing.
 		//
+		// Model - https://models.dev/models/zhipuai/glm-5.3-flash/
+		// Comparison - https://llm-stats.com/models/compare/mimo-v2.6-flash-vs-glm-5.3-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - #high effort for grading open-ended study answers; reasoning rank 29 (47.1) leads every model at its price tier ($0.15/$0.50) except DeepSeek-V4.1-Flash (rank 30), which requires the Global region setting.
+		// - Trade-off: no measured writing score exists for any Go catalog model, so reasoning rank is the proxy. Volume is tiny (about 49 messages per 30 days, $0.03/mo), so this entry costs nothing to keep strong.
+		//
 		"study": {
 			"model": "opencode-go/glm-5.3-flash#high"
+		},
+		//
+		// GOAL: Generates truthful question-and-answer study cards from a URL or file, then dry-runs the selection helper before writing any card file.
+		//
+		// Model - https://models.dev/models/xiaomi/mimo-v2.6-flash/
+		// Comparison - https://llm-stats.com/models/compare/qwen3.8-flash-vs-mimo-v2.6-flash
+		// Leaderboard - https://llm-stats.com/leaderboards/best-ai-for-reasoning
+		//
+		// - Extraction and transcription workload at the cheapest paid tier ($0.14/$0.28, cache reads $0.0028/M), about $0.03/mo at current volumes.
+		// - Pinned explicitly (it previously inherited the top-level default, the same model) so the choice is documented rather than implicit.
+		//
+		"study-material-collector": {
+			"model": "opencode-go/mimo-v2.6-flash"
 		}
 	},
 	"default_agent": "plan",
