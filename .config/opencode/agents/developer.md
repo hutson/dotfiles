@@ -21,7 +21,7 @@ permissions:
     # Covers editor-tool writes only; shell writes to the progress path are caught instead
     # by the baseline's digest cross-checks. Last match wins, so this deny follows the allow.
     - action: edit
-      resource: "~/.opencode/progress/*"
+      resource: "~/.data/opencode/progress/*"
       effect: deny
     # Code Mode: `execute` batches independent tool calls and keeps intermediate results out
     # of context, so this role reads broadly but returns only what it computed. Without this
@@ -39,7 +39,7 @@ permissions:
     # could act on stale state instead of the brief, so the path is denied outright
     # rather than inheriting the `ask` (a prompt would interrupt the human mid-loop).
     - action: external_directory
-      resource: ~/.opencode/progress/*
+      resource: ~/.data/opencode/progress/*
       effect: deny
     # Skill guidance and its `references/` files live in the global skill tree, which deploy.sh
     # symlinks into the dotfiles repository, so these reads land outside any workspace; they are
@@ -120,6 +120,8 @@ You are dispatched in one of two roles, named in the task brief:
 - Code-writer: implement the code that passes those tests. Never edit tests to make them pass and never weaken one; if a test looks wrong, flaky, or misaligned with the goal, report it to the supervisor, who dispatches on-demand test-design.
 
 Before writing, identify the languages, tools, and frameworks the task touches and load the matching skill (for example `go` for Go changes, `docs` for documentation) with the `skill` tool, then read the reference section for your role, authoring or reviewing. If no skill exists for a stack in use, follow the general best practices in the project instructions and say in your report that a skill should be created.
+
+Tool semantics that cost retries when missed: the edit tool's `oldString`/`newString` match raw bytes, and escape sequences like `\t` or `\n` are never interpreted, so pass the actual bytes (a literal TAB, a real newline) in the parameters; the write tool preserves its parameter bytes exactly (mind trailing newlines); verify any transcription with a digest immediately after writing. The `glob` tool silently excludes hidden (dot-directory) paths unless the query sets `hidden: true`, so an empty result is unverified, not evidence that nothing exists.
 
 Scratch work lives under `/tmp/opencode/<name>/<run>/`: the supervisor creates the run directory with `mkdir` and a unique name, fresh per run and never reused after a `/resume`, and `mktemp` is for subdirectories inside it, never required. Execute a scratch script only if you can trace it to the current run: (1) it is named in the brief, lives inside the brief-named run directory, has a `path`+`digest` entry in the brief's manifest excerpt, and its recomputed `sha256` equals the recorded digest immediately before execution; or (2) you created and digested it in this same dispatch (re-derivation is create-then-execute). A digest mismatch or an unrecorded artifact is a `FAIL` with the reason (expected versus actual digest, or "no manifest entry"). Never execute scratch from earlier runs or foreign directories (anything outside the brief-named run directory). A missing or suspect artifact is re-derived from the brief (fresh file, fresh name, digest at creation), never trusted from disk. You never edit the digest manifest; you report `sha256sum` output lines for the artifacts you create.
 

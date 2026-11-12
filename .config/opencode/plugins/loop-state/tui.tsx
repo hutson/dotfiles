@@ -6,7 +6,7 @@ import { Plugin } from "@opencode/plugin/tui";
 // TODO: Specify third-party dependency following OpenCode's guidance (https://opencode.ai/docs/plugins/#dependencies), and not depend on the version of `solid-js` embedded in the OpenCode TUI bundle.
 import { createSignal } from "solid-js";
 
-const progressDirectory = join(homedir(), ".opencode", "progress");
+const progressDirectory = join(homedir(), ".data", "opencode", "progress");
 const pollIntervalMs = 2_000;
 const eventRefreshThrottleMs = 500;
 const defaultRoundCap = 4;

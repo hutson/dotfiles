@@ -18,6 +18,16 @@ Cover each category, asking the questions whose answers change what gets built:
 10. Scope boundaries: what the human deliberately does not want built, so the loop does not gold-plate.
 11. Acceptance and verification: how correctness gets checked. This is where the loop's `Verify` command from SKILL.md phase 0 lives, so confirm it in this walkthrough rather than as a separate interruption. When the project has no `readme.md` yet and the `scaffold` skill applies, do not ask the human to invent a command: `bash .tools/test.sh` (the scaffold's single entry point, its gates assembled from the stack skills' `Verify` sections) is the recommended answer, and the scaffolding pass writes the readme that documents it.
 
+## Conditional additions
+
+Trigger-gated extensions of the categories above. Each applies only when its trigger holds, so a goal that does not touch the area never answers for it.
+
+- Credentials and secrets (when the goal touches them): secret source and storage, endpoint policy (hard-coded versus override), failure tolerance (transient versus terminal), credential lifecycle (rotation and purge triggers), and privilege scope (which scope the credential needs and whether the provider issues a narrower one).
+- Directed behaviors and multi-state controls (when the goal names behaviors to expose): trace every directed behavior to a named, reachable trigger before the round closes, enumerate every state's visible and durable behavior, and note each pinned external basis (fixture bytes, HEAD captures) with the points where it is consulted and the re-verify-and-halt rule at each point.
+- Acceptance-criterion cross-references (mandatory when criteria name literals): check each criterion against every other criterion and every prose instruction naming the same literal (grep-equality sets, a move's delete list versus its placement criteria), so a contradiction surfaces in the round instead of at a grader run.
+- Byte-frozen user-facing text (when the goal freezes any user-facing surface such as a help or usage string): check whether the change must touch that surface and surface the conflict in the round.
+- Dirty-worktree goals (when the goal pins foreign in-flight changes): ask the human to hold edits to the pinned files until the loop exits, and express foreign-WIP criteria as dirty-set equality plus per-file hash with attestation rather than exact diffstat counts (counts are derived and go stale under live editing).
+
 ## Asking rules
 
 - Use the `question` tool, not prose. Batch the questions for one round into a single call so the human answers them together.

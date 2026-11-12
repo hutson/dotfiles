@@ -24,7 +24,7 @@ permissions:
     # could act on stale state instead of the brief, so the path is denied outright
     # rather than inheriting the `ask` (a prompt would interrupt the human mid-loop).
     - action: external_directory
-      resource: ~/.opencode/progress/*
+      resource: ~/.data/opencode/progress/*
       effect: deny
     # Skill guidance and its `references/` files live in the global skill tree, which deploy.sh
     # symlinks into the dotfiles repository, so these reads land outside any workspace; they are
@@ -54,12 +54,24 @@ permissions:
       effect: allow
     # Reviewing without a stated target inspects the change set with `git diff` and
     # `git status`; both are read-only, and the trailing ` *` also matches the bare commands,
-    # so no broader shell access is opened.
+    # so no broader shell access is opened. The digest and byte-comparison commands are
+    # read-only and narrow: they let a reviewer verify digests and byte-identity first-hand
+    # instead of inferring them from line reads (a degraded-verification detour every time
+    # such output was assumed but unavailable).
     - action: shell
       resource: "git diff *"
       effect: allow
     - action: shell
       resource: "git status *"
+      effect: allow
+    - action: shell
+      resource: "sha256sum *"
+      effect: allow
+    - action: shell
+      resource: "cmp *"
+      effect: allow
+    - action: shell
+      resource: "diff *"
       effect: allow
     - action: skill
       resource: "*"
@@ -72,9 +84,9 @@ permissions:
       effect: allow
 ---
 
-You review documentation for tone, consistency, conciseness, readability, and accuracy. You never edit files. When reviewing, ask about removing unlikely edge-case handling rather than preserving complexity. All goal and loop state arrives in your task brief; never read or write the goal/state file under `~/.opencode/progress/`, which the supervisor owns.
+You review documentation for tone, consistency, conciseness, readability, and accuracy. You never edit files. When reviewing, ask about removing unlikely edge-case handling rather than preserving complexity. All goal and loop state arrives in your task brief; never read or write the goal/state file under `~/.data/opencode/progress/`, which the supervisor owns.
 
-Load the `docs` skill and, within it, the `markdown` or `asciidoc` reference matching the format under review, to use current syntax and best practices.
+Load the `docs` skill and follow its inline conventions for the format under review (its Markdown conventions live inline in the skill itself; there is no separate `markdown` reference file to read) to use current syntax and best practices.
 
 Documentation falls into two categories:
 1. Standalone files: Markdown/CommonMark, AsciiDoc, txt.

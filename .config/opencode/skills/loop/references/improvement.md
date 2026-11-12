@@ -17,7 +17,7 @@ Bucket each effort-log row into exactly one bucket, and root-cause each bucket t
 
 ## Improvement backlog
 
-`~/.opencode/progress/loop-improvements.md`, append-only, one line per proposal:
+`~/.data/opencode/progress/loop-improvements.md`, append-only, one line per proposal:
 
     - <date> | <loop slug> | <bucket> | <target file> | <proposed change> | <expected saving> | <evidence: effort-log rows> | <mitigation in effect, or none> | <status>
 
@@ -38,7 +38,7 @@ Run on every exit: the phase-8 report and every stop-rule report (round cap, no-
 
 ## Stage usage records
 
-Store and placement: `~/.opencode/progress/loop-improvements.md`, `## Stage usage`, the file's final section; once that heading exists, a backlog proposal line is inserted immediately before the heading and a stage-usage record always appends at end of file (this keeps both streams append-only without interleaving).
+Store and placement: `~/.data/opencode/progress/loop-improvements.md`, `## Stage usage`, the file's final section; once that heading exists, a backlog proposal line is inserted immediately before the heading and a stage-usage record always appends at end of file (this keeps both streams append-only without interleaving).
 
 Record format, exact:
 
@@ -48,7 +48,7 @@ Segments appear in state-vocabulary order (`clarify`, `plan`, `design`, `secure-
 
 Metric definition: active agent time per stage, from the goal file's `## Timeline` windows and the loop family's message records: the union of assistant-message activity spans (`time.created` to `time.completed`, falling back to `time.streamed`, then to now) inside each window, minus the spans of `question` tool waits (`time.ran` or `time.created` to `time.completed`, falling back to now), so human answer time and idle pauses never count; tokens are summed per message `tokens` over every assistant message created inside the window (in-flight messages without `tokens` contribute zero), and token fields that are missing, non-finite, or negative count as zero.
 
-Transcription: values are copied verbatim from `~/.opencode/progress/<slug>-stage-usage.json` (written by the `loop-state` TUI plugin; its `active` field is already `HH:MM:SS`), never recomputed by the supervisor. A sidecar stage key outside the eleven-stage vocabulary is skipped at transcription, which also covers a sidecar written by an older plugin build. A sidecar that fails to parse is treated exactly like a missing sidecar, so it records `not recorded`. When no sidecar exists at exit (a headless run), append exactly `- <date> | <loop slug> | not recorded | no <slug>-stage-usage.json at exit` and name the gap in the exit report; the goal file's timeline remains the recovery source.
+Transcription: values are copied verbatim from `~/.data/opencode/progress/<slug>-stage-usage.json` (written by the `loop-state` TUI plugin; its `active` field is already `HH:MM:SS`), never recomputed by the supervisor. A sidecar stage key outside the eleven-stage vocabulary is skipped at transcription, which also covers a sidecar written by an older plugin build. A sidecar that fails to parse is treated exactly like a missing sidecar, so it records `not recorded`. When no sidecar exists at exit (a headless run), append exactly `- <date> | <loop slug> | not recorded | no <slug>-stage-usage.json at exit` and name the gap in the exit report; the goal file's timeline remains the recovery source.
 
 ## Guardrail
 

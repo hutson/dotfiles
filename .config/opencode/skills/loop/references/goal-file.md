@@ -1,6 +1,6 @@
 # Goal/state file format
 
-Write to `~/.opencode/progress/<project>-<slug>.md`. One file per loop. Update it in place.
+Write to `~/.data/opencode/progress/<project>-<slug>.md`. One file per loop. Update it in place.
 Refresh `- Updated:` on every write. It is the recency signal `/resume` ranks a project's
 goal files by, because the supervisor's shell is allowlisted to eight forms that cannot list
 files by modification time and its one clock read reports the current time, never a file's
@@ -102,6 +102,13 @@ Plan-mode guard).
       counts these lines for its grade-round display but marks gates only from the
       newest line with a completed outcome, with the cap taken from the header's
       `max <n> rounds` phrase in `Stop rule:`)
+
+    ## Pending question
+    Optional and transient: the `question` round currently with the human, recorded
+    (question text and options) before the round is dispatched and cleared when the
+    answer lands. A resumed session re-asks a recorded pending round exactly once
+    from this record instead of losing or re-deriving it, so a restart-dropped round
+    costs one re-ask instead of a lost round trip.
 
     ## Timeline
     Append-only stage clock; one line per `State:` change and one `end` line per exit; a

@@ -4,6 +4,6 @@ agent: supervisor
 subagent: false
 ---
 
-Update the goal/state file at ~/.opencode/progress/ for the current loop with the latest status, then reply with its path and a one-line status. Note from me:
+Update the goal/state file at ~/.data/opencode/progress/ for the current loop with the latest status, then reply with its path and a one-line status. Note from me:
 
 $ARGUMENTS

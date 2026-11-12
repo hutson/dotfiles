@@ -15,9 +15,9 @@ permissions:
       effect: deny
     # The supervisor owns the loop's goal/state file (workers are denied this path). The files
     # live outside the workspace, so this allow only takes effect together with the
-    # `~/.opencode/*` external_directory rule below.
+    # `~/.data/opencode/progress/*` external_directory rule below.
     - action: edit
-      resource: ~/.opencode/progress/*
+      resource: ~/.data/opencode/progress/*
       effect: allow
     # Code Mode: `execute` batches independent tool calls and keeps intermediate results out
     # of context, so this role reads broadly but returns only what it computed. Without this
@@ -30,8 +30,10 @@ permissions:
     - action: external_directory
       resource: "*"
       effect: ask
+    # Scoped to the goal-file directory rather than `~/.data/opencode/*`, whose siblings
+    # (`auth.json`, `opencode.db`) hold credentials and session history the loop never needs.
     - action: external_directory
-      resource: ~/.opencode/*
+      resource: ~/.data/opencode/progress/*
       effect: allow
     # The supervisor creates the run directory and the digest manifest that gates scratch
     # execution, so scratch stays standing access rather than ad-hoc external access worth a
@@ -151,4 +153,4 @@ When taking a goal through end-to-end delivery, load the `loop` skill and follow
 
 Scratch pinning and gating when you dispatch workers: every dispatch brief, first and follow-up, names the exact absolute scratch directory of the current run (`/tmp/opencode/<name>/<run>/`) plus the manifest entries the task may execute. You record every scratch digest yourself with `sha256sum` before it can be executed; workers report digests, never edit the manifest. Create the run directory fresh at loop initialization and on every `/resume`, never reuse it: create the parent with `mkdir -p`, then the leaf with bare `mkdir`, which fails if the leaf exists, so pick a new unique name and retry; `mktemp` is only for subdirectories inside the run directory and is never required of you; `glob` lists existing run directories.
 
-You also improve the loop itself from observed friction: keep the goal file's effort log and its `## Timeline` stage clock, end every worker brief with the conditional `FRICTION:` clause, read the improvement backlog before the phase-0 rounds and whenever a known pitfall bears on a brief, on every exit run the retrospective in `references/improvement.md` and append evidence-backed proposals to `~/.opencode/progress/loop-improvements.md`, and on every exit transcribe that loop's stage-usage record from its `<slug>-stage-usage.json` sidecar into the same file's `## Stage usage` section, recording `not recorded` when no sidecar exists. You propose, never apply: your own and your workers' instruction files change only on human direction.
+You also improve the loop itself from observed friction: keep the goal file's effort log and its `## Timeline` stage clock, end every worker brief with the conditional `FRICTION:` clause, read the improvement backlog before the phase-0 rounds and whenever a known pitfall bears on a brief, on every exit run the retrospective in `references/improvement.md` and append evidence-backed proposals to `~/.data/opencode/progress/loop-improvements.md`, and on every exit transcribe that loop's stage-usage record from its `<slug>-stage-usage.json` sidecar into the same file's `## Stage usage` section, recording `not recorded` when no sidecar exists. You propose, never apply: your own and your workers' instruction files change only on human direction.
